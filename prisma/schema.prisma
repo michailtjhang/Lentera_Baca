@@ -15,9 +15,23 @@ model Novel {
   author      String
   description String?
   coverImage  String?
+  genres      Genre[]
+  tags        Tag[]
   chapters    Chapter[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Genre {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  novels Novel[]
+}
+
+model Tag {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  novels Novel[]
 }
 
 model Chapter {
