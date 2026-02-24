@@ -29,9 +29,11 @@ async function main() {
             create: {
                 id: "test-novel",
                 title: "Cahaya di Ujung Terowongan",
+                slug: "cahaya-di-ujung-terowongan",
                 author: "Eka Kurniawan",
                 description: "Sebuah kisah tentang perjalanan seorang pemuda mencari jati diri di tengah hiruk pikuk kota tua Jakarta. Penuh dengan intrik, cinta, dan pengkhianatan.",
                 coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1000",
+                status: "ONGOING",
             },
         });
 

@@ -136,9 +136,19 @@ export default async function Home({
             {novels.map((novel: any) => (
               <Link
                 key={novel.id}
-                href={`/novel/${novel.id}`}
+                href={`/novel/${novel.slug}`}
                 className="group bg-white/60 hover:bg-white border border-black/5 p-6 rounded-2xl transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] flex flex-col"
               >
+                {novel.coverImage ? (
+                  <div className="w-full h-40 mb-4 overflow-hidden rounded-xl">
+                    <img
+                      src={novel.coverImage}
+                      alt={`${novel.title} cover`}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ) : null}
+
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex flex-wrap gap-1">
                     {novel.genres.slice(0, 2).map((g: any) => (
@@ -153,7 +163,14 @@ export default async function Home({
                 </div>
 
                 <h3 className="text-xl font-bold group-hover:text-black transition-colors mb-1">{novel.title}</h3>
-                <p className="text-sm opacity-60 mb-4 italic">Oleh {novel.author}</p>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm opacity-60 italic">Oleh {novel.author}</p>
+                  {novel.status && (
+                    <span className="text-xs font-bold uppercase px-2 py-1 rounded-full bg-[#3E2723]/20 text-[#3E2723]">
+                      {novel.status.toLowerCase().replace(/_/g, '-')}
+                    </span>
+                  )}
+                </div>
 
                 <p className="text-sm opacity-80 line-clamp-2 leading-relaxed mb-6 flex-grow">
                   {novel.description || "Tidak ada deskripsi tersedia."}

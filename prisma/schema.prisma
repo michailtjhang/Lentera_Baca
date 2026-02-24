@@ -11,15 +11,24 @@ datasource db {
 
 model Novel {
   id          String    @id @default(cuid())
-  title       String
+  title       String    @unique                      // judul harus unik
+  slug        String    @unique                      // slug untuk url
   author      String
   description String?
   coverImage  String?
+  status      Status    @default(ONGOING)           // ongoing, complete, drop, hiatus
   genres      Genre[]
   tags        Tag[]
   chapters    Chapter[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+enum Status {
+  ONGOING
+  COMPLETE
+  DROP
+  HIATUS
 }
 
 model Genre {

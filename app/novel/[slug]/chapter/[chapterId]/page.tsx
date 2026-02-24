@@ -5,44 +5,23 @@ import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface PageProps {
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string; chapterId: string }>;
 }
 
 export default async function ReaderPage({ params }: PageProps) {
-    const { id } = await params;
+    const { slug, chapterId } = await params;
     const user = await currentUser();
 
     // Get user preference from Clerk metadata
     const theme = (user?.publicMetadata?.theme as string) || "light";
 
-    // Try to find if 'id' is a Chapter
-    let currentId = id;
-    let chapter = await prisma.chapter.findUnique({
-        where: { id: currentId },
+    // Find the chapter
+    const chapter = await prisma.chapter.findUnique({
+        where: { id: chapterId },
         include: { novel: true },
     });
 
-    // If not found, check if 'id' is a Novel ID and get its first chapter
-    if (!chapter) {
-        const novel = await prisma.novel.findUnique({
-            where: { id: currentId },
-            include: {
-                chapters: {
-                    orderBy: { order: 'asc' },
-                    take: 1
-                }
-            }
-        });
-
-        if (novel && novel.chapters.length > 0) {
-            chapter = {
-                ...novel.chapters[0],
-                novel: novel
-            };
-        }
-    }
-
-    if (!chapter) {
+    if (!chapter || chapter.novel.slug !== slug) {
         return notFound();
     }
 
@@ -68,13 +47,15 @@ export default async function ReaderPage({ params }: PageProps) {
         ? "bg-black text-gray-300"
         : "bg-[#F5F5DC] text-[#3E2723]";
 
+    const basePath = `/novel/${slug}`;
+
     return (
         <div className={`min-h-screen transition-colors duration-500 ${themeClasses}`}>
             <main className="max-w-2xl mx-auto px-6 py-12 md:px-8">
                 {/* Header */}
                 <header className="mb-10 text-center">
-                    <Link href="/" className="text-sm font-medium opacity-60 hover:opacity-100 mb-2 inline-block transition-opacity">
-                        ← Kembali ke Daftar
+                    <Link href={basePath} className="text-sm font-medium opacity-60 hover:opacity-100 mb-2 inline-block transition-opacity">
+                        ← Kembali ke Novel
                     </Link>
                     <h1 className="text-3xl font-bold mb-2 tracking-tight">{chapter.novel.title}</h1>
                     <h2 className="text-lg font-medium opacity-70 italic">Bab {chapter.order}: {chapter.title}</h2>
@@ -89,7 +70,7 @@ export default async function ReaderPage({ params }: PageProps) {
                 <nav className="mt-20 flex justify-between items-center border-t border-black/5 pt-10 dark:border-white/5">
                     {prevChapter ? (
                         <Link
-                            href={`/novel/${prevChapter.id}`}
+                            href={`${basePath}/chapter/${prevChapter.id}`}
                             className={`px-8 py-3 rounded-xl border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
                                 }`}
                         >
@@ -101,7 +82,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                     {nextChapter ? (
                         <Link
-                            href={`/novel/${nextChapter.id}`}
+                            href={`${basePath}/chapter/${nextChapter.id}`}
                             className={`px-8 py-3 rounded-xl border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
                                 }`}
                         >

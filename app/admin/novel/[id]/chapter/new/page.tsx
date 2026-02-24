@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export default async function NewChapterPage({ params }: { params: { id: string } }) {
+export default async function NewChapterPage({ params }: { params: Promise<{ id: string }> }) {
     await checkAdmin();
     const { id } = await params;
 

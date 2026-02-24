@@ -96,6 +96,21 @@ export default async function NewNovelPage() {
                     </div>
 
                     <div className="space-y-2">
+                        <label htmlFor="status" className="text-sm font-bold uppercase tracking-widest opacity-60">Status</label>
+                        <select
+                            name="status"
+                            id="status"
+                            defaultValue="ONGOING"
+                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
+                        >
+                            <option value="ONGOING">On-going</option>
+                            <option value="COMPLETE">Complete</option>
+                            <option value="DROP">Drop</option>
+                            <option value="HIATUS">Hiatus</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
                         <label htmlFor="description" className="text-sm font-bold uppercase tracking-widest opacity-60">Deskripsi</label>
                         <textarea
                             name="description"

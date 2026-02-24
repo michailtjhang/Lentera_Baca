@@ -12,6 +12,7 @@ export async function createNovel(formData: FormData) {
     const author = formData.get("author") as string;
     const description = formData.get("description") as string;
     const coverImage = formData.get("coverImage") as string;
+    const status = (formData.get("status") as string) || "ONGOING";
 
     // Get genres and tags
     const genres = formData.getAll("genres") as string[];
@@ -22,12 +23,34 @@ export async function createNovel(formData: FormData) {
         throw new Error("Title and Author are required");
     }
 
+    // simple slug generator, ensure lowercase and replace spaces
+    const providedSlug = (formData.get("slug") as string) || "";
+    let slug = providedSlug
+        ? providedSlug
+              .toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, "")
+              .trim()
+              .replace(/\s+/g, "-")
+        : title
+              .toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, "")
+              .trim()
+              .replace(/\s+/g, "-");
+
+    // if slug collides we append a short random string
+    const existing = await prisma.novel.findUnique({ where: { slug } });
+    if (existing) {
+        slug = `${slug}-${Math.random().toString(36).substr(2, 5)}`;
+    }
+
     const novel = await (prisma as any).novel.create({
         data: {
             title,
+            slug,
             author,
             description,
             coverImage,
+            status,
             genres: {
                 connectOrCreate: genres.map((name: string) => ({
                     where: { name },
@@ -44,6 +67,7 @@ export async function createNovel(formData: FormData) {
     });
 
     revalidatePath("/");
+    revalidatePath(`/novel/${novel.slug}`);
     revalidatePath("/admin");
     redirect("/admin");
 }
@@ -59,16 +83,19 @@ export async function createChapter(novelId: string, formData: FormData) {
         throw new Error("Title, Content, and Order (number) are required");
     }
 
-    await prisma.chapter.create({
+    const chapter = await prisma.chapter.create({
         data: {
             title,
             content,
             order,
             novelId,
         },
+        include: {
+            novel: true
+        }
     });
 
-    revalidatePath(`/novel/${novelId}`);
+    revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");
     redirect("/admin");
 }

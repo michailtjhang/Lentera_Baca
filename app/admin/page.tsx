@@ -46,7 +46,13 @@ export default async function AdminDashboard() {
                         >
                             <div>
                                 <h3 className="text-xl font-bold mb-1">{novel.title}</h3>
-                                <p className="text-sm opacity-60 italic mb-2">Oleh {novel.author}</p>
+                                <p className="text-sm opacity-60 italic mb-1">Oleh {novel.author}</p>
+                                <p className="text-xs opacity-70 mb-1">slug: <code className="bg-white/20 px-1 rounded">{novel.slug}</code></p>
+                                {novel.status && (
+                                    <span className="text-xs font-bold uppercase px-2 py-1 rounded-full bg-[#3E2723]/20 text-[#3E2723]">
+                                        {novel.status.toLowerCase().replace(/_/g, '-')}
+                                    </span>
+                                )}
                                 <span className="text-xs font-semibold px-2 py-1 bg-black/5 rounded-full">
                                     {novel._count.chapters} Bab
                                 </span>
@@ -59,7 +65,7 @@ export default async function AdminDashboard() {
                                     + Tambah Bab
                                 </Link>
                                 <Link
-                                    href={`/novel/${novel.id}`}
+                                    href={`/novel/${novel.slug}`}
                                     className="text-sm font-bold border border-black/10 px-4 py-2 rounded-lg hover:bg-black/5 transition-colors"
                                 >
                                     Lihat
