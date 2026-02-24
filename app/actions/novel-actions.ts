@@ -99,3 +99,70 @@ export async function createChapter(novelId: string, formData: FormData) {
     revalidatePath("/admin");
     redirect("/admin");
 }
+
+export async function updateNovel(novelId: string, formData: FormData) {
+    await checkAdmin();
+
+    const title = formData.get("title") as string;
+    const author = formData.get("author") as string;
+    const description = formData.get("description") as string;
+    const coverImage = formData.get("coverImage") as string;
+    const status = (formData.get("status") as string) || "ONGOING";
+
+    // Get genres and tags
+    const genres = formData.getAll("genres") as string[];
+    const tagsInput = formData.get("tags") as string;
+    const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter((tag: string) => tag !== "") : [];
+
+    if (!title || !author) {
+        throw new Error("Title and Author are required");
+    }
+
+    const novel = await prisma.novel.findUnique({
+        where: { id: novelId },
+        include: { genres: true, tags: true }
+    });
+
+    if (!novel) {
+        throw new Error("Novel not found");
+    }
+
+    // Remove old genres and tags
+    await (prisma as any).novel.update({
+        where: { id: novelId },
+        data: {
+            genres: { disconnect: novel.genres.map((g: any) => ({ id: g.id })) },
+            tags: { disconnect: novel.tags.map((t: any) => ({ id: t.id })) }
+        }
+    });
+
+    // Update with new data
+    const updated = await (prisma as any).novel.update({
+        where: { id: novelId },
+        data: {
+            title,
+            author,
+            description,
+            coverImage,
+            status,
+            genres: {
+                connectOrCreate: genres.map((name: string) => ({
+                    where: { name },
+                    create: { name }
+                }))
+            },
+            tags: {
+                connectOrCreate: tags.map((name: string) => ({
+                    where: { name },
+                    create: { name }
+                }))
+            }
+        },
+        include: { genres: true, tags: true }
+    });
+
+    revalidatePath("/");
+    revalidatePath(`/novel/${novel.slug}`);
+    revalidatePath("/admin");
+    redirect("/admin");
+}

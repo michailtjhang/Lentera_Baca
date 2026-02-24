@@ -5,10 +5,13 @@ import { X, Search, Plus } from "lucide-react";
 
 interface TagInputProps {
     suggestions: string[];
+    defaultValue?: string;
 }
 
-export function TagInput({ suggestions }: TagInputProps) {
-    const [tags, setTags] = useState<string[]>([]);
+export function TagInput({ suggestions, defaultValue }: TagInputProps) {
+    const [tags, setTags] = useState<string[]>(
+        defaultValue ? defaultValue.split(",").map((t: string) => t.trim()).filter((t: string) => t !== "") : []
+    );
     const [inputValue, setInputValue] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);

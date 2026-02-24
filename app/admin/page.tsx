@@ -15,20 +15,34 @@ export default async function AdminDashboard() {
         orderBy: { createdAt: 'desc' }
     });
 
+    const statusLabel: Record<string, string> = {
+        ONGOING: "On-going",
+        COMPLETE: "Complete",
+        DROP: "Drop",
+        HIATUS: "Hiatus",
+    };
+
+    const statusColors: Record<string, string> = {
+        ONGOING: "bg-blue-100 text-blue-800",
+        COMPLETE: "bg-green-100 text-green-800",
+        DROP: "bg-red-100 text-red-800",
+        HIATUS: "bg-yellow-100 text-yellow-800",
+    };
+
     return (
         <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723]">
             <nav className="border-b border-black/5 px-6 py-4 backdrop-blur-sm sticky top-0 bg-white/50 z-50">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
+                <div className="max-w-6xl mx-auto flex justify-between items-center">
                     <Link href="/" className="text-2xl font-bold tracking-tight">Lentera Baca <span className="text-xs bg-black text-white px-2 py-0.5 rounded ml-2">ADMIN</span></Link>
                     <UserButton />
                 </div>
             </nav>
 
-            <main className="max-w-4xl mx-auto px-6 py-12">
+            <main className="max-w-6xl mx-auto px-6 py-12">
                 <header className="flex justify-between items-end mb-12">
                     <div>
                         <h2 className="text-4xl font-extrabold mb-2 tracking-tight">Admin Dashboard</h2>
-                        <p className="text-lg opacity-70">Kelola koleksi novel dan bab.</p>
+                        <p className="text-lg opacity-70">Kelola koleksi novel dan bab. Total: <strong>{novels.length}</strong> novel</p>
                     </div>
                     <Link
                         href="/admin/novel/new"
@@ -38,48 +52,70 @@ export default async function AdminDashboard() {
                     </Link>
                 </header>
 
-                <div className="grid grid-cols-1 gap-4">
-                    {novels.map((novel: any) => (
-                        <div
-                            key={novel.id}
-                            className="bg-white/60 border border-black/5 p-6 rounded-2xl flex justify-between items-center"
-                        >
-                            <div>
-                                <h3 className="text-xl font-bold mb-1">{novel.title}</h3>
-                                <p className="text-sm opacity-60 italic mb-1">Oleh {novel.author}</p>
-                                <p className="text-xs opacity-70 mb-1">slug: <code className="bg-white/20 px-1 rounded">{novel.slug}</code></p>
-                                {novel.status && (
-                                    <span className="text-xs font-bold uppercase px-2 py-1 rounded-full bg-[#3E2723]/20 text-[#3E2723]">
-                                        {novel.status.toLowerCase().replace(/_/g, '-')}
-                                    </span>
-                                )}
-                                <span className="text-xs font-semibold px-2 py-1 bg-black/5 rounded-full">
-                                    {novel._count.chapters} Bab
-                                </span>
-                            </div>
-                            <div className="flex gap-3">
-                                <Link
-                                    href={`/admin/novel/${novel.id}/chapter/new`}
-                                    className="text-sm font-bold border border-black/10 px-4 py-2 rounded-lg hover:bg-black/5 transition-colors"
-                                >
-                                    + Tambah Bab
-                                </Link>
-                                <Link
-                                    href={`/novel/${novel.slug}`}
-                                    className="text-sm font-bold border border-black/10 px-4 py-2 rounded-lg hover:bg-black/5 transition-colors"
-                                >
-                                    Lihat
-                                </Link>
-                            </div>
-                        </div>
-                    ))}
-
-                    {novels.length === 0 && (
-                        <div className="text-center py-12 opacity-40 italic">
-                            Belum ada novel. Klik "+ Tambah Novel" untuk memulai.
-                        </div>
-                    )}
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b-2 border-black/5">
+                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Novel</th>
+                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Penulis</th>
+                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Status</th>
+                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Chapter</th>
+                                <th className="text-right py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {novels.map((novel: any) => (
+                                <tr key={novel.id} className="border-b border-black/5 hover:bg-white/40 transition-colors">
+                                    <td className="py-4 px-4">
+                                        <div>
+                                            <p className="font-bold">{novel.title}</p>
+                                            <p className="text-xs opacity-60 mt-1">slug: <code>{novel.slug}</code></p>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4 opacity-70">{novel.author}</td>
+                                    <td className="py-4 px-4">
+                                        <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${statusColors[novel.status] || 'bg-gray-100 text-gray-800'}`}>
+                                            {statusLabel[novel.status]}
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <span className="text-sm font-semibold px-3 py-1 bg-black/5 rounded-full">
+                                            {novel._count.chapters}
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-4 text-right">
+                                        <div className="flex gap-2 justify-end">
+                                            <Link
+                                                href={`/admin/novel/${novel.id}/edit`}
+                                                className="text-sm font-bold border border-black/10 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
+                                            >
+                                                Edit
+                                            </Link>
+                                            <Link
+                                                href={`/admin/novel/${novel.id}/chapter/new`}
+                                                className="text-sm font-bold border border-black/10 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
+                                            >
+                                                + Bab
+                                            </Link>
+                                            <Link
+                                                href={`/novel/${novel.slug}`}
+                                                className="text-sm font-bold bg-[#3E2723] text-[#F5F5DC] px-3 py-1.5 rounded-lg hover:shadow-md transition-all"
+                                            >
+                                                View
+                                            </Link>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
+
+                {novels.length === 0 && (
+                    <div className="bg-white/40 border border-black/5 rounded-2xl p-12 text-center mt-8">
+                        <p className="opacity-70 mb-4">Belum ada novel. Klik "+ Tambah Novel" untuk memulai.</p>
+                    </div>
+                )}
             </main>
         </div>
     );

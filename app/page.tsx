@@ -132,60 +132,49 @@ export default async function Home({
             <Link href="/" className="text-sm font-bold underline">Lihat Semua Koleksi</Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {novels.map((novel: any) => (
               <Link
                 key={novel.id}
                 href={`/novel/${novel.slug}`}
-                className="group bg-white/60 hover:bg-white border border-black/5 p-6 rounded-2xl transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] flex flex-col"
+                className="group bg-white/60 hover:bg-white border border-black/5 rounded-2xl overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] flex flex-col"
               >
-                {novel.coverImage ? (
-                  <div className="w-full h-40 mb-4 overflow-hidden rounded-xl">
+                {/* Cover Image */}
+                <div className="w-full aspect-[3/4] overflow-hidden bg-gradient-to-br from-[#3E2723]/10 to-[#3E2723]/5">
+                  {novel.coverImage ? (
                     <img
                       src={novel.coverImage}
                       alt={`${novel.title} cover`}
-                      className="object-cover w-full h-full"
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                     />
-                  </div>
-                ) : null}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[#3E2723]/40">
+                      No Cover
+                    </div>
+                  )}
+                </div>
 
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex flex-wrap gap-1">
-                    {novel.genres.slice(0, 2).map((g: any) => (
-                      <span key={g.id} className="text-[10px] font-bold uppercase tracking-widest bg-[#3E2723]/5 text-[#3E2723]/60 px-2 py-0.5 rounded">
+                {/* Details */}
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="text-sm font-bold group-hover:text-black transition-colors mb-1 line-clamp-2">{novel.title}</h3>
+                  
+                  <p className="text-xs opacity-60 mb-2">{novel.author}</p>
+
+                  <div className="flex gap-1 flex-wrap mb-2">
+                    {novel.genres.slice(0, 1).map((g: any) => (
+                      <span key={g.id} className="text-[10px] font-bold uppercase tracking-widest bg-[#3E2723]/5 text-[#3E2723]/60 px-1.5 py-0.5 rounded">
                         {g.name}
                       </span>
                     ))}
                   </div>
-                  <span className="text-xs font-semibold px-2 py-1 bg-black/5 rounded-full">
-                    {novel._count.chapters} Bab
-                  </span>
-                </div>
 
-                <h3 className="text-xl font-bold group-hover:text-black transition-colors mb-1">{novel.title}</h3>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm opacity-60 italic">Oleh {novel.author}</p>
-                  {novel.status && (
-                    <span className="text-xs font-bold uppercase px-2 py-1 rounded-full bg-[#3E2723]/20 text-[#3E2723]">
-                      {novel.status.toLowerCase().replace(/_/g, '-')}
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-sm opacity-80 line-clamp-2 leading-relaxed mb-6 flex-grow">
-                  {novel.description || "Tidak ada deskripsi tersedia."}
-                </p>
-
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-1">
-                    {novel.tags.slice(0, 3).map((t: any) => (
-                      <span key={t.id} className="text-[10px] font-medium opacity-40">
-                        #{t.name}
+                  <div className="flex justify-between items-center mt-auto text-xs">
+                    <span className="opacity-60">{novel._count.chapters} ch</span>
+                    {novel.status && (
+                      <span className="font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#3E2723]/10 text-[#3E2723]/70">
+                        {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}
                       </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                    Baca Sekarang →
+                    )}
                   </div>
                 </div>
               </Link>
