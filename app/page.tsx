@@ -49,7 +49,7 @@ export default async function Home({
   });
 
   // Fetch all genres for the filter bar
-  const allGenres = await prisma.genre.findMany({
+  const allGenres = await (prisma as any).genre.findMany({
     orderBy: { name: 'asc' }
   });
 
@@ -112,7 +112,7 @@ export default async function Home({
               >
                 Semua
               </Link>
-              {allGenres.map((g) => (
+              {allGenres.map((g: any) => (
                 <Link
                   key={g.id}
                   href={`/?genre=${g.name}${q ? `&q=${q}` : ''}`}
@@ -133,7 +133,7 @@ export default async function Home({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {novels.map((novel) => (
+            {novels.map((novel: any) => (
               <Link
                 key={novel.id}
                 href={`/novel/${novel.id}`}
@@ -141,7 +141,7 @@ export default async function Home({
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex flex-wrap gap-1">
-                    {novel.genres.slice(0, 2).map((g) => (
+                    {novel.genres.slice(0, 2).map((g: any) => (
                       <span key={g.id} className="text-[10px] font-bold uppercase tracking-widest bg-[#3E2723]/5 text-[#3E2723]/60 px-2 py-0.5 rounded">
                         {g.name}
                       </span>
@@ -161,7 +161,7 @@ export default async function Home({
 
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-1">
-                    {novel.tags.slice(0, 3).map((t) => (
+                    {novel.tags.slice(0, 3).map((t: any) => (
                       <span key={t.id} className="text-[10px] font-medium opacity-40">
                         #{t.name}
                       </span>

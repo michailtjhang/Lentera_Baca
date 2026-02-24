@@ -18,7 +18,7 @@ export default async function NewNovelPage() {
     await checkAdmin();
 
     // Fetch existing tags to suggest
-    const existingTags = await prisma.tag.findMany({
+    const existingTags = await (prisma as any).tag.findMany({
         select: { name: true }
     });
     const tagSuggestions = existingTags.map((t: { name: string }) => t.name);
@@ -65,7 +65,7 @@ export default async function NewNovelPage() {
                     <div className="space-y-2">
                         <label className="text-sm font-bold uppercase tracking-widest opacity-60">Genre</label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white/80 p-4 rounded-xl border border-black/5">
-                            {PREDEFINED_GENRES.map((genre) => (
+                            {PREDEFINED_GENRES.map((genre: any) => (
                                 <label key={genre} className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:opacity-70 transition-opacity">
                                     <input
                                         type="checkbox"

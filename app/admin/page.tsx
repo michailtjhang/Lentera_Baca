@@ -39,7 +39,7 @@ export default async function AdminDashboard() {
                 </header>
 
                 <div className="grid grid-cols-1 gap-4">
-                    {novels.map((novel) => (
+                    {novels.map((novel: any) => (
                         <div
                             key={novel.id}
                             className="bg-white/60 border border-black/5 p-6 rounded-2xl flex justify-between items-center"

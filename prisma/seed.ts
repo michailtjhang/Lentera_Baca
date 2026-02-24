@@ -1,23 +1,20 @@
-import "dotenv/config";
+
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+// WebSocket setup not needed if using connection string directly or HTTP driver
 
-// Set the web socket constructor for Neon in Node.js environments
-neonConfig.webSocketConstructor = ws;
+// Connection setup based on environment variables
 
 async function main() {
     console.log("🌱 Starting seed script with WebSocket support...");
 
-    const url = process.env.DATABASE_URL;
-    if (!url) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
         console.error("❌ DATABASE_URL is not defined in environment!");
         process.exit(1);
     }
 
-    const pool = new Pool({ connectionString: url });
-    const adapter = new PrismaNeon(pool);
+    const adapter = new PrismaNeon({ connectionString });
     const prisma = new PrismaClient({ adapter });
 
     try {

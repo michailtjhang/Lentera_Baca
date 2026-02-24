@@ -16,26 +16,26 @@ export async function createNovel(formData: FormData) {
     // Get genres and tags
     const genres = formData.getAll("genres") as string[];
     const tagsInput = formData.get("tags") as string;
-    const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()).filter(tag => tag !== "") : [];
+    const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter((tag: string) => tag !== "") : [];
 
     if (!title || !author) {
         throw new Error("Title and Author are required");
     }
 
-    const novel = await prisma.novel.create({
+    const novel = await (prisma as any).novel.create({
         data: {
             title,
             author,
             description,
             coverImage,
             genres: {
-                connectOrCreate: genres.map(name => ({
+                connectOrCreate: genres.map((name: string) => ({
                     where: { name },
                     create: { name }
                 }))
             },
             tags: {
-                connectOrCreate: tags.map(name => ({
+                connectOrCreate: tags.map((name: string) => ({
                     where: { name },
                     create: { name }
                 }))
