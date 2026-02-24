@@ -21,7 +21,7 @@ export default async function NewNovelPage() {
     const existingTags = await prisma.tag.findMany({
         select: { name: true }
     });
-    const tagSuggestions = existingTags.map(t => t.name);
+    const tagSuggestions = existingTags.map((t: { name: string }) => t.name);
 
     return (
         <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723]">
