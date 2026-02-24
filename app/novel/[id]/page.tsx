@@ -15,37 +15,54 @@ export default async function ReaderPage({ params }: PageProps) {
     // Get user preference from Clerk metadata
     const theme = (user?.publicMetadata?.theme as string) || "light";
 
-    // Fetch the current chapter
-    const chapter = await prisma.chapter.findUnique({
-        where: { id },
-        include: {
-            novel: true,
-        },
+    // Try to find if 'id' is a Chapter
+    let currentId = id;
+    let chapter = await prisma.chapter.findUnique({
+        where: { id: currentId },
+        include: { novel: true },
     });
+
+    // If not found, check if 'id' is a Novel ID and get its first chapter
+    if (!chapter) {
+        const novel = await prisma.novel.findUnique({
+            where: { id: currentId },
+            include: {
+                chapters: {
+                    orderBy: { order: 'asc' },
+                    take: 1
+                }
+            }
+        });
+
+        if (novel && novel.chapters.length > 0) {
+            chapter = {
+                ...novel.chapters[0],
+                novel: novel
+            };
+        }
+    }
 
     if (!chapter) {
         return notFound();
     }
 
     // Fetch previous and next chapters based on 'order'
-    const prevChapter = await prisma.chapter.findFirst({
-        where: {
-            novelId: chapter.novelId,
-            order: chapter.order - 1,
-        },
-    });
-
-    const nextChapter = await prisma.chapter.findFirst({
-        where: {
-            novelId: chapter.novelId,
-            order: chapter.order + 1,
-        },
-    });
+    const [prevChapter, nextChapter] = await Promise.all([
+        prisma.chapter.findFirst({
+            where: {
+                novelId: chapter.novelId,
+                order: chapter.order - 1,
+            },
+        }),
+        prisma.chapter.findFirst({
+            where: {
+                novelId: chapter.novelId,
+                order: chapter.order + 1,
+            },
+        })
+    ]);
 
     // Theme-based classes
-    // User requested:
-    // Dark: Black background, light gray text.
-    // Light/Sepia: Soft cream (#F5F5DC), dark brown text.
     const isDark = theme === "dark";
     const themeClasses = isDark
         ? "bg-black text-gray-300"
