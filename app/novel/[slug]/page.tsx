@@ -62,14 +62,11 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                     ← Kembali ke Koleksi
                 </Link>
 
-                {/* Reading History */}
-                <HistoryDisplay novelId={novel.id} slug={slug} />
-
                 {/* Novel Header */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
                     {/* Cover Image */}
                     <div className="md:col-span-1">
-                        <div className="rounded-2xl overflow-hidden shadow-lg sticky top-24">
+                        <div className="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 sticky top-24">
                             {novel.coverImage ? (
                                 <img
                                     src={novel.coverImage}
@@ -88,27 +85,27 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                     <div className="md:col-span-2">
                         <div className="flex items-start justify-between mb-4">
                             <div>
-                                <h1 className="text-4xl font-bold mb-2">{novel.title}</h1>
-                                <p className="text-lg opacity-70 italic mb-4">Oleh {novel.author}</p>
+                                <h1 className="text-5xl font-black mb-4 tracking-tight leading-tight">{novel.title}</h1>
+                                <p className="text-xl opacity-70 italic mb-6">Oleh {novel.author}</p>
                             </div>
                         </div>
 
                         {/* Status Badge */}
-                        <div className="mb-6">
-                            <span className={`text-sm font-bold uppercase px-4 py-2 rounded-full ${statusColors[novel.status] || 'bg-gray-100 text-gray-800'}`}>
+                        <div className="mb-8">
+                            <span className={`text-xs font-black uppercase tracking-[0.15em] px-5 py-2.5 rounded-full shadow-sm ${statusColors[novel.status] || 'bg-gray-100 text-gray-800'}`}>
                                 {statusLabel[novel.status] || novel.status}
                             </span>
                         </div>
 
                         {/* Genres */}
                         {novel.genres.length > 0 && (
-                            <div className="mb-6">
-                                <h3 className="text-sm font-bold uppercase tracking-widest opacity-60 mb-2">Genre</h3>
+                            <div className="mb-8">
+                                <h3 className="text-[0.65rem] font-bold uppercase tracking-[0.2em] opacity-40 mb-3">Genre</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {novel.genres.map((genre) => (
                                         <span
                                             key={genre.id}
-                                            className="px-3 py-1 bg-[#3E2723]/10 text-[#3E2723] rounded-full text-sm font-medium"
+                                            className="px-4 py-1.5 bg-white/60 text-[#3E2723] rounded-xl text-sm font-bold border border-black/5 shadow-sm"
                                         >
                                             {genre.name}
                                         </span>
@@ -117,41 +114,25 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             </div>
                         )}
 
-                        {/* Tags */}
-                        {novel.tags.length > 0 && (
-                            <div className="mb-6">
-                                <h3 className="text-sm font-bold uppercase tracking-widest opacity-60 mb-2">Tag</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {novel.tags.map((tag) => (
-                                        <span
-                                            key={tag.id}
-                                            className="px-2 py-1 bg-white/40 border border-black/5 rounded text-xs"
-                                        >
-                                            #{tag.name}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
                         {/* Stats */}
-                        <div className="bg-white/40 border border-black/5 p-4 rounded-xl mb-6">
-                            <div className="flex gap-8">
-                                <div>
-                                    <p className="text-xs opacity-60 uppercase tracking-widest mb-1">Total Chapter</p>
-                                    <p className="text-2xl font-bold">{novel.chapters.length}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs opacity-60 uppercase tracking-widest mb-1">Status</p>
-                                    <p className="text-sm font-bold">{statusLabel[novel.status]}</p>
-                                </div>
+                        <div className="bg-white/40 border border-black/5 p-6 rounded-2xl mb-8 flex gap-12 shadow-inner">
+                            <div>
+                                <p className="text-[0.6rem] opacity-40 uppercase tracking-[0.2em] mb-1 font-bold">Total Chapter</p>
+                                <p className="text-3xl font-black">{novel.chapters.length}</p>
+                            </div>
+                            <div className="w-px bg-black/5" />
+                            <div>
+                                <p className="text-[0.6rem] opacity-40 uppercase tracking-[0.2em] mb-1 font-bold">Terakhir Update</p>
+                                <p className="text-sm font-bold">
+                                    {novel.updatedAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </p>
                             </div>
                         </div>
 
                         {/* Description */}
                         <div>
-                            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60 mb-2">Deskripsi</h3>
-                            <p className="text-base leading-relaxed opacity-80 whitespace-pre-wrap">
+                            <h3 className="text-[0.65rem] font-bold uppercase tracking-[0.2em] opacity-40 mb-3">Deskripsi</h3>
+                            <p className="text-lg leading-relaxed opacity-80 whitespace-pre-wrap font-medium max-w-2xl">
                                 {novel.description || "Tidak ada deskripsi tersedia."}
                             </p>
                         </div>
@@ -159,12 +140,18 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                 </div>
 
                 {/* Chapters Section */}
-                <div className="mt-16">
-                    <h2 className="text-3xl font-bold mb-6">Daftar Chapter</h2>
+                <div className="mt-24 max-w-4xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-3xl font-black tracking-tight">Daftar Chapter</h2>
+                        <span className="text-xs font-bold opacity-30 tracking-widest uppercase">{novel.chapters.length} Bab</span>
+                    </div>
+
+                    {/* Reading History - NOW ABOVE LIST */}
+                    <HistoryDisplay novelId={novel.id} slug={slug} />
 
                     {novel.chapters.length === 0 ? (
-                        <div className="bg-white/40 border border-black/5 rounded-2xl p-12 text-center">
-                            <p className="opacity-70">Belum ada chapter tersedia.</p>
+                        <div className="bg-white/40 border border-black/5 rounded-3xl p-16 text-center shadow-inner">
+                            <p className="opacity-40 font-bold uppercase tracking-widest text-sm">Belum ada chapter tersedia.</p>
                         </div>
                     ) : (
                         <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
@@ -172,7 +159,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                 </div>
             </main>
 
-            <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-black/5 opacity-40 text-sm text-center mt-20">
+            <footer className="max-w-6xl mx-auto px-6 py-20 border-t border-black/5 opacity-40 text-xs font-bold tracking-[0.2em] text-center mt-24 uppercase">
                 © 2026 Lentera Baca. Dibuat dengan cinta untuk para pembaca.
             </footer>
         </div>

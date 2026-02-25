@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { updateUserTheme } from "@/app/actions";
 import { Sun, Moon, Coffee } from "lucide-react";
 
@@ -10,38 +10,48 @@ interface ThemeToggleProps {
 
 export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
     const [isPending, startTransition] = useTransition();
-    const [activeTheme, setActiveTheme] = useState(currentTheme);
+    const [activeTheme, setActiveTheme] = useState(currentTheme || "light");
 
     const handleToggle = (theme: "light" | "dark") => {
+        if (theme === activeTheme) return;
+
         setActiveTheme(theme);
+
+        // Immediately apply to body for instant visual feedback
+        if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+
         startTransition(async () => {
             await updateUserTheme(theme);
         });
     };
 
     return (
-        <div className="fixed bottom-6 right-6 flex flex-col gap-2 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-xl z-50">
+        <div className="fixed bottom-6 right-6 flex flex-col gap-2 p-1.5 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl z-50 ring-1 ring-black/5">
             <button
                 onClick={() => handleToggle("light")}
                 disabled={isPending}
-                className={`p-3 rounded-full transition-all ${activeTheme === "light"
-                        ? "bg-[#F5F5DC] text-[#3E2723] scale-110 shadow-lg"
-                        : "text-gray-400 hover:text-white"
+                className={`p-3 rounded-2xl transition-all duration-300 ${activeTheme === "light"
+                    ? "bg-[#F5F5DC] text-[#3E2723] scale-105 shadow-md"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                     }`}
-                title="Light/Sepia Mode"
+                title="Sepia Mode"
             >
-                <Coffee size={24} />
+                <Coffee size={20} />
             </button>
             <button
                 onClick={() => handleToggle("dark")}
                 disabled={isPending}
-                className={`p-3 rounded-full transition-all ${activeTheme === "dark"
-                        ? "bg-gray-800 text-gray-100 scale-110 shadow-lg"
-                        : "text-gray-400 hover:text-white"
+                className={`p-3 rounded-2xl transition-all duration-300 ${activeTheme === "dark"
+                    ? "bg-gray-800 text-gray-100 scale-105 shadow-md"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                     }`}
                 title="Dark Mode"
             >
-                <Moon size={24} />
+                <Moon size={20} />
             </button>
         </div>
     );

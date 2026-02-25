@@ -15,11 +15,15 @@ export default function ReadingHistory({ novelId, chapterId, chapterOrder, chapt
             const historyKey = "lentera_baca_history";
             const currentHistory = JSON.parse(localStorage.getItem(historyKey) || "{}");
 
+            // Update last read info
             currentHistory[novelId] = {
+                ...currentHistory[novelId],
                 chapterId,
                 chapterOrder,
                 chapterTitle,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                // Store all read chapter IDs in an array for that novel
+                readChapters: Array.from(new Set([...(currentHistory[novelId]?.readChapters || []), chapterId]))
             };
 
             localStorage.setItem(historyKey, JSON.stringify(currentHistory));

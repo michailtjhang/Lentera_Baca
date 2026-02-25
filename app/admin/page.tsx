@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { checkAdmin } from "@/lib/admin";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import { Plus, BookOpen, Clock, Layers, ExternalLink, Settings } from "lucide-react";
 
 export default async function AdminDashboard() {
     await checkAdmin();
@@ -23,97 +24,100 @@ export default async function AdminDashboard() {
     };
 
     const statusColors: Record<string, string> = {
-        ONGOING: "bg-blue-100 text-blue-800",
-        COMPLETE: "bg-green-100 text-green-800",
-        DROP: "bg-red-100 text-red-800",
-        HIATUS: "bg-yellow-100 text-yellow-800",
+        ONGOING: "bg-blue-500/10 text-blue-600 ring-1 ring-blue-500/20",
+        COMPLETE: "bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20",
+        DROP: "bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20",
+        HIATUS: "bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20",
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723]">
-            <nav className="border-b border-black/5 px-6 py-4 backdrop-blur-sm sticky top-0 bg-white/50 z-50">
-                <div className="max-w-6xl mx-auto flex justify-between items-center">
-                    <Link href="/" className="text-2xl font-bold tracking-tight">Lentera Baca <span className="text-xs bg-black text-white px-2 py-0.5 rounded ml-2">ADMIN</span></Link>
-                    <UserButton />
+        <div className="min-h-screen bg-[#FDFCF0] text-[#1A1A1A]">
+            <nav className="border-b border-black/[0.03] px-8 py-5 backdrop-blur-xl sticky top-0 bg-white/70 z-50">
+                <div className="max-w-7xl mx-auto flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                        <Link href="/" className="text-2xl font-black tracking-tighter hover:opacity-70 transition-opacity">
+                            Lentera Baca <span className="text-[0.6rem] bg-black text-white px-2 py-1 rounded ml-2 align-middle tracking-widest font-bold">ADMIN</span>
+                        </Link>
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <UserButton afterSignOutUrl="/" />
+                    </div>
                 </div>
             </nav>
 
-            <main className="max-w-6xl mx-auto px-6 py-12">
-                <header className="flex justify-between items-end mb-12">
+            <main className="max-w-7xl mx-auto px-8 py-12">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
                     <div>
-                        <h2 className="text-4xl font-extrabold mb-2 tracking-tight">Admin Dashboard</h2>
-                        <p className="text-lg opacity-70">Kelola koleksi novel dan bab. Total: <strong>{novels.length}</strong> novel</p>
+                        <h2 className="text-5xl font-black tracking-tighter mb-4 pr-10">Control Center.</h2>
+                        <p className="text-lg text-black/40 font-bold uppercase tracking-[0.2em] flex items-center gap-3">
+                            <Layers size={18} />
+                            Manage <span className="text-black font-black">{novels.length}</span> Active Collections
+                        </p>
                     </div>
                     <Link
                         href="/admin/novel/new"
-                        className="bg-[#3E2723] text-[#F5F5DC] px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95"
+                        className="group flex items-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-black/10"
                     >
-                        + Tambah Novel
+                        <Plus size={20} className="transition-transform group-hover:rotate-90" />
+                        Tambah Novel
                     </Link>
                 </header>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b-2 border-black/5">
-                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Novel</th>
-                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Penulis</th>
-                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Status</th>
-                                <th className="text-left py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Chapter</th>
-                                <th className="text-right py-4 px-4 font-bold uppercase text-xs tracking-widest opacity-60">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {novels.map((novel: any) => (
-                                <tr key={novel.id} className="border-b border-black/5 hover:bg-white/40 transition-colors">
-                                    <td className="py-4 px-4">
-                                        <div>
-                                            <p className="font-bold">{novel.title}</p>
-                                            <p className="text-xs opacity-60 mt-1">slug: <code>{novel.slug}</code></p>
-                                        </div>
-                                    </td>
-                                    <td className="py-4 px-4 opacity-70">{novel.author}</td>
-                                    <td className="py-4 px-4">
-                                        <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${statusColors[novel.status] || 'bg-gray-100 text-gray-800'}`}>
+                <div className="grid grid-cols-1 gap-6">
+                    {novels.map((novel: any) => (
+                        <div key={novel.id} className="group bg-white/60 border border-black/[0.03] p-6 rounded-[2.5rem] hover:bg-white hover:shadow-2xl hover:shadow-black/[0.04] transition-all duration-500">
+                            <div className="flex flex-col lg:flex-row items-center gap-8">
+                                {/* Short Info */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <span className={`text-[0.6rem] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full ${statusColors[novel.status]}`}>
                                             {statusLabel[novel.status]}
                                         </span>
-                                    </td>
-                                    <td className="py-4 px-4">
-                                        <span className="text-sm font-semibold px-3 py-1 bg-black/5 rounded-full">
-                                            {novel._count.chapters}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 px-4 text-right">
-                                        <div className="flex gap-2 justify-end">
-                                            <Link
-                                                href={`/admin/novel/${novel.id}/edit`}
-                                                className="text-sm font-bold border border-black/10 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
-                                            >
-                                                Edit
-                                            </Link>
-                                            <Link
-                                                href={`/admin/novel/${novel.id}/chapter`}
-                                                className="text-sm font-bold border border-black/10 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
-                                            >
-                                                Kelola Bab
-                                            </Link>
-                                            <Link
-                                                href={`/novel/${novel.slug}`}
-                                                className="text-sm font-bold bg-[#3E2723] text-[#F5F5DC] px-3 py-1.5 rounded-lg hover:shadow-md transition-all"
-                                            >
-                                                View
-                                            </Link>
+                                        <div className="flex items-center gap-1.5 text-black/30">
+                                            <BookOpen size={14} />
+                                            <span className="text-xs font-black uppercase tracking-widest">{novel._count.chapters} Bab</span>
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                    <h3 className="text-3xl font-black tracking-tight mb-2 group-hover:text-black transition-colors truncate">
+                                        {novel.title}
+                                    </h3>
+                                    <p className="text-sm font-bold text-black/40 uppercase tracking-widest">Oleh {novel.author}</p>
+                                </div>
+
+                                {/* Quick Actions */}
+                                <div className="flex flex-wrap justify-center gap-3">
+                                    <Link
+                                        href={`/admin/novel/${novel.id}/edit`}
+                                        className="flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-white border border-black/5 px-6 py-3.5 rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm"
+                                    >
+                                        <Settings size={14} />
+                                        Update
+                                    </Link>
+                                    <Link
+                                        href={`/admin/novel/${novel.id}/chapter`}
+                                        className="flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-white border border-black/5 px-6 py-3.5 rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm"
+                                    >
+                                        <Layers size={14} />
+                                        Chapters
+                                    </Link>
+                                    <Link
+                                        href={`/novel/${novel.slug}`}
+                                        className="flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-black text-white px-6 py-3.5 rounded-2xl hover:opacity-70 transition-all shadow-xl shadow-black/5"
+                                    >
+                                        <ExternalLink size={14} />
+                                        Preview
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
                 {novels.length === 0 && (
-                    <div className="bg-white/40 border border-black/5 rounded-2xl p-12 text-center mt-8">
-                        <p className="opacity-70 mb-4">Belum ada novel. Klik "+ Tambah Novel" untuk memulai.</p>
+                    <div className="bg-white/40 border-2 border-dashed border-black/[0.05] rounded-[3rem] p-24 text-center mt-8">
+                        <Plus className="mx-auto mb-6 text-black/10" size={64} />
+                        <p className="text-black/40 font-black uppercase tracking-widest text-sm">Belum ada novel dalam koleksi.</p>
+                        <Link href="/admin/novel/new" className="text-black font-black underline underline-offset-8 decoration-2 hover:opacity-60 transition-opacity mt-4 inline-block">Mulai menulis sekarang →</Link>
                     </div>
                 )}
             </main>

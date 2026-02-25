@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 interface Chapter {
     id: string;
@@ -18,6 +19,7 @@ interface ChapterListProps {
 
 export default function ChapterList({ chapters, slug, novelId }: ChapterListProps) {
     const [lastReadId, setLastReadId] = useState<string | null>(null);
+    const [readChapterIds, setReadChapterIds] = useState<string[]>([]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -25,43 +27,47 @@ export default function ChapterList({ chapters, slug, novelId }: ChapterListProp
             const currentHistory = JSON.parse(localStorage.getItem(historyKey) || "{}");
             if (currentHistory[novelId]) {
                 setLastReadId(currentHistory[novelId].chapterId);
+                setReadChapterIds(currentHistory[novelId].readChapters || []);
             }
         }
     }, [novelId]);
 
     return (
-        <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar border border-black/5 rounded-2xl bg-white/40">
+        <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar border border-black/5 rounded-2xl bg-white/40 shadow-inner">
             <div className="divide-y divide-black/5">
-                {chapters.map((chapter) => (
-                    <Link
-                        key={chapter.id}
-                        href={`/novel/${slug}/chapter/${chapter.id}`}
-                        className={`flex items-center gap-6 p-5 hover:bg-white/60 transition-all group ${lastReadId === chapter.id ? "bg-white/80 border-l-4 border-l-[#3E2723]" : ""
-                            }`}
-                    >
-                        <span className="text-2xl font-black opacity-90 min-w-[3rem] text-[#3E2723]">
-                            #{chapter.order}
-                        </span>
-                        <div className="flex-1">
-                            <h3 className="text-[1.05rem] font-medium text-[#3E2723] opacity-90 group-hover:opacity-100 transition-opacity">
-                                {chapter.title}
-                            </h3>
-                            {lastReadId === chapter.id && (
-                                <span className="text-[0.65rem] font-bold uppercase tracking-widest text-[#3E2723]/60 bg-[#3E2723]/5 px-2 py-0.5 rounded mt-1 inline-block">
-                                    Sedang Dibaca
-                                </span>
-                            )}
-                        </div>
-                        <span className="text-sm font-bold opacity-0 group-hover:opacity-40 transition-opacity">
-                            Baca →
-                        </span>
-                    </Link>
-                ))}
+                {chapters.map((chapter) => {
+                    const isRead = readChapterIds.includes(chapter.id);
+                    const isLastRead = lastReadId === chapter.id;
+
+                    return (
+                        <Link
+                            key={chapter.id}
+                            href={`/novel/${slug}/chapter/${chapter.id}`}
+                            className={`flex items-center gap-4 p-4 hover:bg-white/60 transition-all group ${isLastRead ? "bg-white/80 border-l-4 border-l-[#3E2723]" : ""
+                                } ${isRead && !isLastRead ? "opacity-50" : "opacity-100"}`}
+                        >
+                            <span className="text-lg font-black min-w-[2.5rem] text-[#3E2723] opacity-80">
+                                #{chapter.order}
+                            </span>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-semibold text-[#3E2723] group-hover:text-black transition-colors line-clamp-1">
+                                    {chapter.title}
+                                </h3>
+                                {isLastRead && (
+                                    <span className="text-[0.6rem] font-bold uppercase tracking-widest text-[#3E2723] bg-[#3E2723]/10 px-2 py-0.5 rounded mt-1 inline-block">
+                                        Sedang Dibaca
+                                    </span>
+                                )}
+                            </div>
+                            <ChevronRight size={16} className="opacity-0 group-hover:opacity-40 transition-opacity" />
+                        </Link>
+                    );
+                })}
             </div>
 
             <style jsx>{`
                 .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
+                    width: 4px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
                     background: transparent;

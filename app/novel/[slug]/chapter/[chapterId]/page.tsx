@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import ReadingHistory from "@/components/ReadingHistory";
 
@@ -45,13 +46,13 @@ export default async function ReaderPage({ params }: PageProps) {
     // Theme-based classes
     const isDark = theme === "dark";
     const themeClasses = isDark
-        ? "bg-black text-gray-300"
+        ? "bg-black text-gray-400"
         : "bg-[#F5F5DC] text-[#3E2723]";
 
     const basePath = `/novel/${slug}`;
 
     return (
-        <div className={`min-h-screen transition-colors duration-500 ${themeClasses}`}>
+        <div className={`min-h-screen transition-colors duration-500 ease-in-out ${themeClasses}`}>
             {/* Reading History Tracker */}
             <ReadingHistory
                 novelId={chapter.novelId}
@@ -60,61 +61,65 @@ export default async function ReaderPage({ params }: PageProps) {
                 chapterTitle={chapter.title}
             />
 
-            <main className="max-w-2xl mx-auto px-6 py-12 md:px-8">
+            <main className="max-w-3xl mx-auto px-6 py-12 md:px-12">
                 {/* Header */}
-                <header className="mb-10 text-center">
-                    <Link href={basePath} className="text-sm font-medium opacity-60 hover:opacity-100 mb-6 inline-block transition-opacity">
-                        ← Kembali ke Novel
+                <header className="mb-16 text-center">
+                    <Link href={basePath} className="group flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 mb-10 transition-all">
+                        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
+                        Kembali ke Novel
                     </Link>
 
                     {/* Top Navigation */}
-                    <nav className="flex justify-between items-center mb-10 pb-6 border-b border-black/5 dark:border-white/5">
+                    <nav className="flex justify-between items-center mb-12 py-4 border-y border-black/5 dark:border-white/5">
                         {prevChapter ? (
                             <Link
                                 href={`${basePath}/chapter/${prevChapter.id}`}
-                                className={`text-sm font-bold px-4 py-2 rounded-lg border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
-                                    }`}
+                                className={`flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5 text-white" : "border-black/5 hover:bg-black/5 text-[#3E2723]"
+                                    } shadow-sm`}
                             >
-                                ← Seb
+                                <ChevronLeft size={16} />
+                                Prev
                             </Link>
                         ) : (
-                            <div />
+                            <div className="w-[85px]" />
                         )}
 
-                        <div className="text-xs font-bold uppercase tracking-widest opacity-40">
+                        <div className="text-[0.6rem] font-black uppercase tracking-[0.3em] opacity-30">
                             Bab {chapter.order}
                         </div>
 
                         {nextChapter ? (
                             <Link
                                 href={`${basePath}/chapter/${nextChapter.id}`}
-                                className={`text-sm font-bold px-4 py-2 rounded-lg border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
-                                    }`}
+                                className={`flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5 text-white" : "border-black/5 hover:bg-black/5 text-[#3E2723]"
+                                    } shadow-sm`}
                             >
-                                Sel →
+                                Next
+                                <ChevronRight size={16} />
                             </Link>
                         ) : (
-                            <div />
+                            <div className="w-[85px]" />
                         )}
                     </nav>
 
-                    <h1 className="text-3xl font-bold mb-2 tracking-tight">{chapter.novel.title}</h1>
-                    <h2 className="text-lg font-medium opacity-70 italic">Bab {chapter.order}: {chapter.title}</h2>
+                    <h1 className="text-4xl font-black mb-4 tracking-tight leading-tight dark:text-white">{chapter.novel.title}</h1>
+                    <h2 className="text-xl font-bold opacity-60 italic">Bab {chapter.order}: {chapter.title}</h2>
                 </header>
 
                 {/* Content */}
-                <article className="font-serif text-[1.2rem] leading-relaxed space-y-8 whitespace-pre-wrap selection:bg-black/10 selection:text-black dark:selection:bg-white/10 dark:selection:text-white">
+                <article className="font-serif text-[1.25rem] leading-[2] space-y-10 whitespace-pre-wrap selection:bg-[#3E2723]/10 dark:selection:bg-white/10 dark:text-gray-200">
                     {chapter.content}
                 </article>
 
                 {/* Bottom Navigation */}
-                <nav className="mt-20 flex justify-between items-center border-t border-black/5 pt-10 dark:border-white/5">
+                <nav className="mt-24 flex justify-between items-center border-t border-black/5 pt-12 dark:border-white/5">
                     {prevChapter ? (
                         <Link
                             href={`${basePath}/chapter/${prevChapter.id}`}
-                            className={`px-8 py-3 rounded-xl border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
-                                }`}
+                            className={`flex items-center gap-3 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5 text-white" : "border-black/5 hover:bg-black/5 text-[#3E2723]"
+                                } shadow-sm`}
                         >
+                            <ChevronLeft size={20} />
                             Sebelumnya
                         </Link>
                     ) : (
@@ -124,10 +129,11 @@ export default async function ReaderPage({ params }: PageProps) {
                     {nextChapter ? (
                         <Link
                             href={`${basePath}/chapter/${nextChapter.id}`}
-                            className={`px-8 py-3 rounded-xl border transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
-                                }`}
+                            className={`flex items-center gap-3 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 ${isDark ? "border-white/10 hover:bg-white/5 text-white" : "border-black/5 hover:bg-black/5 text-[#3E2723]"
+                                } shadow-sm`}
                         >
                             Selanjutnya
+                            <ChevronRight size={20} />
                         </Link>
                     ) : (
                         <div />
