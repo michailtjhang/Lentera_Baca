@@ -92,10 +92,10 @@ export default async function AdminDashboard() {
                                                 Edit
                                             </Link>
                                             <Link
-                                                href={`/admin/novel/${novel.id}/chapter/new`}
+                                                href={`/admin/novel/${novel.id}/chapter`}
                                                 className="text-sm font-bold border border-black/10 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
                                             >
-                                                + Bab
+                                                Kelola Bab
                                             </Link>
                                             <Link
                                                 href={`/novel/${novel.slug}`}

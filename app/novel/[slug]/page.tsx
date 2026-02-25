@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
+import ChapterList from "@/components/ChapterList";
+import HistoryDisplay from "@/components/HistoryDisplay";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -59,6 +61,9 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                 <Link href="/" className="text-sm font-medium opacity-60 hover:opacity-100 mb-8 inline-block transition-opacity">
                     ← Kembali ke Koleksi
                 </Link>
+
+                {/* Reading History */}
+                <HistoryDisplay novelId={novel.id} slug={slug} />
 
                 {/* Novel Header */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -162,33 +167,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             <p className="opacity-70">Belum ada chapter tersedia.</p>
                         </div>
                     ) : (
-                        <div className="space-y-2">
-                            {novel.chapters.map((chapter, index) => (
-                                <Link
-                                    key={chapter.id}
-                                    href={`/novel/${slug}/chapter/${chapter.id}`}
-                                    className="block group bg-white/60 hover:bg-white border border-black/5 p-4 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <h3 className="font-bold group-hover:text-[#3E2723] transition-colors">
-                                                Bab {chapter.order}: {chapter.title}
-                                            </h3>
-                                            <p className="text-xs opacity-50 mt-1">
-                                                {new Date(chapter.createdAt).toLocaleDateString('id-ID', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric'
-                                                })}
-                                            </p>
-                                        </div>
-                                        <span className="text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                            Baca →
-                                        </span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                        <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
                     )}
                 </div>
             </main>
@@ -199,4 +178,3 @@ export default async function NovelOverviewPage({ params }: PageProps) {
         </div>
     );
 }
-

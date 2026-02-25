@@ -27,15 +27,15 @@ export async function createNovel(formData: FormData) {
     const providedSlug = (formData.get("slug") as string) || "";
     let slug = providedSlug
         ? providedSlug
-              .toLowerCase()
-              .replace(/[^a-z0-9\s-]/g, "")
-              .trim()
-              .replace(/\s+/g, "-")
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .trim()
+            .replace(/\s+/g, "-")
         : title
-              .toLowerCase()
-              .replace(/[^a-z0-9\s-]/g, "")
-              .trim()
-              .replace(/\s+/g, "-");
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .trim()
+            .replace(/\s+/g, "-");
 
     // if slug collides we append a short random string
     const existing = await prisma.novel.findUnique({ where: { slug } });
@@ -165,4 +165,49 @@ export async function updateNovel(novelId: string, formData: FormData) {
     revalidatePath(`/novel/${novel.slug}`);
     revalidatePath("/admin");
     redirect("/admin");
+}
+
+export async function updateChapter(chapterId: string, formData: FormData) {
+    await checkAdmin();
+
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const order = parseInt(formData.get("order") as string);
+
+    if (!title || !content || isNaN(order)) {
+        throw new Error("Title, Content, and Order (number) are required");
+    }
+
+    const chapter = await prisma.chapter.update({
+        where: { id: chapterId },
+        data: {
+            title,
+            content,
+            order,
+        },
+        include: {
+            novel: true
+        }
+    });
+
+    revalidatePath(`/novel/${chapter.novel.slug}`);
+    revalidatePath("/admin");
+    revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
+    redirect(`/admin/novel/${chapter.novelId}/chapter`);
+}
+
+export async function deleteChapter(chapterId: string) {
+    await checkAdmin();
+
+    const chapter = await prisma.chapter.delete({
+        where: { id: chapterId },
+        include: {
+            novel: true
+        }
+    });
+
+    revalidatePath(`/novel/${chapter.novel.slug}`);
+    revalidatePath("/admin");
+    revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
+    return { success: true };
 }
