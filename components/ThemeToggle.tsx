@@ -12,17 +12,19 @@ export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
     const [isPending, startTransition] = useTransition();
     const [activeTheme, setActiveTheme] = useState(currentTheme || "light");
 
-    const handleToggle = (theme: "light" | "dark") => {
-        if (theme === activeTheme) return;
-
-        setActiveTheme(theme);
-
-        // Immediately apply to body for instant visual feedback
-        if (theme === "dark") {
+    // Sync theme with DOM class list
+    useEffect(() => {
+        if (activeTheme === "dark") {
             document.documentElement.classList.add("dark");
         } else {
             document.documentElement.classList.remove("dark");
         }
+    }, [activeTheme]);
+
+    const handleToggle = (theme: "light" | "dark") => {
+        if (theme === activeTheme) return;
+
+        setActiveTheme(theme);
 
         startTransition(async () => {
             await updateUserTheme(theme);
