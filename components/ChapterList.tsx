@@ -42,7 +42,7 @@ export default function ChapterList({ chapters, slug, novelId }: ChapterListProp
                     return (
                         <Link
                             key={chapter.id}
-                            href={`/novel/${slug}/chapter/${chapter.id}`}
+                            href={`/novel/${slug}/chapter/chapter-${chapter.order}`}
                             className={`flex items-center gap-4 p-4 hover:bg-white/60 transition-all group ${isLastRead ? "bg-white/80 border-l-4 border-l-[#3E2723]" : ""
                                 } ${isRead && !isLastRead ? "opacity-50" : "opacity-100"}`}
                         >

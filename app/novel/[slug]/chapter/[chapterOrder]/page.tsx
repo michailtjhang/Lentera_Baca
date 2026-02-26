@@ -7,23 +7,35 @@ import ThemeToggle from "@/components/ThemeToggle";
 import ReadingHistory from "@/components/ReadingHistory";
 
 interface PageProps {
-    params: Promise<{ slug: string; chapterId: string }>;
+    params: Promise<{ slug: string; chapterOrder: string }>;
 }
 
 export default async function ReaderPage({ params }: PageProps) {
-    const { slug, chapterId } = await params;
+    const { slug, chapterOrder } = await params;
     const user = await currentUser();
+
+    // Parse order from "chapter-1", "chapter-2", etc.
+    const orderNumber = parseInt(chapterOrder.replace("chapter-", ""));
+
+    if (isNaN(orderNumber)) {
+        return notFound();
+    }
 
     // Get user preference from Clerk metadata
     const theme = (user?.publicMetadata?.theme as string) || "light";
 
-    // Find the chapter
-    const chapter = await prisma.chapter.findUnique({
-        where: { id: chapterId },
+    // Find the chapter by novel slug and order
+    const chapter = await prisma.chapter.findFirst({
+        where: {
+            order: orderNumber,
+            novel: {
+                slug: slug
+            }
+        },
         include: { novel: true },
     });
 
-    if (!chapter || chapter.novel.slug !== slug) {
+    if (!chapter) {
         return notFound();
     }
 
@@ -50,7 +62,7 @@ export default async function ReaderPage({ params }: PageProps) {
             {/* Reading History Tracker */}
             <ReadingHistory
                 novelId={chapter.novelId}
-                chapterId={chapterId}
+                chapterId={chapter.id}
                 chapterOrder={chapter.order}
                 chapterTitle={chapter.title}
             />
@@ -67,7 +79,7 @@ export default async function ReaderPage({ params }: PageProps) {
                     <nav className="flex justify-between items-center mb-12 py-4 border-y border-black/5 dark:border-white/5">
                         {prevChapter ? (
                             <Link
-                                href={`${basePath}/chapter/${prevChapter.id}`}
+                                href={`${basePath}/chapter/chapter-${prevChapter.order}`}
                                 className="flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                             >
                                 <ChevronLeft size={16} />
@@ -83,7 +95,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                         {nextChapter ? (
                             <Link
-                                href={`${basePath}/chapter/${nextChapter.id}`}
+                                href={`${basePath}/chapter/chapter-${nextChapter.order}`}
                                 className="flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                             >
                                 Next
@@ -107,7 +119,7 @@ export default async function ReaderPage({ params }: PageProps) {
                 <nav className="mt-24 flex justify-between items-center border-t border-black/5 pt-12 dark:border-white/5">
                     {prevChapter ? (
                         <Link
-                            href={`${basePath}/chapter/${prevChapter.id}`}
+                            href={`${basePath}/chapter/chapter-${prevChapter.order}`}
                             className="flex items-center gap-3 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                         >
                             <ChevronLeft size={20} />
@@ -119,7 +131,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                     {nextChapter ? (
                         <Link
-                            href={`${basePath}/chapter/${nextChapter.id}`}
+                            href={`${basePath}/chapter/chapter-${nextChapter.order}`}
                             className="flex items-center gap-3 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                         >
                             Selanjutnya

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import { updateUserTheme } from "@/app/actions";
 import { Sun, Moon, Coffee } from "lucide-react";
 
@@ -9,6 +10,7 @@ interface ThemeToggleProps {
 }
 
 export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
+    const { isSignedIn } = useUser();
     const [isPending, startTransition] = useTransition();
     const [activeTheme, setActiveTheme] = useState(currentTheme || "light");
 
@@ -26,9 +28,19 @@ export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
 
         setActiveTheme(theme);
 
-        startTransition(async () => {
-            await updateUserTheme(theme);
-        });
+        // Only update server if user is signed in
+        if (isSignedIn) {
+            startTransition(async () => {
+                try {
+                    const result = await updateUserTheme(theme);
+                    if (!result.success) {
+                        console.error("Theme sync failed:", result.message);
+                    }
+                } catch (e) {
+                    console.error("Theme toggle error:", e);
+                }
+            });
+        }
     };
 
     return (
