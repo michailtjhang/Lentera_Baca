@@ -106,24 +106,27 @@ export default async function ReaderPage({ params }: PageProps) {
                     {prevChapter ? (
                         <Link
                             href={`${basePath}/chapter-${prevChapter.order}`}
-                            className="flex items-center gap-3 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
+                            className="flex items-center justify-center w-14 h-14 rounded-2xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
+                            title="Sebelumnya"
                         >
-                            <ChevronLeft size={20} /> Sebelumnya
+                            <ChevronLeft size={24} />
                         </Link>
-                    ) : (<div />)}
+                    ) : (<div className="w-14" />)}
 
-                    <Link href={basePath} className="flex items-center gap-2 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm">
+                    <Link href={basePath} className="flex items-center gap-2 px-8 h-14 rounded-2xl border font-bold transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm">
                         Daftar Isi
                     </Link>
 
                     {nextChapter ? (
                         <Link
                             href={`${basePath}/chapter-${nextChapter.order}`}
-                            className="flex items-center gap-3 px-8 py-4 rounded-2xl border font-bold transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
+                            className="flex items-center justify-center w-14 h-14 rounded-2xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
+                            title="Selanjutnya"
                         >
-                            Selanjutnya <ChevronRight size={20} />
+                            <ChevronRight size={24} />
                         </Link>
-                    ) : (<div />)}
+                    ) : (<div className="w-14" />)}
+
                 </nav>
 
                 {/* Fixed Theme Toggler for easier access */}
