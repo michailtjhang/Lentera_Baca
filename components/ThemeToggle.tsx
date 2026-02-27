@@ -15,13 +15,22 @@ export default function ThemeToggle({ currentTheme, variant = "fixed" }: ThemeTo
     const [isPending, startTransition] = useTransition();
     const [activeTheme, setActiveTheme] = useState(currentTheme || "light");
 
-    // Sync theme with DOM class list
+    // Initialize from localStorage for guests
+    useEffect(() => {
+        const storedTheme = localStorage.getItem("lentera_baca_theme");
+        if (storedTheme && (storedTheme === "light" || storedTheme === "dark")) {
+            setActiveTheme(storedTheme);
+        }
+    }, []);
+
+    // Sync theme with DOM class list and localStorage
     useEffect(() => {
         if (activeTheme === "dark") {
             document.documentElement.classList.add("dark");
         } else {
             document.documentElement.classList.remove("dark");
         }
+        localStorage.setItem("lentera_baca_theme", activeTheme);
     }, [activeTheme]);
 
     const handleToggle = (theme: "light" | "dark") => {
@@ -38,6 +47,7 @@ export default function ThemeToggle({ currentTheme, variant = "fixed" }: ThemeTo
             });
         }
     };
+
 
     if (variant === "minimal") {
         return (

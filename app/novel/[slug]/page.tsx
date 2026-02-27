@@ -130,9 +130,11 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                     <HistoryDisplay novelId={novel.id} slug={slug} />
                     <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
                 </div>
+                <ThemeToggle currentTheme={theme} />
             </main>
 
             <footer className="max-w-6xl mx-auto px-6 py-24 border-t border-black/5 dark:border-white/5 opacity-20 text-[0.6rem] font-black tracking-[0.4em] text-center uppercase">
+
                 © 2026 Lentera Baca. Terangi ceritamu.
             </footer>
         </div>

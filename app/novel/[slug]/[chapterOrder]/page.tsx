@@ -125,7 +125,11 @@ export default async function ReaderPage({ params }: PageProps) {
                         </Link>
                     ) : (<div />)}
                 </nav>
+
+                {/* Fixed Theme Toggler for easier access */}
+                <ThemeToggle currentTheme={theme} />
             </main>
         </div>
+
     );
 }

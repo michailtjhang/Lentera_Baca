@@ -12,14 +12,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@theme {
-  --dark-mode: class;
-}
+@variant dark (&:where(.dark, .dark *));
 
 .dark {
-  --background: #121212;
-  --foreground: #e0e0e0;
+  --background: #1a1a1a;
+  --foreground: #d1d1d1;
 }
+
 
 
 
