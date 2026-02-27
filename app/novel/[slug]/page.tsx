@@ -89,8 +89,8 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             ))}
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="p-6 bg-white/40 dark:bg-white/5 rounded-[2rem] border border-black/5 dark:border-white/5">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="p-6 bg-white/40 dark:bg-white/5 rounded-[2rem] border border-black/5 dark:border-white/5 flex flex-col md:block items-center text-center md:text-left">
                                 <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest mb-2">Total Bab</p>
                                 <div className="flex items-end gap-2">
                                     <span className="text-3xl font-black">{novel.chapters.length}</span>
@@ -98,7 +98,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                 </div>
                             </div>
                             {/* Actions */}
-                            <div className="md:col-span-3 flex items-stretch gap-4">
+                            <div className="md:col-span-3 flex items-stretch gap-4 h-16 md:h-auto">
                                 {novel.chapters.length > 0 && (
                                     <ReadButton
                                         novelId={novel.id}
@@ -135,7 +135,6 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                     <HistoryDisplay novelId={novel.id} slug={slug} />
                     <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
                 </div>
-                <ThemeToggle currentTheme={theme} />
             </main>
 
             <footer className="max-w-6xl mx-auto px-6 py-24 border-t border-black/5 dark:border-white/5 opacity-20 text-[0.6rem] font-black tracking-[0.4em] text-center uppercase">
