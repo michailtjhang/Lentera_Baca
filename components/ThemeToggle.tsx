@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { updateUserTheme } from "@/app/actions";
-import { Sun, Moon, Coffee } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 
 interface ThemeToggleProps {
     currentTheme: string;
@@ -52,9 +52,9 @@ export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
                     ? "bg-[#F5F5DC] text-[#3E2723] scale-105 shadow-md"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
                     }`}
-                title="Sepia Mode"
+                title="Mode Terang"
             >
-                <Coffee size={20} />
+                <Sun size={20} />
             </button>
             <button
                 onClick={() => handleToggle("dark")}

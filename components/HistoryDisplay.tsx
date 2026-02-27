@@ -41,7 +41,7 @@ export default function HistoryDisplay({ novelId, slug }: HistoryDisplayProps) {
                     </h3>
                 </div>
                 <Link
-                    href={`/novel/${slug}/chapter/chapter-${history.chapterOrder}`}
+                    href={`/novel/${slug}/chapter-${history.chapterOrder}`}
                     className="group w-full sm:w-auto flex items-center justify-center gap-2 bg-[#F5F5DC] text-[#3E2723] px-6 py-2.5 rounded-xl font-bold hover:bg-white transition-all active:scale-95 shadow-md"
                 >
                     Lanjutkan
