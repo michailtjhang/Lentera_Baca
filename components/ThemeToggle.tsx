@@ -7,9 +7,10 @@ import { Sun, Moon } from "lucide-react";
 
 interface ThemeToggleProps {
     currentTheme: string;
+    variant?: "fixed" | "minimal";
 }
 
-export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
+export default function ThemeToggle({ currentTheme, variant = "fixed" }: ThemeToggleProps) {
     const { isSignedIn } = useUser();
     const [isPending, startTransition] = useTransition();
     const [activeTheme, setActiveTheme] = useState(currentTheme || "light");
@@ -25,23 +26,39 @@ export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
 
     const handleToggle = (theme: "light" | "dark") => {
         if (theme === activeTheme) return;
-
         setActiveTheme(theme);
 
-        // Only update server if user is signed in
         if (isSignedIn) {
             startTransition(async () => {
                 try {
-                    const result = await updateUserTheme(theme);
-                    if (!result.success) {
-                        console.error("Theme sync failed:", result.message);
-                    }
+                    await updateUserTheme(theme);
                 } catch (e) {
                     console.error("Theme toggle error:", e);
                 }
             });
         }
     };
+
+    if (variant === "minimal") {
+        return (
+            <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/5 dark:border-white/5">
+                <button
+                    onClick={() => handleToggle("light")}
+                    className={`p-1.5 rounded-lg transition-all ${activeTheme === "light" ? "bg-white dark:bg-zinc-800 shadow-sm text-[#3E2723] dark:text-white" : "opacity-40 hover:opacity-100"}`}
+                    title="Light Mode"
+                >
+                    <Sun size={14} />
+                </button>
+                <button
+                    onClick={() => handleToggle("dark")}
+                    className={`p-1.5 rounded-lg transition-all ${activeTheme === "dark" ? "bg-white dark:bg-zinc-800 shadow-sm text-[#3E2723] dark:text-white" : "opacity-40 hover:opacity-100"}`}
+                    title="Dark Mode"
+                >
+                    <Moon size={14} />
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed bottom-6 right-6 flex flex-col gap-2 p-1.5 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl z-50 ring-1 ring-black/5">
@@ -70,3 +87,4 @@ export default function ThemeToggle({ currentTheme }: ThemeToggleProps) {
         </div>
     );
 }
+

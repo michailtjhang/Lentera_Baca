@@ -17,9 +17,10 @@
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #121212;
+  --foreground: #e0e0e0;
 }
+
 
 
 body {

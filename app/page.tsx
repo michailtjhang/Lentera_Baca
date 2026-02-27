@@ -1,209 +1,135 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/admin";
-import { Search } from "lucide-react";
+import { Search, Hash, Star, Zap, Clock, ChevronRight } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; genre?: string; tag?: string }>;
-}) {
+export default async function Home() {
   const { userId } = await auth();
-  const params = await searchParams;
-  const { q, genre, tag } = params;
+  const user = await currentUser();
+  const theme = (user?.publicMetadata?.theme as string) || "light";
 
-  // Build the filter
-  const where: any = {};
+  // Fetch novels for different sections
+  const [latestUpdated, newestNovels, trendingNovels] = await Promise.all([
+    // 1. Latest Updated (by update time)
+    prisma.novel.findMany({
+      take: 10,
+      orderBy: { updatedAt: 'desc' },
+      include: { _count: { select: { chapters: true } }, genres: true }
+    }),
+    // 2. Newest (by creation time)
+    prisma.novel.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { chapters: true } }, genres: true }
+    }),
+    // 3. Trending (Simulated for now by using a mix or specific titles if we had popularity score)
+    prisma.novel.findMany({
+      take: 10,
+      orderBy: { chapters: { _count: 'desc' } }, // More chapters as a proxy for popularity for now
+      include: { _count: { select: { chapters: true } }, genres: true }
+    })
+  ]);
 
-  if (q) {
-    where.OR = [
-      { title: { contains: q, mode: 'insensitive' } },
-      { author: { contains: q, mode: 'insensitive' } },
-    ];
-  }
+  const NovelSection = ({ title, icon: Icon, novels, href }: { title: string, icon: any, novels: any[], href: string }) => (
+    <section className="mb-20">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[#3E2723] dark:bg-white text-white dark:text-black rounded-xl">
+            <Icon size={18} />
+          </div>
+          <h2 className="text-2xl font-black uppercase tracking-tight">{title}</h2>
+        </div>
+        <Link href={href} className="group text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 flex items-center gap-1 transition-all">
+          Lihat Semua <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
+      </div>
 
-  if (genre) {
-    where.genres = {
-      some: { name: genre }
-    };
-  }
-
-  if (tag) {
-    where.tags = {
-      some: { name: tag }
-    };
-  }
-
-  // Fetch novels from database with filtering and counts
-  const novels = await prisma.novel.findMany({
-    where,
-    include: {
-      _count: {
-        select: { chapters: true }
-      },
-      genres: true,
-      tags: true,
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  // Fetch all genres for the filter bar
-  const allGenres = await (prisma as any).genre.findMany({
-    orderBy: { name: 'asc' }
-  });
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+        {novels.map((novel) => (
+          <Link key={novel.id} href={`/novel/${novel.slug}`} className="group flex flex-col">
+            <div className="relative aspect-[10/14] overflow-hidden rounded-[2rem] bg-zinc-200 dark:bg-zinc-800 mb-4 shadow-sm group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+              {novel.coverImage ? (
+                <img src={novel.coverImage} alt={novel.title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[0.6rem] opacity-20 uppercase font-black">No Cover</div>
+              )}
+              <div className="absolute top-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                <span className="text-[0.55rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur shadow-xl">
+                  {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}
+                </span>
+              </div>
+            </div>
+            <h3 className="text-sm font-black line-clamp-2 leading-tight tracking-tight mb-2 group-hover:text-black dark:group-hover:text-white transition-colors">{novel.title}</h3>
+            <div className="flex justify-between items-center mt-auto opacity-40 text-[0.55rem] font-black uppercase tracking-widest">
+              <span>{novel.author}</span>
+              <span>{novel._count.chapters} ch</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 
   return (
-    <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-black dark:text-gray-400 transition-colors duration-500 selection:bg-[#3E2723]/10">
+    <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-[#121212] dark:text-[#e0e0e0] transition-colors duration-500">
       <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-white/70 dark:bg-black/70 z-50">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center justify-between w-full md:w-auto gap-8">
-            <h1 className="text-2xl font-black tracking-tighter text-[#3E2723] dark:text-white">Lentera Baca</h1>
-            <div className="md:hidden flex items-center gap-3">
+        <div className="max-w-6xl mx-auto flex justify-between items-center gap-8">
+          <Link href="/" className="text-2xl font-black tracking-tighter shrink-0">Lentera Baca</Link>
+
+          <div className="flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="/browse" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity flex items-center gap-2">
+                <Search size={14} /> Jelajah
+              </Link>
               {await isAdmin() && (
-                <Link href="/admin" className="p-2 bg-[#3E2723] dark:bg-white text-white dark:text-black rounded-full">
-                  <span className="sr-only">Admin</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                <Link href="/admin" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">
+                  Admin
                 </Link>
               )}
-              {!userId ? (
-                <Link href="/sign-in" className="text-xs font-bold uppercase tracking-widest">Login</Link>
-              ) : (
-                <UserButton />
-              )}
             </div>
-          </div>
 
-          <form action="/" method="GET" className="relative flex-1 max-w-xl w-full group">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity" />
-            <input
-              type="text"
-              name="q"
-              defaultValue={q}
-              placeholder="Cari ribuan kisah menarik..."
-              className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-white/10 focus:border-black/5 dark:focus:border-white/10 rounded-2xl px-12 py-3 focus:outline-none transition-all font-medium text-sm placeholder:opacity-40"
-            />
-          </form>
+            <div className="h-4 w-px bg-black/10 dark:bg-white/10 hidden md:block" />
 
-          <div className="hidden md:flex items-center gap-6">
-            {await isAdmin() && (
-              <Link
-                href="/admin"
-                className="text-xs font-black uppercase tracking-[0.2em] px-5 py-2.5 bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black rounded-xl hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
-              >
-                Admin Panel
-              </Link>
-            )}
-            {!userId ? (
-              <Link
-                href="/sign-in"
-                className="text-xs font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-all border-b border-black/20 dark:border-white/20"
-              >
-                Masuk
-              </Link>
-            ) : (
-              <UserButton />
-            )}
+            <div className="flex items-center gap-4">
+              <ThemeToggle currentTheme={theme} variant="minimal" />
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+              <SignedOut>
+                <Link href="/sign-in" className="text-[0.65rem] font-black uppercase tracking-[0.2em] px-5 py-2.5 bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black rounded-xl hover:shadow-xl transition-all active:scale-95">
+                  Masuk
+                </Link>
+              </SignedOut>
+            </div>
           </div>
         </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 py-16">
-        <header className="mb-20 text-center">
-          <h2 className="text-6xl font-black mb-6 tracking-tighter text-[#3E2723] dark:text-white leading-[0.9]">
-            Koleksi <span className="opacity-20 block md:inline italic font-serif font-light">Novel</span>
+        <header className="mb-24 flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3E2723]/5 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+            <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Terangi Imajinasi Anda</span>
+          </div>
+          <h2 className="text-7xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.85] text-center max-w-4xl">
+            Eksplorasi Dunia <span className="opacity-20 italic font-serif font-light">Tanpa</span> Batas.
           </h2>
-          <p className="text-lg opacity-50 max-w-xl mx-auto leading-relaxed font-serif">
-            Terangi imajinasimu dengan ribuan kisah menarik.
-          </p>
+          <Link href="/browse" className="group flex items-center gap-3 px-10 py-5 bg-[#3E2723] dark:bg-white text-[#F5F5DC] dark:text-black rounded-[2rem] font-black uppercase tracking-[0.2em] text-[0.7rem] hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
+            Mulai Jelajahi
+            <Zap size={16} className="fill-current" />
+          </Link>
         </header>
 
-        {/* Filters */}
-        <section className="mb-16">
-          {allGenres.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                href="/"
-                className={`px-6 py-2.5 rounded-2xl text-[0.65rem] font-black uppercase tracking-widest transition-all border-2 ${!genre ? 'bg-[#3E2723] text-[#F5F5DC] border-[#3E2723] dark:bg-white dark:text-black dark:border-white' : 'bg-white/20 dark:bg-white/5 border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10'}`}
-              >
-                Semua
-              </Link>
-              {allGenres.map((g: any) => (
-                <Link
-                  key={g.id}
-                  href={`/?genre=${g.name}${q ? `&q=${q}` : ''}`}
-                  className={`px-6 py-2.5 rounded-2xl text-[0.65rem] font-black uppercase tracking-widest transition-all border-2 ${genre === g.name ? 'bg-[#3E2723] text-[#F5F5DC] border-[#3E2723] dark:bg-white dark:text-black dark:border-white' : 'bg-white/20 dark:bg-white/5 border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10'}`}
-                >
-                  {g.name}
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {novels.length === 0 ? (
-          <div className="bg-white/30 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2rem] p-24 text-center backdrop-blur-sm">
-            <h3 className="text-2xl font-black mb-3 text-[#3E2723] dark:text-white">Tidak ditemukan</h3>
-            <p className="opacity-40 mb-10 text-sm tracking-widest uppercase font-bold">"{q || genre || tag}"</p>
-            <Link href="/" className="text-xs font-black uppercase tracking-[0.3em] border-b-2 border-black/10 dark:border-white/10 pb-1 hover:border-black/40 transition-all">Reset Pencarian</Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8">
-            {novels.map((novel: any) => (
-              <Link
-                key={novel.id}
-                href={`/novel/${novel.slug}`}
-                className="group flex flex-col"
-              >
-                {/* Cover Image Container */}
-                <div className="relative aspect-[11/16] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#3E2723]/10 to-[#3E2723]/5 dark:from-white/10 dark:to-white/5 mb-6 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:group-hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] transition-all duration-500 group-hover:-translate-y-2">
-                  {novel.coverImage ? (
-                    <img
-                      src={novel.coverImage}
-                      alt={`${novel.title} cover`}
-                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-out"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[0.6rem] font-black uppercase tracking-widest opacity-20">
-                      No Cover
-                    </div>
-                  )}
-
-                  {/* Status Overlay */}
-                  <div className="absolute top-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <span className="text-[0.6rem] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur shadow-xl">
-                      {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className="flex flex-col px-1">
-                  <h3 className="text-sm font-black group-hover:text-black dark:group-hover:text-white transition-colors mb-2 line-clamp-2 leading-tight tracking-tight">{novel.title}</h3>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[0.65rem] font-bold opacity-40 uppercase tracking-widest truncate">{novel.author}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-auto">
-                    <div className="flex gap-1">
-                      {novel.genres.slice(0, 1).map((g: any) => (
-                        <span key={g.id} className="text-[0.55rem] font-black uppercase tracking-widest bg-[#3E2723]/5 dark:bg-white/5 text-[#3E2723]/40 dark:text-white/40 px-2 py-0.5 rounded-lg border border-black/5 dark:border-white/5">
-                          {g.name}
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-[0.6rem] font-black opacity-20 uppercase tracking-widest">{novel._count.chapters} ch</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <NovelSection title="Update Terkini" icon={Clock} novels={latestUpdated} href="/browse?sort=updated" />
+        <NovelSection title="Novel Terbaru" icon={Clock} novels={newestNovels} href="/browse?sort=newest" />
+        <NovelSection title="Paling Populer" icon={Star} novels={trendingNovels} href="/browse?sort=popular" />
       </main>
 
-      <footer className="max-w-6xl mx-auto px-6 py-24 border-t border-black/5 dark:border-white/5 opacity-20 text-[0.6rem] font-black tracking-[0.4em] text-center uppercase">
-        © 2026 Lentera Baca. Terangi imajinasimu.
+      <footer className="max-w-6xl mx-auto px-6 py-24 border-t border-black/5 dark:border-white/5 opacity-20 text-[0.6rem] font-black tracking-[0.3em] text-center uppercase">
+        © 2026 Lentera Baca. Terangi segalanya.
       </footer>
     </div>
   );
