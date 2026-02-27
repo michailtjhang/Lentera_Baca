@@ -7,6 +7,8 @@ import { ChevronRight, Bookmark, Play, Clock, BookOpen, Hash } from "lucide-reac
 import ChapterList from "@/components/ChapterList";
 import HistoryDisplay from "@/components/HistoryDisplay";
 import ThemeToggle from "@/components/ThemeToggle";
+import ReadButton from "@/components/ReadButton";
+
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -98,14 +100,17 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             {/* Actions */}
                             <div className="md:col-span-3 flex items-stretch gap-4">
                                 {novel.chapters.length > 0 && (
-                                    <Link href={`/novel/${novel.slug}/chapter-${novel.chapters[0].order}`} className="flex-1 flex items-center justify-center gap-3 bg-[#3E2723] dark:bg-white text-[#F5F5DC] dark:text-black rounded-[2rem] font-black uppercase tracking-widest text-[0.7rem] hover:shadow-2xl transition-all active:scale-95 group">
-                                        <Play size={16} className="fill-current group-hover:scale-110 transition-transform" /> Mulai Baca
-                                    </Link>
+                                    <ReadButton
+                                        novelId={novel.id}
+                                        slug={slug}
+                                        firstChapterOrder={novel.chapters[0].order}
+                                    />
                                 )}
                                 <button className="aspect-square flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2rem] hover:bg-white transition-all active:scale-90">
                                     <Bookmark size={20} />
                                 </button>
                             </div>
+
                         </div>
 
                         <div>

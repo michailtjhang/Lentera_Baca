@@ -128,11 +128,9 @@ export default async function ReaderPage({ params }: PageProps) {
                     ) : (<div className="w-14" />)}
 
                 </nav>
-
-                {/* Fixed Theme Toggler for easier access */}
-                <ThemeToggle currentTheme={theme} />
             </main>
         </div>
+
 
     );
 }
