@@ -14,7 +14,29 @@ interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
+export async function generateMetadata({ params }: PageProps) {
+    const { slug } = await params;
+    const novel = await prisma.novel.findUnique({
+        where: { slug },
+        select: { title: true, description: true, coverImage: true, author: true }
+    });
+
+    if (!novel) return { title: "Novel Tidak Ditemukan" };
+
+    return {
+        title: novel.title,
+        description: novel.description?.slice(0, 160) || `Baca novel ${novel.title} oleh ${novel.author} di Lentera Baca.`,
+        openGraph: {
+            title: novel.title,
+            description: novel.description?.slice(0, 160),
+            images: novel.coverImage ? [novel.coverImage] : [],
+            type: "article",
+        }
+    };
+}
+
 export default async function NovelOverviewPage({ params }: PageProps) {
+
     const { slug } = await params;
     const user = await currentUser();
     const theme = (user?.publicMetadata?.theme as string) || "light";

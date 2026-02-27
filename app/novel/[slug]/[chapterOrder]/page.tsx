@@ -11,7 +11,24 @@ interface PageProps {
     params: Promise<{ slug: string; chapterOrder: string }>;
 }
 
+export async function generateMetadata({ params }: PageProps) {
+    const { slug, chapterOrder } = await params;
+    const orderNumber = parseInt(chapterOrder.replace("chapter-", ""));
+    const chapter = await prisma.chapter.findFirst({
+        where: { order: orderNumber, novel: { slug: slug } },
+        include: { novel: true },
+    });
+
+    if (!chapter) return { title: "Bab Tidak Ditemukan" };
+
+    return {
+        title: `Bab ${chapter.order}: ${chapter.title} - ${chapter.novel.title}`,
+        description: `Baca ${chapter.novel.title} Bab ${chapter.order}: ${chapter.title} di Lentera Baca.`,
+    };
+}
+
 export default async function ReaderPage({ params }: PageProps) {
+
     const { slug, chapterOrder } = await params;
     const user = await currentUser();
     const theme = (user?.publicMetadata?.theme as string) || "light";

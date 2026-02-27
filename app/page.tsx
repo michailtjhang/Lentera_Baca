@@ -6,29 +6,34 @@ import { isAdmin } from "@/lib/admin";
 import { Search, Hash, Star, Zap, Clock, ChevronRight } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
+export const metadata = {
+  title: "Beranda | Lentera Baca",
+  description: "Jelajahi koleksi novel terbaru dan terpopuler di Lentera Baca. Terangi imajinasi Anda dengan ribuan cerita menarik.",
+};
+
 export default async function Home() {
   const { userId } = await auth();
   const user = await currentUser();
   const theme = (user?.publicMetadata?.theme as string) || "light";
 
   // Fetch novels for different sections
-  const [latestUpdated, newestNovels, trendingNovels] = await Promise.all([
-    // 1. Latest Updated (by update time)
+  const [trendingNovels, latestUpdated, newestNovels] = await Promise.all([
+    // 1. Trending (Simulated for now by using a mix or specific titles if we had popularity score)
+    prisma.novel.findMany({
+      take: 10,
+      orderBy: { chapters: { _count: 'desc' } }, // More chapters as a proxy for popularity for now
+      include: { _count: { select: { chapters: true } }, genres: true }
+    }),
+    // 2. Latest Updated (by update time)
     prisma.novel.findMany({
       take: 10,
       orderBy: { updatedAt: 'desc' },
       include: { _count: { select: { chapters: true } }, genres: true }
     }),
-    // 2. Newest (by creation time)
+    // 3. Newest (by creation time)
     prisma.novel.findMany({
       take: 10,
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { chapters: true } }, genres: true }
-    }),
-    // 3. Trending (Simulated for now by using a mix or specific titles if we had popularity score)
-    prisma.novel.findMany({
-      take: 10,
-      orderBy: { chapters: { _count: 'desc' } }, // More chapters as a proxy for popularity for now
       include: { _count: { select: { chapters: true } }, genres: true }
     })
   ]);
@@ -123,9 +128,9 @@ export default async function Home() {
           </Link>
         </header>
 
+        <NovelSection title="Paling Populer" icon={Star} novels={trendingNovels} href="/browse?sort=popular" />
         <NovelSection title="Update Terkini" icon={Clock} novels={latestUpdated} href="/browse?sort=updated" />
         <NovelSection title="Novel Terbaru" icon={Clock} novels={newestNovels} href="/browse?sort=newest" />
-        <NovelSection title="Paling Populer" icon={Star} novels={trendingNovels} href="/browse?sort=popular" />
       </main>
 
       <footer className="max-w-6xl mx-auto px-6 py-24 border-t border-black/5 dark:border-white/5 opacity-20 text-[0.6rem] font-black tracking-[0.3em] text-center uppercase">

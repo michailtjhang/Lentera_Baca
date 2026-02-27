@@ -10,6 +10,11 @@ interface BrowseProps {
     searchParams: Promise<{ q?: string; genre?: string; sort?: string }>;
 }
 
+export const metadata = {
+    title: "Jelajah Novel",
+    description: "Temukan berbagai macam genre novel menarik di Lentera Baca. Cari novel favorit Anda sekarang.",
+};
+
 export default async function BrowsePage({ searchParams }: BrowseProps) {
     const { userId } = await auth();
     const user = await currentUser();
@@ -42,7 +47,8 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
     ]);
 
     return (
-        <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-[#121212] dark:text-[#e0e0e0] transition-colors duration-500">
+        <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-[#1a1a1a] dark:text-[#d1d1d1] transition-colors duration-500">
+
             {/* Minimal Header */}
             <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-white/70 dark:bg-black/70 z-50">
                 <div className="max-w-6xl mx-auto flex justify-between items-center">
