@@ -3,11 +3,11 @@ import Link from "next/link";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/admin";
-import { Search, ChevronLeft, SlidersHorizontal } from "lucide-react";
+import { Search, ChevronLeft, SlidersHorizontal, Hash } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface BrowseProps {
-    searchParams: Promise<{ q?: string; genre?: string; sort?: string }>;
+    searchParams: Promise<{ q?: string; genre?: string; tag?: string; sort?: string }>;
 }
 
 export const metadata = {
@@ -20,30 +20,39 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
     const user = await currentUser();
     const theme = (user?.publicMetadata?.theme as string) || "light";
     const params = await searchParams;
-    const { q, genre, sort } = params;
+    const { q, genre, tag, sort } = params;
 
     const where: any = {};
     if (q) {
         where.OR = [
             { title: { contains: q, mode: 'insensitive' } },
             { author: { contains: q, mode: 'insensitive' } },
+            { genres: { some: { name: { contains: q, mode: 'insensitive' } } } },
+            { tags: { some: { name: { contains: q, mode: 'insensitive' } } } },
         ];
     }
     if (genre) {
         where.genres = { some: { name: genre } };
+    }
+    if (tag) {
+        where.tags = { some: { name: tag } };
     }
 
     let orderBy: any = { createdAt: 'desc' };
     if (sort === 'updated') orderBy = { updatedAt: 'desc' };
     if (sort === 'popular') orderBy = { chapters: { _count: 'desc' } };
 
-    const [novels, allGenres] = await Promise.all([
+    const [novels, allGenres, allTags] = await Promise.all([
         prisma.novel.findMany({
             where,
-            include: { _count: { select: { chapters: true } }, genres: true },
+            include: { _count: { select: { chapters: true } }, genres: true, tags: true },
             orderBy
         }),
-        (prisma as any).genre.findMany({ orderBy: { name: 'asc' } })
+        (prisma as any).genre.findMany({ orderBy: { name: 'asc' } }),
+        (prisma as any).tag.findMany({
+            take: 20,
+            orderBy: { novels: { _count: 'desc' } }
+        })
     ]);
 
     return (
@@ -79,10 +88,11 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                                     type="text"
                                     name="q"
                                     defaultValue={q}
-                                    placeholder="Cari novel..."
+                                    placeholder="Cari novel, author, tag..."
                                     className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-white/10 rounded-2xl px-5 py-3 focus:outline-none transition-all text-sm font-bold"
                                 />
                                 {genre && <input type="hidden" name="genre" value={genre} />}
+                                {tag && <input type="hidden" name="tag" value={tag} />}
                             </form>
                         </div>
 
@@ -96,13 +106,33 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                                     Semua Genre
                                 </Link>
                                 {allGenres.map((g: any) => (
-                                    <Link key={g.id} href={`/browse?genre=${g.name}${q ? `&q=${q}` : ''}`} className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${genre === g.name ? 'bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black' : 'hover:bg-black/5 dark:hover:bg-white/5 opacity-60'}`}>
+                                    <Link key={g.id} href={`/browse?genre=${g.name}${q ? `&q=${q}` : ''}${tag ? `&tag=${tag}` : ''}`} className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${genre === g.name ? 'bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black' : 'hover:bg-black/5 dark:hover:bg-white/5 opacity-60'}`}>
                                         {g.name}
                                     </Link>
                                 ))}
                             </div>
                         </div>
+
+                        {allTags.length > 0 && (
+                            <div>
+                                <div className="flex items-center gap-2 mb-6 opacity-30">
+                                    <Hash size={14} />
+                                    <h3 className="text-[0.65rem] font-black uppercase tracking-[0.2em]">Populer Tags</h3>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <Link href="/browse" className={`px-3 py-1.5 rounded-full text-[0.6rem] font-bold transition-all ${!tag ? 'bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black' : 'bg-black/5 dark:bg-white/5 opacity-60 hover:opacity-100'}`}>
+                                        #Semua
+                                    </Link>
+                                    {allTags.map((t: any) => (
+                                        <Link key={t.id} href={`/browse?tag=${t.name}${q ? `&q=${q}` : ''}${genre ? `&genre=${genre}` : ''}`} className={`px-3 py-1.5 rounded-full text-[0.6rem] font-bold transition-all ${tag === t.name ? 'bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black' : 'bg-black/5 dark:bg-white/5 opacity-60 hover:opacity-100'}`}>
+                                            #{t.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </aside>
+
 
                     {/* Result Grid */}
                     <div className="lg:col-span-3">

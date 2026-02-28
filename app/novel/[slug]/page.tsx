@@ -111,6 +111,16 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             ))}
                         </div>
 
+                        {novel.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {novel.tags.map((t) => (
+                                    <Link key={t.id} href={`/browse?tag=${t.name}`} className="px-4 py-1.5 bg-black/5 dark:bg-white/5 rounded-full text-[0.6rem] font-bold opacity-60 hover:opacity-100 transition-all">
+                                        #{t.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="p-6 bg-white/40 dark:bg-white/5 rounded-[2rem] border border-black/5 dark:border-white/5 flex flex-col md:block items-center text-center md:text-left">
                                 <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest mb-2">Total Bab</p>
