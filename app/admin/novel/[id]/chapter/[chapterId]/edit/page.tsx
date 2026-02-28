@@ -3,6 +3,7 @@ import { updateChapter } from "@/app/actions/novel-actions";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AdminChapterForm from "@/components/admin/ChapterForm";
 
 export default async function EditChapterPage({
     params
@@ -41,53 +42,10 @@ export default async function EditChapterPage({
                     <p className="opacity-70">Ubah judul, urutan, atau isi konten untuk bab ini.</p>
                 </header>
 
-                <form action={updateChapterWithId} className="space-y-6 bg-white/40 p-8 rounded-3xl border border-black/5">
-                    <div className="grid grid-cols-4 gap-4">
-                        <div className="col-span-3 space-y-2">
-                            <label htmlFor="title" className="text-sm font-bold uppercase tracking-widest opacity-60">Judul Bab</label>
-                            <input
-                                type="text"
-                                name="title"
-                                id="title"
-                                required
-                                defaultValue={chapter.title}
-                                placeholder="Contoh: Bab 1: Pertemuan Tak Terduga"
-                                className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="order" className="text-sm font-bold uppercase tracking-widest opacity-60">Urutan</label>
-                            <input
-                                type="number"
-                                name="order"
-                                id="order"
-                                required
-                                defaultValue={chapter.order}
-                                className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="content" className="text-sm font-bold uppercase tracking-widest opacity-60">Isi Konten</label>
-                        <textarea
-                            name="content"
-                            id="content"
-                            required
-                            rows={15}
-                            defaultValue={chapter.content}
-                            placeholder="Tuliskan cerita di sini..."
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium resize-none leading-relaxed"
-                        ></textarea>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="w-full bg-[#3E2723] text-[#F5F5DC] py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all active:scale-[0.98]"
-                    >
-                        Update Bab
-                    </button>
-                </form>
+                <AdminChapterForm
+                    chapter={chapter}
+                    action={updateChapterWithId}
+                />
             </main>
         </div>
     );

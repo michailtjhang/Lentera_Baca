@@ -1,8 +1,8 @@
 import { checkAdmin } from "@/lib/admin";
 import { createNovel } from "@/app/actions/novel-actions";
 import Link from "next/link";
-import { TagInput } from "@/components/TagInput";
 import { prisma } from "@/lib/prisma";
+import AdminNovelForm from "@/components/admin/NovelForm";
 
 const PREDEFINED_GENRES = [
     "Action", "Adventure", "Adult", "Comedy", "Drama", "Ecchi",
@@ -37,98 +37,13 @@ export default async function NewNovelPage() {
                     <p className="opacity-70">Masukkan informasi detail untuk novel baru.</p>
                 </header>
 
-                <form action={createNovel} className="space-y-6 bg-white/40 p-8 rounded-3xl border border-black/5">
-                    <div className="space-y-2">
-                        <label htmlFor="title" className="text-sm font-bold uppercase tracking-widest opacity-60">Judul Novel</label>
-                        <input
-                            type="text"
-                            name="title"
-                            id="title"
-                            required
-                            placeholder="Contoh: Sang Pencari Cahaya"
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="author" className="text-sm font-bold uppercase tracking-widest opacity-60">Penulis</label>
-                        <input
-                            type="text"
-                            name="author"
-                            id="author"
-                            required
-                            placeholder="Contoh: Ahmad Fuadi"
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold uppercase tracking-widest opacity-60">Genre</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white/80 p-4 rounded-xl border border-black/5">
-                            {PREDEFINED_GENRES.map((genre: any) => (
-                                <label key={genre} className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:opacity-70 transition-opacity">
-                                    <input
-                                        type="checkbox"
-                                        name="genres"
-                                        value={genre}
-                                        className="w-4 h-4 accent-[#3E2723]"
-                                    />
-                                    {genre}
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold uppercase tracking-widest opacity-60">Tag (Pilih atau Ketik)</label>
-                        <TagInput suggestions={tagSuggestions} />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="coverImage" className="text-sm font-bold uppercase tracking-widest opacity-60">URL Gambar Sampul (Opsional)</label>
-                        <input
-                            type="url"
-                            name="coverImage"
-                            id="coverImage"
-                            placeholder="https://example.com/cover.jpg"
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="status" className="text-sm font-bold uppercase tracking-widest opacity-60">Status</label>
-                        <select
-                            name="status"
-                            id="status"
-                            defaultValue="ONGOING"
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                        >
-                            <option value="ONGOING">On-going</option>
-                            <option value="COMPLETE">Complete</option>
-                            <option value="DROP">Drop</option>
-                            <option value="HIATUS">Hiatus</option>
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="description" className="text-sm font-bold uppercase tracking-widest opacity-60">Deskripsi</label>
-                        <textarea
-                            name="description"
-                            id="description"
-                            rows={4}
-                            placeholder="Ceritakan sedikit tentang novel ini..."
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium resize-none"
-                        ></textarea>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="w-full bg-[#3E2723] text-[#F5F5DC] py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all active:scale-[0.98]"
-                    >
-                        Simpan Novel
-                    </button>
-                </form>
+                <AdminNovelForm
+                    action={createNovel}
+                    tagSuggestions={tagSuggestions}
+                    predefinedGenres={PREDEFINED_GENRES}
+                />
             </main>
         </div>
     );
 }
+

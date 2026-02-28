@@ -100,6 +100,12 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                 </div>
                             </div>
                             <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6">{novel.title}</h1>
+                            {novel.description && (
+                                <div
+                                    className="text-sm sm:text-base leading-relaxed opacity-80 prose prose-sm dark:prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: novel.description }}
+                                />
+                            )}
                             <p className="text-2xl font-serif italic opacity-40 px-1">oleh {novel.author}</p>
                         </div>
 

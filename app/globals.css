@@ -27,3 +27,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Prose/WYSIWYG Styles */
+.prose p { margin-bottom: 1.5rem; }
+.prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+.prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+.prose h1 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+.prose h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+.prose blockquote { border-left: 4px solid #3E2723; padding-left: 1rem; font-style: italic; opacity: 0.8; margin-bottom: 1.5rem; }
+.dark .prose blockquote { border-left-color: #fff; }

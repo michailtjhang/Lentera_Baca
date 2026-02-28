@@ -115,9 +115,10 @@ export default async function ReaderPage({ params }: PageProps) {
                     <h2 className="text-xl font-bold opacity-60 italic dark:text-gray-400">Bab {chapter.order}: {chapter.title}</h2>
                 </header>
 
-                <article className="font-serif text-[1.25rem] leading-[2] space-y-10 whitespace-pre-wrap selection:bg-[#3E2723]/10 dark:selection:bg-white/10 text-[#3E2723] dark:text-gray-200">
-                    {chapter.content}
-                </article>
+                <div
+                    className="text-lg sm:text-xl leading-[1.8] sm:leading-[2] space-y-6 opacity-90 prose prose-lg dark:prose-invert max-w-none prose-p:mb-6"
+                    dangerouslySetInnerHTML={{ __html: chapter.content }}
+                />
 
                 <nav className="mt-24 flex justify-between items-center border-t border-black/5 pt-12 dark:border-white/5">
                     {prevChapter ? (
