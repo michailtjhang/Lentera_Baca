@@ -3,7 +3,7 @@ import Link from "next/link";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/admin";
-import { Search, Hash, Star, Zap, Clock, ChevronRight } from "lucide-react";
+import { Search, Hash, Star, Zap, Clock, ChevronRight, BookMarked } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata = {
@@ -88,6 +88,9 @@ export default async function Home() {
             <div className="hidden md:flex items-center gap-8">
               <Link href="/browse" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity flex items-center gap-2">
                 <Search size={14} /> Jelajah
+              </Link>
+              <Link href="/light-novel" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity flex items-center gap-2">
+                <BookMarked size={14} /> Light Novel
               </Link>
               {await isAdmin() && (
                 <Link href="/admin" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">

@@ -54,13 +54,22 @@ export default async function AdminDashboard() {
                             Manage <span className="text-black font-black">{novels.length}</span> Active Collections
                         </p>
                     </div>
-                    <Link
-                        href="/admin/novel/new"
-                        className="group flex items-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-black/10"
-                    >
-                        <Plus size={20} className="transition-transform group-hover:rotate-90" />
-                        Tambah Novel
-                    </Link>
+                    <div className="flex flex-wrap gap-4">
+                        <Link
+                            href="/admin/novel/new"
+                            className="group flex items-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-black/10"
+                        >
+                            <Plus size={20} className="transition-transform group-hover:rotate-90" />
+                            Tambah Novel
+                        </Link>
+                        <Link
+                            href="/admin/light-novel"
+                            className="group flex items-center gap-2 bg-white text-black border border-black/10 px-8 py-4 rounded-2xl font-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                        >
+                            <BookOpen size={20} />
+                            Manage Light Novel
+                        </Link>
+                    </div>
                 </header>
 
                 <div className="grid grid-cols-1 gap-6">

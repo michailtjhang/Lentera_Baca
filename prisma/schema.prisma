@@ -56,3 +56,30 @@ model Chapter {
   @@index([novelId])
   @@index([order])
 }
+
+// ── Light Novel ────────────────────────────────────────────────
+model LightNovel {
+  id          String      @id @default(cuid())
+  title       String      @unique
+  slug        String      @unique
+  author      String
+  description String?
+  coverImage  String?
+  fileUrl     String      // URL dari UploadThing (PDF atau EPUB)
+  fileType    FileType    @default(PDF)
+  status      Status      @default(ONGOING)
+  genres      LNGenre[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum FileType {
+  PDF
+  EPUB
+}
+
+model LNGenre {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  lightNovels LightNovel[]
+}
