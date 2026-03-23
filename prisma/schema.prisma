@@ -59,18 +59,34 @@ model Chapter {
 
 // ── Light Novel ────────────────────────────────────────────────
 model LightNovel {
-  id          String      @id @default(cuid())
-  title       String      @unique
-  slug        String      @unique
-  author      String
-  description String?
-  coverImage  String?
-  fileUrl     String      // URL dari UploadThing (PDF atau EPUB)
-  fileType    FileType    @default(PDF)
-  status      Status      @default(ONGOING)
-  genres      LNGenre[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  title          String      @unique
+  slug           String      @unique
+  author         String
+  description    String?
+  coverImage     String?
+  coverImageKey  String?     // Key dari UploadThing untuk hapus file
+  status         Status      @default(ONGOING)
+  genres         LNGenre[]
+  volumes        Volume[]    // Relasi ke banyak volume
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Volume {
+  id           String      @id @default(cuid())
+  title        String      // Misal: "Volume 1", "Edisi Spesial"
+  order        Int         @default(1)
+  fileUrl      String      // URL dari UploadThing
+  fileKey      String      // Key dari UploadThing untuk hapus file
+  fileType     FileType    @default(PDF)
+  lightNovelId String
+  lightNovel   LightNovel  @relation(fields: [lightNovelId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([lightNovelId])
+  @@index([order])
 }
 
 enum FileType {

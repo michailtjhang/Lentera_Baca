@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createLightNovel, updateLightNovel } from "@/app/actions/lightnovel";
 import LNUploader from "@/components/admin/LNUploader";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, ArrowLeft } from "lucide-react";
 
 interface LightNovelFormProps {
     mode: "create" | "edit";
@@ -14,10 +14,10 @@ interface LightNovelFormProps {
         author?: string;
         description?: string;
         coverImage?: string;
-        fileUrl?: string;
-        fileType?: string;
+        coverImageKey?: string;
         status?: string;
         genres?: string;
+        volumes?: any[];
     };
 }
 
@@ -28,144 +28,147 @@ const labelClass = "block text-xs font-black uppercase tracking-widest text-blac
 export default function LightNovelForm({ mode, id, defaultValues = {} }: LightNovelFormProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const [fileUrl, setFileUrl] = useState(defaultValues.fileUrl || "");
+    const [volumes, setVolumes] = useState<any[]>(defaultValues.volumes || []);
     const [coverImage, setCoverImage] = useState(defaultValues.coverImage || "");
-    const [fileType, setFileType] = useState(defaultValues.fileType || "PDF");
+    const [coverImageKey, setCoverImageKey] = useState(defaultValues.coverImageKey || "");
     const [error, setError] = useState("");
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setError("");
 
-        if (!fileUrl) {
-            setError("Harap upload file PDF atau EPUB terlebih dahulu.");
+        if (volumes.length === 0) {
+            setError("Harap upload minimal satu volume.");
             return;
         }
 
         const form = e.currentTarget;
         const formData = new FormData(form);
-        formData.set("fileUrl", fileUrl);
         formData.set("coverImage", coverImage);
-        formData.set("fileType", fileType);
+        formData.set("coverImageKey", coverImageKey);
+        formData.set("volumes", JSON.stringify(volumes)); // Pass volumes as JSON
 
         startTransition(async () => {
-            if (mode === "create") {
-                await createLightNovel(formData);
-            } else {
-                await updateLightNovel(id!, formData);
+            try {
+                if (mode === "create") {
+                    await createLightNovel(formData);
+                } else {
+                    await updateLightNovel(id!, formData);
+                }
+                router.push("/admin/light-novel");
+            } catch (err: any) {
+                setError(err.message || "Gagal menyimpan data.");
             }
-            router.push("/admin/light-novel");
         });
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            {/* LN File + Cover Upload */}
-            <LNUploader
-                onFileUploaded={(url) => {
-                    setFileUrl(url);
-                    // Auto-detect file type
-                    if (url.toLowerCase().includes(".epub")) setFileType("EPUB");
-                    else setFileType("PDF");
-                }}
-                onCoverUploaded={setCoverImage}
-                currentFileUrl={defaultValues.fileUrl}
-                currentCoverUrl={defaultValues.coverImage}
-            />
+        <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="bg-white/60 border border-black/[0.03] rounded-[2.5rem] p-8 space-y-8">
+                {/* 1. Judul & Author */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className={labelClass}>Judul *</label>
+                        <input
+                            name="title"
+                            required
+                            defaultValue={defaultValues.title}
+                            placeholder="Judul light novel..."
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Penulis *</label>
+                        <input
+                            name="author"
+                            required
+                            defaultValue={defaultValues.author}
+                            placeholder="Nama penulis..."
+                            className={inputClass}
+                        />
+                    </div>
+                </div>
 
-            {/* File Type Override */}
-            <div>
-                <label className={labelClass}>Tipe File</label>
-                <div className="flex gap-3">
-                    {["PDF", "EPUB"].map((type) => (
-                        <button
-                            key={type}
-                            type="button"
-                            onClick={() => setFileType(type)}
-                            className={`flex-1 py-3 rounded-2xl text-sm font-black tracking-widest transition-all border ${fileType === type
-                                    ? "bg-black text-white border-black"
-                                    : "bg-white text-black/40 border-black/10 hover:border-black/20"
-                                }`}
-                        >
-                            {type}
-                        </button>
-                    ))}
+                {/* 2. Description */}
+                <div>
+                    <label className={labelClass}>Deskripsi</label>
+                    <textarea
+                        name="description"
+                        rows={4}
+                        defaultValue={defaultValues.description}
+                        placeholder="Sinopsis singkat..."
+                        className={`${inputClass} resize-none`}
+                    />
+                </div>
+
+                {/* 3. Genres & Status */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className={labelClass}>Genre (pisahkan koma)</label>
+                        <input
+                            name="genres"
+                            defaultValue={defaultValues.genres}
+                            placeholder="Fantasy, Action..."
+                            className={inputClass}
+                        />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Status</label>
+                        <select name="status" defaultValue={defaultValues.status || "ONGOING"} className={inputClass}>
+                            <option value="ONGOING">On-going</option>
+                            <option value="COMPLETE">Complete</option>
+                            <option value="HIATUS">Hiatus</option>
+                            <option value="DROP">Drop</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            {/* Title */}
-            <div>
-                <label className={labelClass}>Judul *</label>
-                <input
-                    name="title"
-                    required
-                    defaultValue={defaultValues.title}
-                    placeholder="Judul light novel..."
-                    className={inputClass}
+            {/* 4. Files & Vol Management */}
+            <div className="bg-white/60 border border-black/[0.03] rounded-[2.5rem] p-8">
+                <h3 className="text-xl font-black tracking-tight mb-8 flex items-center gap-3">
+                    <span className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center text-xs">UT</span>
+                    Files & Media
+                </h3>
+                
+                <LNUploader
+                    onCoverUploaded={(url, key) => {
+                        setCoverImage(url);
+                        setCoverImageKey(key);
+                    }}
+                    onVolumesChanged={setVolumes}
+                    currentCoverUrl={defaultValues.coverImage}
+                    currentCoverKey={defaultValues.coverImageKey}
+                    currentVolumes={defaultValues.volumes}
                 />
-            </div>
-
-            {/* Author */}
-            <div>
-                <label className={labelClass}>Penulis *</label>
-                <input
-                    name="author"
-                    required
-                    defaultValue={defaultValues.author}
-                    placeholder="Nama penulis..."
-                    className={inputClass}
-                />
-            </div>
-
-            {/* Description */}
-            <div>
-                <label className={labelClass}>Deskripsi</label>
-                <textarea
-                    name="description"
-                    rows={4}
-                    defaultValue={defaultValues.description}
-                    placeholder="Sinopsis singkat..."
-                    className={`${inputClass} resize-none`}
-                />
-            </div>
-
-            {/* Genres */}
-            <div>
-                <label className={labelClass}>Genre <span className="text-black/25">(pisahkan dengan koma)</span></label>
-                <input
-                    name="genres"
-                    defaultValue={defaultValues.genres}
-                    placeholder="Fantasy, Action, Romance..."
-                    className={inputClass}
-                />
-            </div>
-
-            {/* Status */}
-            <div>
-                <label className={labelClass}>Status</label>
-                <select name="status" defaultValue={defaultValues.status || "ONGOING"} className={inputClass}>
-                    <option value="ONGOING">On-going</option>
-                    <option value="COMPLETE">Complete</option>
-                    <option value="HIATUS">Hiatus</option>
-                    <option value="DROP">Drop</option>
-                </select>
             </div>
 
             {error && (
-                <p className="text-sm text-red-500 font-bold bg-red-50 px-4 py-3 rounded-xl">{error}</p>
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-600 text-sm font-bold text-center">
+                    {error}
+                </div>
             )}
 
-            <button
-                type="submit"
-                disabled={isPending}
-                className="w-full flex items-center justify-center gap-2 bg-black text-white py-4 rounded-2xl font-black tracking-widest text-sm hover:opacity-80 active:scale-[0.99] transition-all disabled:opacity-50"
-            >
-                {isPending ? (
-                    <><Loader2 size={18} className="animate-spin" /> Menyimpan...</>
-                ) : (
-                    <><Save size={18} /> {mode === "create" ? "Tambah Light Novel" : "Simpan Perubahan"}</>
-                )}
-            </button>
+            <div className="flex gap-4">
+                <button
+                    type="button"
+                    onClick={() => router.back()}
+                    className="px-8 py-4 rounded-2xl font-black text-sm border border-black/10 hover:bg-black/5 transition-all"
+                >
+                    Batal
+                </button>
+                <button
+                    type="submit"
+                    disabled={isPending}
+                    className="flex-1 flex items-center justify-center gap-2 bg-black text-white py-4 rounded-2xl font-black tracking-widest text-sm hover:opacity-80 active:scale-[0.99] transition-all disabled:opacity-50 shadow-2xl shadow-black/10"
+                >
+                    {isPending ? (
+                        <><Loader2 size={18} className="animate-spin" /> Menyimpan...</>
+                    ) : (
+                        <><Save size={18} /> {mode === "create" ? "Terbitkan Novel" : "Simpan Perubahan"}</>
+                    )}
+                </button>
+            </div>
         </form>
     );
 }

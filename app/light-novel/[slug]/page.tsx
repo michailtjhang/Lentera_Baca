@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, User, Tag, Clock, ChevronRight } from "lucide-react";
+import { BookOpen, User, Tag, Clock, ChevronRight, FileText } from "lucide-react";
 
 export default async function LightNovelDetailPage({
     params,
@@ -11,7 +11,7 @@ export default async function LightNovelDetailPage({
     const { slug } = await params;
     const ln = await prisma.lightNovel.findUnique({
         where: { slug },
-        include: { genres: true },
+        include: { genres: true, volumes: { orderBy: { order: "asc" } } },
     });
 
     if (!ln) notFound();
@@ -70,28 +70,43 @@ export default async function LightNovelDetailPage({
                                 </p>
                             </div>
                             <div>
-                                <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] text-black/20 mb-2">File Type</p>
+                                <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] text-black/20 mb-2">Volumes</p>
                                 <p className="font-black text-xl flex items-center gap-3">
                                     <BookOpen size={20} className="text-black/20" />
-                                    {ln.fileType}
+                                    {ln.volumes.length} Edisi
                                 </p>
                             </div>
                         </div>
 
                         <div className="mb-16">
                             <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] text-black/20 mb-6">Synopsis</p>
-                            <p className="text-xl font-medium leading-relaxed opacity-60 italic">
+                            <p className="text-xl font-medium leading-relaxed opacity-60 italic whitespace-pre-wrap">
                                 {ln.description || "Belum ada deskripsi untuk novel ini."}
                             </p>
                         </div>
 
-                        <Link 
-                            href={`/light-novel/${ln.slug}/read`}
-                            className="inline-flex items-center gap-4 bg-black text-white px-12 py-6 rounded-[2rem] font-black text-lg hover:scale-[1.03] active:scale-[0.97] transition-all shadow-2xl shadow-black/20"
-                        >
-                            Baca Sekarang
-                            <ChevronRight size={24} />
-                        </Link>
+                        {/* Volumes List */}
+                        <div className="space-y-6">
+                            <h3 className="text-[0.6rem] font-black uppercase tracking-[0.3em] text-black/20">Daftar Volume</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {ln.volumes.map((vol) => (
+                                    <Link 
+                                        key={vol.id}
+                                        href={`/light-novel/${ln.slug}/read?v=${vol.id}`}
+                                        className="group flex items-center gap-4 bg-white border border-black/5 p-5 rounded-[1.5rem] hover:bg-black hover:text-white transition-all shadow-xl shadow-black/[0.02]"
+                                    >
+                                        <div className="w-10 h-10 bg-black/5 group-hover:bg-white/10 rounded-xl flex items-center justify-center font-black text-sm">
+                                            {vol.order}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-black text-sm uppercase tracking-tight">{vol.title}</p>
+                                            <p className="text-[0.6rem] font-bold opacity-40 uppercase tracking-widest">{vol.fileType}</p>
+                                        </div>
+                                        <ChevronRight size={20} className="opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>

@@ -16,7 +16,7 @@ export default async function EditLightNovelPage({
 
     const ln = await prisma.lightNovel.findUnique({
         where: { id },
-        include: { genres: true },
+        include: { genres: true, volumes: { orderBy: { order: "asc" } } },
     });
 
     if (!ln) notFound();
@@ -26,10 +26,10 @@ export default async function EditLightNovelPage({
         author: ln.author,
         description: ln.description || "",
         coverImage: ln.coverImage || "",
-        fileUrl: ln.fileUrl,
-        fileType: ln.fileType,
+        coverImageKey: ln.coverImageKey || "",
         status: ln.status,
         genres: ln.genres.map((g: any) => g.name).join(", "),
+        volumes: ln.volumes,
     };
 
     return (
@@ -50,9 +50,8 @@ export default async function EditLightNovelPage({
             <main className="max-w-3xl mx-auto px-8 py-12">
                 <h2 className="text-4xl font-black tracking-tighter mb-2">Edit {ln.title}</h2>
                 <p className="text-black/40 font-bold mb-10 text-sm">Update informasi atau ganti file light novel.</p>
-                <div className="bg-white/60 border border-black/[0.03] rounded-[2.5rem] p-8">
-                    <LightNovelForm mode="edit" id={ln.id} defaultValues={defaultValues} />
-                </div>
+                
+                <LightNovelForm mode="edit" id={ln.id} defaultValues={defaultValues} />
             </main>
         </div>
     );

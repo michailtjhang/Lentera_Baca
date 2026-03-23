@@ -1,15 +1,17 @@
 import { checkAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { Plus, FileText, ExternalLink, Settings, BookMarked } from "lucide-react";
+import { Plus, FileText, ExternalLink, Settings, BookMarked, Trash2 } from "lucide-react";
 import { deleteLightNovel } from "@/app/actions/lightnovel";
+import DeleteButton from "@/components/admin/DeleteButton";
 
 export default async function AdminLightNovelPage() {
     await checkAdmin();
 
     const lightNovels = await prisma.lightNovel.findMany({
-        include: { genres: true },
+        include: { genres: true, volumes: true },
         orderBy: { createdAt: "desc" },
     });
 
@@ -47,7 +49,7 @@ export default async function AdminLightNovelPage() {
                         <h2 className="text-5xl font-black tracking-tighter mb-4">Light Novel.</h2>
                         <p className="text-lg text-black/40 font-bold uppercase tracking-[0.2em] flex items-center gap-3">
                             <BookMarked size={18} />
-                            <span className="text-black font-black">{lightNovels.length}</span> Novel Tersedia
+                            <span className="text-black font-black">{lightNovels.length}</span> Judul Tersedia
                         </p>
                     </div>
                     <Link
@@ -79,7 +81,7 @@ export default async function AdminLightNovelPage() {
                                             {statusLabel[ln.status]}
                                         </span>
                                         <span className="text-[0.6rem] font-black uppercase tracking-widest bg-black/5 text-black/50 px-3 py-1 rounded-full">
-                                            {ln.fileType}
+                                            {ln.volumes.length} Volumes
                                         </span>
                                         {ln.genres.slice(0, 3).map((g: any) => (
                                             <span key={g.id} className="text-[0.6rem] font-bold text-black/40">{g.name}</span>
@@ -105,6 +107,7 @@ export default async function AdminLightNovelPage() {
                                         <ExternalLink size={14} />
                                         Preview
                                     </Link>
+                                    <DeleteButton id={ln.id} deleteAction={deleteLightNovel} />
                                 </div>
                             </div>
                         </div>
