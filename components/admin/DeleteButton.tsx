@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, AlertTriangle, X } from "lucide-react";
+import { Trash2, AlertTriangle, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface DeleteButtonProps {
@@ -59,9 +59,14 @@ export default function DeleteButton({ id, novelTitle, deleteAction, variant = "
                     <button
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="flex-1 px-8 py-4 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:opacity-80 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-rose-500/20"
+                        className="flex-1 px-8 py-4 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:opacity-80 transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl shadow-rose-500/20"
                     >
-                        {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+                        {isDeleting ? (
+                            <>
+                                <Loader2 size={16} className="animate-spin" />
+                                Memproses...
+                            </>
+                        ) : "Ya, Hapus"}
                     </button>
                 </div>
             </div>

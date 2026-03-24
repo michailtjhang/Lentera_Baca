@@ -59,8 +59,23 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
         });
     }
 
+    const LoadingOverlay = () => (
+        <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-white/20 backdrop-blur-md animate-in fade-in duration-500">
+            <div className="relative">
+                <div className="w-24 h-24 border-4 border-[#3E2723]/5 rounded-full" />
+                <div className="absolute inset-0 w-24 h-24 border-4 border-[#3E2723] border-t-transparent rounded-full animate-spin" />
+            </div>
+            <div className="mt-8 flex flex-col items-center gap-2">
+                <span className="text-2xl font-black tracking-tighter text-[#3E2723] animate-pulse">Memproses Data...</span>
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[#3E2723]/40">Mohon tunggu sebentar</span>
+            </div>
+        </div>
+    );
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <>
+            {isPending && <LoadingOverlay />}
+            <form onSubmit={handleSubmit} className="space-y-8">
             <div className="bg-white/40 p-8 rounded-[2.5rem] border border-black/5 space-y-8">
                 {/* Judul & Penulis & Illustrator */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -230,5 +245,6 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                 </button>
             </div>
         </form>
+        </>
     );
 }

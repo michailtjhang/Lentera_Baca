@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { NovelType, Region, Status, FileType } from "@prisma/client";
 import { utapi } from "@/lib/uploadthing";
 
-export async function createNovel(formData: FormData) {
+export async function createNovel(_: any, formData: FormData) {
     await checkAdmin();
 
     const title = formData.get("title") as string;
