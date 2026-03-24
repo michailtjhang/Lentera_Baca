@@ -28,9 +28,13 @@ export default function VolumeList({ volumes, slug }: VolumeListProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {volumes.map((vol) => (
-                <div key={vol.id} className="group bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 p-6 rounded-[2rem] hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm flex items-center justify-between">
+                <Link 
+                    key={vol.id} 
+                    href={`/novel/${slug}/volume/${vol.id}`}
+                    className="group bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 p-6 rounded-[2rem] hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm flex items-center justify-between active:scale-[0.98]"
+                >
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#3E2723] text-[#F5F5DC] rounded-2xl flex items-center justify-center font-black">
+                        <div className="w-12 h-12 bg-[#3E2723] text-[#F5F5DC] rounded-xl flex items-center justify-center font-black group-hover:scale-110 transition-transform">
                             <FileText size={20} />
                         </div>
                         <div>
@@ -38,14 +42,7 @@ export default function VolumeList({ volumes, slug }: VolumeListProps) {
                             <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] opacity-30">{vol.fileType}</span>
                         </div>
                     </div>
-                    <Link
-                        href={`/novel/${slug}/volume/${vol.id}`}
-                        className="flex items-center gap-3 bg-black text-white px-6 py-3 rounded-2xl text-[0.65rem] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-black/20"
-                    >
-                        <BookOpen size={16} />
-                        Baca Sekarang
-                    </Link>
-                </div>
+                </Link>
             ))}
         </div>
     );

@@ -27,6 +27,7 @@ export default async function VolumePage({ params }: VolumePageProps) {
                 fileUrl={volume.fileUrl} 
                 fileType={volume.fileType} 
                 title={`${volume.novel.title} - ${volume.title}`} 
+                novelSlug={slug}
             />
         </main>
     );

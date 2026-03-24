@@ -28,11 +28,12 @@ interface ReaderWrapperProps {
     fileUrl: string;
     fileType: string;
     title: string;
+    novelSlug: string;
 }
 
-export default function ReaderWrapper({ fileUrl, fileType, title }: ReaderWrapperProps) {
+export default function ReaderWrapper({ fileUrl, fileType, title, novelSlug }: ReaderWrapperProps) {
     if (fileType === "PDF") {
-        return <PDFReader fileUrl={fileUrl} title={title} />;
+        return <PDFReader fileUrl={fileUrl} title={title} novelSlug={novelSlug} />;
     }
-    return <EPUBReader fileUrl={fileUrl} title={title} />;
+    return <EPUBReader fileUrl={fileUrl} title={title} novelSlug={novelSlug} />;
 }

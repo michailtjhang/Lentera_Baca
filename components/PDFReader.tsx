@@ -15,7 +15,9 @@ import {
     X,
     Maximize,
     Minimize,
+    ArrowLeft,
 } from "lucide-react";
+import Link from "next/link";
 
 // Setup worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -30,9 +32,10 @@ const BG_THEMES = [
 interface PDFReaderProps {
     fileUrl: string;
     title: string;
+    novelSlug: string;
 }
 
-export default function PDFReader({ fileUrl, title }: PDFReaderProps) {
+export default function PDFReader({ fileUrl, title, novelSlug }: PDFReaderProps) {
     const [numPages, setNumPages] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [scale, setScale] = useState<number>(1.0);
@@ -174,9 +177,17 @@ export default function PDFReader({ fileUrl, title }: PDFReaderProps) {
                     pointerEvents: showUI ? "all" : "none",
                 }}
             >
-                <div className="flex items-center gap-3">
-                    <BookOpen size={18} opacity={0.6} />
-                    <span className="font-bold text-sm truncate max-w-[200px] md:max-w-none" style={{ color: theme.text }}>
+                <div className="flex items-center gap-4">
+                    <Link
+                        href={`/novel/${novelSlug}`}
+                        className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all"
+                        style={{ color: theme.text }}
+                        title="Kembali ke Novel"
+                    >
+                        <ArrowLeft size={20} />
+                    </Link>
+                    <div className="h-6 w-px bg-black/10 dark:bg-white/10 mx-1" />
+                    <span className="font-black text-sm uppercase tracking-widest truncate max-w-[200px] md:max-w-none" style={{ color: theme.text }}>
                         {title}
                     </span>
                 </div>

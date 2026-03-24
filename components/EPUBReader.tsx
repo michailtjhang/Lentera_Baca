@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, BookOpen, ZoomIn, ZoomOut, Maximize, Minimize } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen, ZoomIn, ZoomOut, Maximize, Minimize, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 const BG_THEMES = [
     { label: "Putih", value: "white", bg: "#FFFFFF", text: "#1A1A1A" },
@@ -13,9 +14,10 @@ const BG_THEMES = [
 interface EPUBReaderProps {
     fileUrl: string;
     title: string;
+    novelSlug: string;
 }
 
-export default function EPUBReader({ fileUrl, title }: EPUBReaderProps) {
+export default function EPUBReader({ fileUrl, title, novelSlug }: EPUBReaderProps) {
     const viewerRef = useRef<HTMLDivElement>(null);
     const bookRef = useRef<any>(null);
     const renditionRef = useRef<any>(null);
@@ -186,9 +188,17 @@ export default function EPUBReader({ fileUrl, title }: EPUBReaderProps) {
                     pointerEvents: showUI ? "all" : "none",
                 }}
             >
-                <div className="flex items-center gap-3">
-                    <BookOpen size={18} opacity={0.6} />
-                    <span className="font-bold text-sm truncate max-w-[200px]" style={{ color: theme.text }}>
+                <div className="flex items-center gap-4">
+                    <Link
+                        href={`/novel/${novelSlug}`}
+                        className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all"
+                        style={{ color: theme.text }}
+                        title="Kembali ke Novel"
+                    >
+                        <ArrowLeft size={20} />
+                    </Link>
+                    <div className="h-6 w-px bg-black/10 dark:bg-white/10 mx-1" />
+                    <span className="font-black text-sm uppercase tracking-widest truncate max-w-[200px]" style={{ color: theme.text }}>
                         {title}
                     </span>
                 </div>
