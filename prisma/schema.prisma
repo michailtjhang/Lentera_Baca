@@ -10,18 +10,23 @@ datasource db {
 }
 
 model Novel {
-  id          String    @id @default(cuid())
-  title       String    @unique                      // judul harus unik
-  slug        String    @unique                      // slug untuk url
-  author      String
-  description String?
-  coverImage  String?
-  status      Status    @default(ONGOING)           // ongoing, complete, drop, hiatus
-  genres      Genre[]
-  tags        Tag[]
-  chapters    Chapter[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  title         String    @unique                      // judul harus unik
+  slug          String    @unique                      // slug untuk url
+  author        String
+  illustrator   String?                                // penambahan illustrator
+  description   String?
+  coverImage    String?
+  coverImageKey String?                                // Key dari UploadThing
+  type          NovelType @default(WEB)                // tipe novel
+  region        Region    @default(OTHER)              // regional novel
+  status        Status    @default(ONGOING)            // ongoing, complete, drop, hiatus
+  genres        Genre[]
+  tags          Tag[]
+  chapters      Chapter[]
+  volumes       Volume[]                               // relasi ke volumes (untuk PDF/EPUB)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 enum Status {
@@ -29,6 +34,19 @@ enum Status {
   COMPLETE
   DROP
   HIATUS
+}
+
+enum NovelType {
+  WEB
+  PDF
+  EPUB
+}
+
+enum Region {
+  JAPAN
+  KOREA
+  CHINA
+  OTHER
 }
 
 model Genre {
@@ -57,45 +75,24 @@ model Chapter {
   @@index([order])
 }
 
-// ── Light Novel ────────────────────────────────────────────────
-model LightNovel {
-  id             String      @id @default(cuid())
-  title          String      @unique
-  slug           String      @unique
-  author         String
-  description    String?
-  coverImage     String?
-  coverImageKey  String?     // Key dari UploadThing untuk hapus file
-  status         Status      @default(ONGOING)
-  genres         LNGenre[]
-  volumes        Volume[]    // Relasi ke banyak volume
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-}
-
+// ── Volumes (Shared for PDF/EPUB) ──────────────────────────────────
 model Volume {
-  id           String      @id @default(cuid())
-  title        String      // Misal: "Volume 1", "Edisi Spesial"
-  order        Int         @default(1)
-  fileUrl      String      // URL dari UploadThing
-  fileKey      String      // Key dari UploadThing untuk hapus file
-  fileType     FileType    @default(PDF)
-  lightNovelId String
-  lightNovel   LightNovel  @relation(fields: [lightNovelId], references: [id], onDelete: Cascade)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id        String   @id @default(cuid())
+  title     String   // Misal: "Volume 1", "Edisi Spesial"
+  order     Int      @default(1)
+  fileUrl   String   // URL dari UploadThing
+  fileKey   String   // Key dari UploadThing untuk hapus file
+  fileType  FileType @default(PDF)
+  novelId   String
+  novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([lightNovelId])
+  @@index([novelId])
   @@index([order])
 }
 
 enum FileType {
   PDF
   EPUB
-}
-
-model LNGenre {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  lightNovels LightNovel[]
 }

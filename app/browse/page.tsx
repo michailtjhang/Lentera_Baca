@@ -42,10 +42,10 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
     if (sort === 'updated') orderBy = { updatedAt: 'desc' };
     if (sort === 'popular') orderBy = { chapters: { _count: 'desc' } };
 
-    const [novels, allGenres, allTags] = await Promise.all([
+    const [novelsResult, allGenres, allTags] = await Promise.all([
         prisma.novel.findMany({
             where,
-            include: { _count: { select: { chapters: true } }, genres: true, tags: true },
+            include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
             orderBy
         }),
         (prisma as any).genre.findMany({ orderBy: { name: 'asc' } }),
@@ -55,9 +55,10 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
         })
     ]);
 
-    return (
-        <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-[#1a1a1a] dark:text-[#d1d1d1] transition-colors duration-500">
+    const novels = novelsResult as any[];
 
+    return (
+        <div className="min-h-screen bg-[#FDFCF0] text-[#3E2723] dark:bg-[#1a1a1a] dark:text-[#d1d1d1] transition-colors duration-500 font-sans">
             {/* Minimal Header */}
             <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-white/70 dark:bg-black/70 z-50">
                 <div className="max-w-6xl mx-auto flex justify-between items-center">
@@ -161,11 +162,19 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-[0.6rem] opacity-20 uppercase font-black">No Cover</div>
                                             )}
+                                            <div className="absolute top-4 right-4 flex flex-col items-end gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                                                <span className="text-[0.45rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black backdrop-blur shadow-xl">
+                                                    {novel.type}
+                                                </span>
+                                                <span className="text-[0.45rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur shadow-xl">
+                                                    {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}
+                                                </span>
+                                            </div>
                                         </div>
                                         <h3 className="text-sm font-black line-clamp-2 leading-tight tracking-tight mb-2 group-hover:text-black dark:group-hover:text-white transition-colors">{novel.title}</h3>
                                         <div className="flex justify-between items-center mt-auto opacity-40 text-[0.55rem] font-black uppercase tracking-widest">
-                                            <span>{novel.author}</span>
-                                            <span>{novel._count.chapters} ch</span>
+                                            <span className="truncate max-w-[60%]">{novel.author}</span>
+                                            <span>{novel.type === 'WEB' ? `${novel._count.chapters} ch` : `${novel._count.volumes} vol`}</span>
                                         </div>
                                     </Link>
                                 ))}

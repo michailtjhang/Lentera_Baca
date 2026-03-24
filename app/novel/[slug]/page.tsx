@@ -8,7 +8,7 @@ import ChapterList from "@/components/ChapterList";
 import HistoryDisplay from "@/components/HistoryDisplay";
 import ThemeToggle from "@/components/ThemeToggle";
 import ReadButton from "@/components/ReadButton";
-
+import VolumeList from "@/components/VolumeList";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -36,19 +36,21 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function NovelOverviewPage({ params }: PageProps) {
-
     const { slug } = await params;
     const user = await currentUser();
     const theme = (user?.publicMetadata?.theme as string) || "light";
 
-    const novel = await prisma.novel.findUnique({
+    const novelResult = await prisma.novel.findUnique({
         where: { slug },
         include: {
             chapters: { orderBy: { order: 'asc' } },
+            volumes: { orderBy: { order: 'asc' } },
             genres: true,
             tags: true,
-        }
+        } as any
     });
+
+    const novel = novelResult as any;
 
     if (!novel) return notFound();
 
@@ -59,8 +61,14 @@ export default async function NovelOverviewPage({ params }: PageProps) {
         HIATUS: "text-amber-500 bg-amber-500/10",
     };
 
+    const typeLabels: Record<string, string> = {
+        WEB: "Web Novel",
+        PDF: "Light Novel (PDF)",
+        EPUB: "Light Novel (EPUB)",
+    };
+
     return (
-        <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-[#121212] dark:text-[#e0e0e0] transition-colors duration-500">
+        <div className="min-h-screen bg-[#FDFCF0] text-[#1A1A1A] dark:bg-[#121212] dark:text-[#e0e0e0] transition-colors duration-500 font-sans">
             <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-white/70 dark:bg-black/70 z-50">
                 <div className="max-w-6xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-6">
@@ -95,22 +103,28 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                 <span className={`text-[0.6rem] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full ${statusColors[novel.status]}`}>
                                     {novel.status}
                                 </span>
-                                <div className="flex items-center gap-2 opacity-30 text-[0.65rem] font-black uppercase tracking-widest">
-                                    <Clock size={14} /> {novel.updatedAt.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                                </div>
+                                <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] bg-black text-white px-4 py-2 rounded-full">
+                                    {typeLabels[novel.type] || novel.type}
+                                </span>
+                                <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] bg-stone-200 text-stone-600 px-4 py-2 rounded-full">
+                                    {novel.region}
+                                </span>
                             </div>
                             <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6">{novel.title}</h1>
-                            {novel.description && (
-                                <div
-                                    className="text-sm sm:text-base leading-relaxed opacity-80 prose prose-sm dark:prose-invert max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: novel.description }}
-                                />
-                            )}
-                            <p className="text-2xl font-serif italic opacity-40 px-1">oleh {novel.author}</p>
+                            <div className="space-y-1 bg-black text-white p-6 rounded-2xl w-fit mb-8">
+                                <p className="text-sm font-black uppercase tracking-widest opacity-40">Penulis</p>
+                                <p className="text-xl font-black">{novel.author}</p>
+                                {novel.illustrator && (
+                                    <>
+                                        <p className="text-sm font-black uppercase tracking-widest opacity-40 mt-3">Ilustrator</p>
+                                        <p className="text-xl font-black">{novel.illustrator}</p>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex flex-wrap gap-3">
-                            {novel.genres.map((g) => (
+                            {novel.genres.map((g: any) => (
                                 <Link key={g.id} href={`/browse?genre=${g.name}`} className="px-6 py-2.5 bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-2xl text-[0.65rem] font-black uppercase tracking-widest hover:bg-white dark:hover:bg-white/10 transition-all">
                                     {g.name}
                                 </Link>
@@ -119,7 +133,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
 
                         {novel.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
-                                {novel.tags.map((t) => (
+                                {novel.tags.map((t: any) => (
                                     <Link key={t.id} href={`/browse?tag=${t.name}`} className="px-4 py-1.5 bg-black/5 dark:bg-white/5 rounded-full text-[0.6rem] font-bold opacity-60 hover:opacity-100 transition-all">
                                         #{t.name}
                                     </Link>
@@ -128,55 +142,86 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="p-6 bg-white/40 dark:bg-white/5 rounded-[2rem] border border-black/5 dark:border-white/5 flex flex-col md:block items-center text-center md:text-left">
-                                <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest mb-2">Total Bab</p>
+                            <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/5 flex flex-col md:block items-center text-center md:text-left">
+                                <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest mb-2">
+                                    {novel.type === 'WEB' ? 'Total Bab' : 'Total Volume'}
+                                </p>
                                 <div className="flex items-end gap-2">
-                                    <span className="text-3xl font-black">{novel.chapters.length}</span>
-                                    <BookOpen size={18} className="mb-1 opacity-20" />
+                                    <span className="text-4xl font-black">
+                                        {novel.type === 'WEB' ? novel.chapters.length : novel.volumes.length}
+                                    </span>
+                                    <BookOpen size={20} className="mb-1.5 opacity-20" />
                                 </div>
                             </div>
+                            
                             {/* Actions */}
                             <div className="md:col-span-3 flex items-stretch gap-4 h-16 md:h-auto">
-                                {novel.chapters.length > 0 && (
-                                    <ReadButton
-                                        novelId={novel.id}
-                                        slug={slug}
-                                        firstChapterOrder={novel.chapters[0].order}
-                                    />
+                                {novel.type === 'WEB' ? (
+                                    novel.chapters.length > 0 && (
+                                        <ReadButton
+                                            novelId={novel.id}
+                                            slug={slug}
+                                            firstChapterOrder={novel.chapters[0].order}
+                                        />
+                                    )
+                                ) : (
+                                    novel.volumes.length > 0 && (
+                                        <a
+                                            href={novel.volumes[0].fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 flex items-center justify-center gap-3 bg-black text-white rounded-[2.5rem] font-black uppercase tracking-widest text-xs hover:opacity-80 active:scale-[0.98] transition-all"
+                                        >
+                                            <Play size={18} /> Mulai Baca
+                                        </a>
+                                    )
                                 )}
-                                <button className="aspect-square flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2rem] hover:bg-white transition-all active:scale-90">
-                                    <Bookmark size={20} />
+                                <button className="aspect-square flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2.5rem] hover:bg-black hover:text-white transition-all active:scale-90">
+                                    <Bookmark size={22} />
                                 </button>
                             </div>
-
                         </div>
 
-                        <div>
+                        <div className="bg-white/40 dark:bg-white/5 p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5">
                             <h3 className="text-[0.65rem] font-black uppercase tracking-[0.3em] opacity-30 mb-6 flex items-center gap-2">
                                 <Hash size={14} /> Sinopsis
                             </h3>
-                            <p className="text-xl leading-[1.8] font-medium opacity-80 whitespace-pre-wrap font-serif">
-                                {novel.description || "Tidak ada deskripsi tersedia."}
-                            </p>
+                            {novel.description ? (
+                                <div
+                                    className="text-lg leading-[1.8] font-medium opacity-80 prose prose-lg dark:prose-invert max-w-none prose-p:font-serif"
+                                    dangerouslySetInnerHTML={{ __html: novel.description }}
+                                />
+                            ) : (
+                                <p className="text-lg opacity-40 font-serif italic">Tidak ada deskripsi tersedia.</p>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Chapters Section */}
+                {/* Content List Section */}
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-12">
-                        <h2 className="text-4xl font-black tracking-tighter">Daftar Bab</h2>
+                        <h2 className="text-4xl font-black tracking-tighter">
+                            {novel.type === 'WEB' ? 'Daftar Bab' : 'Koleksi Volume'}
+                        </h2>
                         <div className="h-px flex-1 mx-8 bg-black/5 dark:bg-white/5 hidden md:block" />
-                        <span className="text-xs font-black opacity-20 tracking-[0.3em] uppercase">{novel.chapters.length} Bab</span>
+                        <span className="text-xs font-black opacity-20 tracking-[0.3em] uppercase">
+                            {novel.type === 'WEB' ? `${novel.chapters.length} Bab` : `${novel.volumes.length} Volume`}
+                        </span>
                     </div>
 
-                    <HistoryDisplay novelId={novel.id} slug={slug} />
-                    <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
+                    {novel.type === 'WEB' ? (
+                        <>
+                            <HistoryDisplay novelId={novel.id} slug={slug} />
+                            <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
+                        </>
+                    ) : (
+                        <VolumeList volumes={novel.volumes as any} />
+                    )}
                 </div>
             </main>
 
             <footer className="max-w-6xl mx-auto px-6 py-24 border-t border-black/5 dark:border-white/5 opacity-20 text-[0.6rem] font-black tracking-[0.4em] text-center uppercase">
-
                 © 2026 Lentera Baca. Terangi ceritamu.
             </footer>
         </div>

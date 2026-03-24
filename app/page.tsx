@@ -16,88 +16,92 @@ export default async function Home() {
   const user = await currentUser();
   const theme = (user?.publicMetadata?.theme as string) || "light";
 
-  // Fetch novels for different sections
-  const [trendingNovels, latestUpdated, newestNovels] = await Promise.all([
-    // 1. Trending (Simulated for now by using a mix or specific titles if we had popularity score)
-    prisma.novel.findMany({
-      take: 10,
-      orderBy: { chapters: { _count: 'desc' } }, // More chapters as a proxy for popularity for now
-      include: { _count: { select: { chapters: true } }, genres: true }
-    }),
-    // 2. Latest Updated (by update time)
-    prisma.novel.findMany({
-      take: 10,
-      orderBy: { updatedAt: 'desc' },
-      include: { _count: { select: { chapters: true } }, genres: true }
-    }),
-    // 3. Newest (by creation time)
-    prisma.novel.findMany({
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { chapters: true } }, genres: true }
-    })
-  ]);
+    // Fetch novels for different sections
+    const [trendingRaw, latestRaw, newestRaw] = await Promise.all([
+        // 1. Trending (Simulated for now by using a mix or specific titles if we had popularity score)
+        prisma.novel.findMany({
+            take: 10,
+            orderBy: { chapters: { _count: 'desc' } }, // More chapters as a proxy for popularity for now
+            include: { _count: { select: { chapters: true, volumes: true } }, genres: true } as any
+        }),
+        // 2. Latest Updated (by update time)
+        prisma.novel.findMany({
+            take: 10,
+            orderBy: { updatedAt: 'desc' },
+            include: { _count: { select: { chapters: true, volumes: true } }, genres: true } as any
+        }),
+        // 3. Newest (by creation time)
+        prisma.novel.findMany({
+            take: 10,
+            orderBy: { createdAt: 'desc' },
+            include: { _count: { select: { chapters: true, volumes: true } }, genres: true } as any
+        })
+    ]);
 
-  const NovelSection = ({ title, icon: Icon, novels, href }: { title: string, icon: any, novels: any[], href: string }) => (
-    <section className="mb-20">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#3E2723] dark:bg-white text-white dark:text-black rounded-xl">
-            <Icon size={18} />
-          </div>
-          <h2 className="text-2xl font-black uppercase tracking-tight">{title}</h2>
-        </div>
-        <Link href={href} className="group text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 flex items-center gap-1 transition-all">
-          Lihat Semua <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
+    const trendingNovels = trendingRaw as any[];
+    const latestUpdated = latestRaw as any[];
+    const newestNovels = newestRaw as any[];
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-        {novels.map((novel) => (
-          <Link key={novel.id} href={`/novel/${novel.slug}`} className="group flex flex-col">
-            <div className="relative aspect-[10/14] overflow-hidden rounded-[2rem] bg-zinc-200 dark:bg-zinc-800 mb-4 shadow-sm group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
-              {novel.coverImage ? (
-                <img src={novel.coverImage} alt={novel.title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[0.6rem] opacity-20 uppercase font-black">No Cover</div>
-              )}
-              <div className="absolute top-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                <span className="text-[0.55rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur shadow-xl">
-                  {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}
-                </span>
-              </div>
-            </div>
-            <h3 className="text-sm font-black line-clamp-2 leading-tight tracking-tight mb-2 group-hover:text-black dark:group-hover:text-white transition-colors">{novel.title}</h3>
-            <div className="flex justify-between items-center mt-auto opacity-40 text-[0.55rem] font-black uppercase tracking-widest">
-              <span>{novel.author}</span>
-              <span>{novel._count.chapters} ch</span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-
-  return (
-    <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723] dark:bg-[#121212] dark:text-[#e0e0e0] transition-colors duration-500">
-      <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-white/70 dark:bg-black/70 z-50">
-        <div className="max-w-6xl mx-auto flex justify-between items-center gap-8">
-          <Link href="/" className="text-2xl font-black tracking-tighter shrink-0">Lentera Baca</Link>
-
-          <div className="flex items-center gap-8">
-            <div className="hidden md:flex items-center gap-8">
-              <Link href="/browse" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity flex items-center gap-2">
-                <Search size={14} /> Jelajah
-              </Link>
-              <Link href="/light-novel" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity flex items-center gap-2">
-                <BookMarked size={14} /> Light Novel
-              </Link>
-              {await isAdmin() && (
-                <Link href="/admin" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">
-                  Admin
+    const NovelSection = ({ title, icon: Icon, novels, href }: { title: string, icon: any, novels: any[], href: string }) => (
+        <section className="mb-20">
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#3E2723] dark:bg-white text-white dark:text-black rounded-xl">
+                        <Icon size={18} />
+                    </div>
+                    <h2 className="text-2xl font-black uppercase tracking-tight">{title}</h2>
+                </div>
+                <Link href={href} className="group text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 flex items-center gap-1 transition-all">
+                    Lihat Semua <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-              )}
             </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                {novels.map((novel) => (
+                    <Link key={novel.id} href={`/novel/${novel.slug}`} className="group flex flex-col">
+                        <div className="relative aspect-[10/14] overflow-hidden rounded-[2rem] bg-zinc-200 dark:bg-zinc-800 mb-4 shadow-sm group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+                            {novel.coverImage ? (
+                                <img src={novel.coverImage} alt={novel.title} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[0.6rem] opacity-20 uppercase font-black">No Cover</div>
+                            )}
+                            <div className="absolute top-4 right-4 flex flex-col items-end gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                                <span className="text-[0.45rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black backdrop-blur shadow-xl">
+                                    {novel.type}
+                                </span>
+                                <span className="text-[0.45rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur shadow-xl">
+                                    {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}
+                                </span>
+                            </div>
+                        </div>
+                        <h3 className="text-sm font-black line-clamp-2 leading-tight tracking-tight mb-2 group-hover:text-black dark:group-hover:text-white transition-colors">{novel.title}</h3>
+                        <div className="flex justify-between items-center mt-auto opacity-40 text-[0.55rem] font-black uppercase tracking-widest">
+                            <span className="truncate max-w-[60%]">{novel.author}</span>
+                            <span>{novel.type === 'WEB' ? `${novel._count.chapters} ch` : `${novel._count.volumes} vol`}</span>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+        </section>
+    );
+
+    return (
+        <div className="min-h-screen bg-[#FDFCF0] text-[#3E2723] dark:bg-[#121212] dark:text-[#e0e0e0] transition-colors duration-500 font-sans">
+            <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-white/70 dark:bg-black/70 z-50">
+                <div className="max-w-6xl mx-auto flex justify-between items-center gap-8">
+                    <Link href="/" className="text-2xl font-black tracking-tighter shrink-0">Lentera Baca</Link>
+
+                    <div className="flex items-center gap-8">
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link href="/browse" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity flex items-center gap-2">
+                                <Search size={14} /> Jelajah
+                            </Link>
+                            {await isAdmin() && (
+                                <Link href="/admin" className="text-[0.65rem] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">
+                                    Admin
+                                </Link>
+                            )}
+                        </div>
 
             <div className="h-4 w-px bg-black/10 dark:bg-white/10 hidden md:block" />
 

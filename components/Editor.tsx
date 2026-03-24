@@ -123,6 +123,7 @@ export default function Editor({ value, onChange, placeholder }: EditorProps) {
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML());
         },
+        immediatelyRender: false,
         editorProps: {
             attributes: {
                 class: "prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[200px] p-4 text-sm font-medium leading-relaxed",

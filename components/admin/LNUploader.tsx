@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { UploadButton } from "@uploadthing/react";
-import type { OurFileRouter } from "@/lib/uploadthing";
-import { FileText, Image, CheckCircle, X, Plus, Trash2 } from "lucide-react";
+import { useUploadThing } from "@/lib/uploadthing-client";
+import { FileText, X, Plus, Trash2, Loader2 } from "lucide-react";
 
 interface Volume {
     id?: string;
@@ -15,25 +14,32 @@ interface Volume {
 }
 
 interface LNUploaderProps {
-    onCoverUploaded: (url: string, key: string) => void;
     onVolumesChanged: (volumes: Volume[]) => void;
-    currentCoverUrl?: string;
-    currentCoverKey?: string;
     currentVolumes?: Volume[];
 }
 
 export default function LNUploader({
-    onCoverUploaded,
     onVolumesChanged,
-    currentCoverUrl,
-    currentCoverKey,
     currentVolumes = [],
 }: LNUploaderProps) {
-    const [coverUrl, setCoverUrl] = useState(currentCoverUrl || "");
-    const [coverKey, setCoverKey] = useState(currentCoverKey || "");
     const [volumes, setVolumes] = useState<Volume[]>(currentVolumes);
-    const [isUploadingCover, setIsUploadingCover] = useState(false);
-    const [isUploadingVolume, setIsUploadingVolume] = useState(false);
+    const { startUpload, isUploading } = useUploadThing("lightNovelUploader", {
+        onClientUploadComplete: (res) => {
+            const file = res[0];
+            if (file) {
+                const type = file.url.toLowerCase().endsWith(".epub") ? "EPUB" : "PDF";
+                addVolume({
+                    title: `Volume ${volumes.length + 1}`,
+                    fileUrl: file.url,
+                    fileKey: file.key,
+                    fileType: type as any,
+                });
+            }
+        },
+        onUploadError: (error) => {
+            alert(`Upload failed: ${error.message}`);
+        },
+    });
 
     const addVolume = (newVol: Volume) => {
         const updated = [...volumes, { ...newVol, order: volumes.length + 1 }];
@@ -47,61 +53,14 @@ export default function LNUploader({
         onVolumesChanged(updated);
     };
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await startUpload([file]);
+    };
+
     return (
         <div className="space-y-8">
-            {/* Cover Image Upload (WebP preferred) */}
-            <div className="space-y-3">
-                <label className="block text-xs font-black uppercase tracking-widest opacity-50">
-                    Cover Image <span className="text-black/30 font-bold">(WebP recommended)</span>
-                </label>
-                <div className="border-2 border-dashed border-black/10 rounded-[2.5rem] p-8 bg-white/40 group hover:border-black/20 transition-all flex flex-col items-center justify-center text-center">
-                    {coverUrl ? (
-                        <div className="relative">
-                            <img src={coverUrl} alt="cover" className="w-32 h-44 object-cover rounded-2xl shadow-2xl" />
-                            <button
-                                type="button"
-                                onClick={() => { setCoverUrl(""); setCoverKey(""); onCoverUploaded("", ""); }}
-                                className="absolute -top-2 -right-2 p-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-black transition-colors"
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="w-16 h-16 bg-black/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <Image size={32} className="text-black/20" />
-                            </div>
-                            <UploadButton<OurFileRouter, "coverUploader">
-                                endpoint="coverUploader"
-                                onUploadBegin={() => setIsUploadingCover(true)}
-                                onClientUploadComplete={(res) => {
-                                    const file = res[0];
-                                    if (file) {
-                                        setCoverUrl(file.url);
-                                        setCoverKey(file.key);
-                                        onCoverUploaded(file.url, file.key);
-                                    }
-                                    setIsUploadingCover(false);
-                                }}
-                                onUploadError={() => setIsUploadingCover(false)}
-                                appearance={{
-                                    button: {
-                                        background: "#000",
-                                        borderRadius: "1rem",
-                                        fontSize: "0.75rem",
-                                        fontWeight: "900",
-                                        letterSpacing: "0.1em",
-                                        padding: "0.8rem 2rem",
-                                    },
-                                    allowedContent: { display: "none" },
-                                }}
-                                content={{ button: isUploadingCover ? "Uploading..." : "Upload Cover Image" }}
-                            />
-                        </>
-                    )}
-                </div>
-            </div>
-
             {/* Volumes Management */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -138,39 +97,32 @@ export default function LNUploader({
                     ))}
 
                     {/* Add Volume Uploader */}
-                    <div className="border-2 border-dashed border-black/5 rounded-2xl p-6 bg-white/20 flex flex-col items-center justify-center gap-3">
-                        <FileText size={24} className="text-black/10" />
-                        <p className="text-[0.65rem] font-black uppercase tracking-widest text-black/30 mb-2">Tambah Volume Baru (PDF/EPUB)</p>
-                        <UploadButton<OurFileRouter, "lightNovelUploader">
-                            endpoint="lightNovelUploader"
-                            onUploadBegin={() => setIsUploadingVolume(true)}
-                            onClientUploadComplete={(res) => {
-                                const file = res[0];
-                                if (file) {
-                                    const type = file.url.toLowerCase().endsWith(".epub") ? "EPUB" : "PDF";
-                                    addVolume({
-                                        title: `Volume ${volumes.length + 1}`,
-                                        fileUrl: file.url,
-                                        fileKey: file.key,
-                                        fileType: type as any,
-                                    });
-                                }
-                                setIsUploadingVolume(false);
-                            }}
-                            onUploadError={() => setIsUploadingVolume(false)}
-                            appearance={{
-                                button: {
-                                    background: "#000",
-                                    borderRadius: "1rem",
-                                    fontSize: "0.75rem",
-                                    fontWeight: "900",
-                                    letterSpacing: "0.1em",
-                                    padding: "0.6rem 1.4rem",
-                                },
-                                allowedContent: { display: "none" },
-                            }}
-                            content={{ button: isUploadingVolume ? "Uploading..." : "Click to Upload File" }}
-                        />
+                    <div className="border-2 border-dashed border-black/5 rounded-[2rem] p-8 bg-white/20 flex flex-col items-center justify-center gap-4">
+                        <FileText size={32} className="text-black/10" />
+                        <div className="text-center">
+                            <p className="text-[0.7rem] font-black uppercase tracking-widest text-black/80 mb-1">Tambah Volume Baru</p>
+                            <p className="text-[0.55rem] font-bold text-black/30 uppercase tracking-[0.15em] mb-4">Maksimum 16MB • PDF/EPUB</p>
+                            
+                            <label className="relative cursor-pointer inline-block">
+                                <div className="bg-[#3E2723] text-[#F5F5DC] px-10 py-3.5 rounded-xl font-black text-[0.65rem] uppercase tracking-widest hover:opacity-80 transition-all flex items-center gap-2 shadow-xl">
+                                    {isUploading ? (
+                                        <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+                                    ) : (
+                                        <>
+                                            <Plus size={14} />
+                                            Upload File
+                                        </>
+                                    )}
+                                </div>
+                                <input
+                                    type="file"
+                                    accept=".pdf,.epub"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                    disabled={isUploading}
+                                />
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
