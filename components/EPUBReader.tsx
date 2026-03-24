@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, BookOpen, ZoomIn, ZoomOut, Maximize, Minimize, ArrowLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen, ZoomIn, ZoomOut, Maximize, Minimize, ArrowLeft, Settings } from "lucide-react";
 import Link from "next/link";
 
 const BG_THEMES = [
@@ -26,6 +26,7 @@ export default function EPUBReader({ fileUrl, title, novelSlug }: EPUBReaderProp
     const [showUI, setShowUI] = useState(true);
     const [currentCfi, setCurrentCfi] = useState<string>("");
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
     const touchStartX = useRef<number>(0);
     const touchStartY = useRef<number>(0);
     const uiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -178,7 +179,7 @@ export default function EPUBReader({ fileUrl, title, novelSlug }: EPUBReaderProp
         >
             {/* Top Bar */}
             <div
-                className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300"
+                className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between px-4 py-3 transition-all duration-300"
                 style={{
                     backgroundColor: theme.value === "night" ? "rgba(15,15,15,0.95)" : "rgba(255,255,255,0.92)",
                     backdropFilter: "blur(12px)",
@@ -188,55 +189,95 @@ export default function EPUBReader({ fileUrl, title, novelSlug }: EPUBReaderProp
                     pointerEvents: showUI ? "all" : "none",
                 }}
             >
-                <div className="flex items-center gap-4">
+                {/* Left: Back */}
+                <div className="flex items-center gap-2 z-10">
                     <Link
                         href={`/novel/${novelSlug}`}
-                        className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all"
+                        className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-all active:scale-90"
                         style={{ color: theme.text }}
-                        title="Kembali ke Novel"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={22} />
                     </Link>
-                    <div className="h-6 w-px bg-black/10 dark:bg-white/10 mx-1" />
-                    <span className="font-black text-sm uppercase tracking-widest truncate max-w-[200px]" style={{ color: theme.text }}>
+                </div>
+
+                {/* Center: Title (Responsive) */}
+                <div className="absolute left-1/2 -translate-x-1/2 px-4 py-1.5 bg-black/5 dark:bg-white/5 rounded-full border border-black/5 dark:border-white/5 max-w-[45%] md:max-w-[60%]">
+                    <span className="font-black text-[0.65rem] md:text-sm uppercase tracking-[0.2em] truncate block text-center" style={{ color: theme.text }}>
                         {title}
                     </span>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 border-r border-black/5 dark:border-white/5 pr-4 mr-2">
-                        {BG_THEMES.map((t) => (
-                            <button
-                                key={t.value}
-                                title={t.label}
-                                onClick={() => setTheme(t)}
-                                className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
-                                style={{
-                                    backgroundColor: t.bg,
-                                    borderColor: theme.value === t.value ? theme.text : "transparent",
-                                    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                                }}
-                            />
-                        ))}
-                    </div>
 
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2 z-10">
                     <button
                         onClick={toggleFullScreen}
-                        className="p-2 rounded-full hover:opacity-70 transition-opacity"
+                        className="p-2.5 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-xs font-black uppercase tracking-widest hidden md:flex items-center gap-2"
                         style={{ color: theme.text }}
-                        title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
                     >
-                        {isFullScreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                        {isFullScreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                        <span className="hidden lg:inline">{isFullScreen ? "Kecilkan" : "Layar Penuh"}</span>
+                    </button>
+                    
+                    <button
+                        onClick={() => setShowSettings(!showSettings)}
+                        className={`p-2.5 rounded-2xl transition-all active:scale-95 ${showSettings ? 'bg-black text-white dark:bg-white dark:text-black' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                        style={{ color: showSettings ? undefined : theme.text }}
+                    >
+                        <Settings size={22} />
                     </button>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => setFontSize((f) => Math.max(f - 10, 70))} className="p-2 hover:opacity-70" style={{ color: theme.text }}>
-                        <ZoomOut size={16} />
-                    </button>
-                    <span className="text-xs font-bold min-w-[3rem] text-center" style={{ color: theme.text }}>{fontSize}%</span>
-                    <button onClick={() => setFontSize((f) => Math.min(f + 10, 160))} className="p-2 hover:opacity-70" style={{ color: theme.text }}>
-                        <ZoomIn size={16} />
-                    </button>
-                </div>
+
+                {/* Settings Dropdown */}
+                {showSettings && (
+                    <div 
+                        className="absolute top-full right-4 mt-4 w-72 bg-white dark:bg-[#1A1A1A] p-6 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-black/5 animate-in fade-in slide-in-from-top-4 duration-300"
+                        style={{ color: theme.text }}
+                    >
+                        <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] opacity-30 mb-4 ml-2">Tema Bacaan</p>
+                        <div className="grid grid-cols-4 gap-3 mb-8">
+                            {BG_THEMES.map((t) => (
+                                <button
+                                    key={t.value}
+                                    onClick={() => setTheme(t)}
+                                    className="aspect-square rounded-2xl border-2 transition-all hover:scale-105 active:scale-95 flex items-center justify-center p-1"
+                                    style={{
+                                        backgroundColor: t.bg,
+                                        borderColor: theme.value === t.value ? theme.text : "transparent",
+                                    }}
+                                >
+                                    {theme.value === t.value && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: theme.text }} />}
+                                </button>
+                            ))}
+                        </div>
+
+                        <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] opacity-30 mb-4 ml-2">Ukuran Font</p>
+                        <div className="flex items-center justify-between p-2 bg-black/5 dark:bg-white/5 rounded-2xl">
+                            <button
+                                onClick={() => setFontSize((f) => Math.max(f - 10, 70))}
+                                className="p-3 rounded-xl hover:bg-black/5 transition-all active:scale-90"
+                            >
+                                <ZoomOut size={18} />
+                            </button>
+                            <span className="font-black text-xs tabular-nums tracking-widest">
+                                {fontSize}%
+                            </span>
+                            <button
+                                onClick={() => setFontSize((f) => Math.min(f + 10, 160))}
+                                className="p-3 rounded-xl hover:bg-black/5 transition-all active:scale-90"
+                            >
+                                <ZoomIn size={18} />
+                            </button>
+                        </div>
+                        
+                        <button
+                            onClick={toggleFullScreen}
+                            className="w-full mt-6 py-4 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black text-[0.6rem] uppercase tracking-widest md:hidden flex items-center justify-center gap-3"
+                        >
+                            {isFullScreen ? <Minimize size={14} /> : <Maximize size={14} />}
+                            {isFullScreen ? "Keluar Layar Penuh" : "Mode Layar Penuh"}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* EPUB Viewer */}

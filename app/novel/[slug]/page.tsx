@@ -110,15 +110,17 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                     {novel.region}
                                 </span>
                             </div>
-                            <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6">{novel.title}</h1>
-                            <div className="space-y-1 bg-black text-white p-6 rounded-2xl w-fit mb-8">
-                                <p className="text-sm font-black uppercase tracking-widest opacity-40">Penulis</p>
-                                <p className="text-xl font-black">{novel.author}</p>
+                            <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6">{novel.title}</h1>
+                            <div className="flex flex-wrap gap-x-12 gap-y-6 bg-black text-white p-8 rounded-[2rem] w-fit mb-8 shadow-xl shadow-stone-900/10">
+                                <div className="space-y-1">
+                                    <p className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Penulis</p>
+                                    <p className="text-xl font-black">{novel.author}</p>
+                                </div>
                                 {novel.illustrator && (
-                                    <>
-                                        <p className="text-sm font-black uppercase tracking-widest opacity-40 mt-3">Ilustrator</p>
+                                    <div className="space-y-1">
+                                        <p className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Ilustrator</p>
                                         <p className="text-xl font-black">{novel.illustrator}</p>
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         </div>
