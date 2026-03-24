@@ -13,6 +13,8 @@ import {
     Moon,
     BookOpen,
     X,
+    Maximize,
+    Minimize,
 } from "lucide-react";
 
 // Setup worker
@@ -38,6 +40,28 @@ export default function PDFReader({ fileUrl, title }: PDFReaderProps) {
     const [showUI, setShowUI] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [containerWidth, setContainerWidth] = useState<number>(800);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+            setIsFullScreen(true);
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                setIsFullScreen(false);
+            }
+        }
+    };
+
+    // Track full screen change
+    useEffect(() => {
+        const handleFS = () => setIsFullScreen(!!document.fullscreenElement);
+        document.addEventListener("fullscreenchange", handleFS);
+        return () => document.removeEventListener("fullscreenchange", handleFS);
+    }, []);
 
     // Swipe state
     const touchStartX = useRef<number>(0);
@@ -69,17 +93,29 @@ export default function PDFReader({ fileUrl, title }: PDFReaderProps) {
         return () => { if (uiTimerRef.current) clearTimeout(uiTimerRef.current); };
     }, [resetUITimer]);
 
-    // Keyboard navigation
+    // Keyboard navigation & Protection
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
             resetUITimer();
+            // Prevention
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
+                e.preventDefault();
+                return;
+            }
             if (e.key === "ArrowRight" || e.key === "ArrowDown") nextPage();
             if (e.key === "ArrowLeft" || e.key === "ArrowUp") prevPage();
             if (e.key === "+" || e.key === "=") zoomIn();
             if (e.key === "-") zoomOut();
         };
+
+        const handleContext = (e: MouseEvent) => e.preventDefault();
+
         window.addEventListener("keydown", handleKey);
-        return () => window.removeEventListener("keydown", handleKey);
+        window.addEventListener("contextmenu", handleContext);
+        return () => {
+            window.removeEventListener("keydown", handleKey);
+            window.removeEventListener("contextmenu", handleContext);
+        };
     });
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -145,21 +181,32 @@ export default function PDFReader({ fileUrl, title }: PDFReaderProps) {
                     </span>
                 </div>
 
-                {/* Theme Picker */}
-                <div className="flex items-center gap-2">
-                    {BG_THEMES.map((t) => (
-                        <button
-                            key={t.value}
-                            title={t.label}
-                            onClick={() => setTheme(t)}
-                            className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
-                            style={{
-                                backgroundColor: t.bg,
-                                borderColor: theme.value === t.value ? theme.text : "transparent",
-                                boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                            }}
-                        />
-                    ))}
+                {/* Theme & Fullscreen Picker */}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 border-r border-black/5 dark:border-white/5 pr-4 mr-2">
+                        {BG_THEMES.map((t) => (
+                            <button
+                                key={t.value}
+                                title={t.label}
+                                onClick={() => setTheme(t)}
+                                className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                                style={{
+                                    backgroundColor: t.bg,
+                                    borderColor: theme.value === t.value ? theme.text : "transparent",
+                                    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                                }}
+                            />
+                        ))}
+                    </div>
+                    
+                    <button
+                        onClick={toggleFullScreen}
+                        className="p-2 rounded-full hover:opacity-70 transition-opacity"
+                        style={{ color: theme.text }}
+                        title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
+                    >
+                        {isFullScreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    </button>
                 </div>
 
                 {/* Zoom Controls */}
@@ -217,7 +264,7 @@ export default function PDFReader({ fileUrl, title }: PDFReaderProps) {
                         width={Math.min(containerWidth * scale, containerWidth)}
                         renderTextLayer={true}
                         renderAnnotationLayer={true}
-                        className="shadow-2xl rounded-lg overflow-hidden"
+                        className="shadow-2xl rounded-lg overflow-hidden pointer-events-none select-none"
                     />
                 </Document>
             </div>

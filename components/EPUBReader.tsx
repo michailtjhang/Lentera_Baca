@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, BookOpen, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen, ZoomIn, ZoomOut, Maximize, Minimize } from "lucide-react";
 
 const BG_THEMES = [
     { label: "Putih", value: "white", bg: "#FFFFFF", text: "#1A1A1A" },
@@ -23,9 +23,31 @@ export default function EPUBReader({ fileUrl, title }: EPUBReaderProps) {
     const [fontSize, setFontSize] = useState(100);
     const [showUI, setShowUI] = useState(true);
     const [currentCfi, setCurrentCfi] = useState<string>("");
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const touchStartX = useRef<number>(0);
     const touchStartY = useRef<number>(0);
     const uiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+            setIsFullScreen(true);
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                setIsFullScreen(false);
+            }
+        }
+    };
+
+    // Track full screen change
+    useEffect(() => {
+        const handleFS = () => setIsFullScreen(!!document.fullscreenElement);
+        document.addEventListener("fullscreenchange", handleFS);
+        return () => document.removeEventListener("fullscreenchange", handleFS);
+    }, []);
 
     const resetUITimer = useCallback(() => {
         setShowUI(true);
@@ -107,14 +129,26 @@ export default function EPUBReader({ fileUrl, title }: EPUBReaderProps) {
         resetUITimer();
     }, [resetUITimer]);
 
-    // Keyboard
+    // Keyboard & Protection
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
+                e.preventDefault();
+                return;
+            }
             if (e.key === "ArrowRight") nextPage();
             if (e.key === "ArrowLeft") prevPage();
         };
+
+        const handleContext = (e: MouseEvent) => e.preventDefault();
+
         window.addEventListener("keydown", handleKey);
-        return () => window.removeEventListener("keydown", handleKey);
+        window.addEventListener("contextmenu", handleContext);
+        
+        return () => {
+            window.removeEventListener("keydown", handleKey);
+            window.removeEventListener("contextmenu", handleContext);
+        };
     }, [nextPage, prevPage]);
 
     function handleTouchStart(e: React.TouchEvent) {
@@ -158,20 +192,31 @@ export default function EPUBReader({ fileUrl, title }: EPUBReaderProps) {
                         {title}
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
-                    {BG_THEMES.map((t) => (
-                        <button
-                            key={t.value}
-                            title={t.label}
-                            onClick={() => setTheme(t)}
-                            className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
-                            style={{
-                                backgroundColor: t.bg,
-                                borderColor: theme.value === t.value ? theme.text : "transparent",
-                                boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                            }}
-                        />
-                    ))}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 border-r border-black/5 dark:border-white/5 pr-4 mr-2">
+                        {BG_THEMES.map((t) => (
+                            <button
+                                key={t.value}
+                                title={t.label}
+                                onClick={() => setTheme(t)}
+                                className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                                style={{
+                                    backgroundColor: t.bg,
+                                    borderColor: theme.value === t.value ? theme.text : "transparent",
+                                    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={toggleFullScreen}
+                        className="p-2 rounded-full hover:opacity-70 transition-opacity"
+                        style={{ color: theme.text }}
+                        title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
+                    >
+                        {isFullScreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    </button>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => setFontSize((f) => Math.max(f - 10, 70))} className="p-2 hover:opacity-70" style={{ color: theme.text }}>

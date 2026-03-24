@@ -1,6 +1,7 @@
 "use client";
 
-import { FileText, Download, ExternalLink } from "lucide-react";
+import { FileText, BookOpen, ExternalLink, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 interface Volume {
     id: string;
@@ -12,9 +13,10 @@ interface Volume {
 
 interface VolumeListProps {
     volumes: Volume[];
+    slug: string;
 }
 
-export default function VolumeList({ volumes }: VolumeListProps) {
+export default function VolumeList({ volumes, slug }: VolumeListProps) {
     if (volumes.length === 0) {
         return (
             <div className="bg-black/5 dark:bg-white/5 rounded-[2rem] p-12 text-center">
@@ -36,14 +38,13 @@ export default function VolumeList({ volumes }: VolumeListProps) {
                             <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] opacity-30">{vol.fileType}</span>
                         </div>
                     </div>
-                    <a
-                        href={vol.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-4 bg-black/5 dark:bg-white/10 rounded-2xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
+                    <Link
+                        href={`/novel/${slug}/volume/${vol.id}`}
+                        className="flex items-center gap-3 bg-black text-white px-6 py-3 rounded-2xl text-[0.65rem] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-black/20"
                     >
-                        <Download size={18} />
-                    </a>
+                        <BookOpen size={16} />
+                        Baca Sekarang
+                    </Link>
                 </div>
             ))}
         </div>

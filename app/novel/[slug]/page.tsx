@@ -166,14 +166,12 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                     )
                                 ) : (
                                     novel.volumes.length > 0 && (
-                                        <a
-                                            href={novel.volumes[0].fileUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <Link
+                                            href={`/novel/${slug}/volume/${novel.volumes[0].id}`}
                                             className="flex-1 flex items-center justify-center gap-3 bg-black text-white rounded-[2.5rem] font-black uppercase tracking-widest text-xs hover:opacity-80 active:scale-[0.98] transition-all"
                                         >
                                             <Play size={18} /> Mulai Baca
-                                        </a>
+                                        </Link>
                                     )
                                 )}
                                 <button className="aspect-square flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2.5rem] hover:bg-black hover:text-white transition-all active:scale-90">
@@ -216,7 +214,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
                         </>
                     ) : (
-                        <VolumeList volumes={novel.volumes as any} />
+                        <VolumeList volumes={novel.volumes as any} slug={slug} />
                     )}
                 </div>
             </main>
