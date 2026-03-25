@@ -43,52 +43,10 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
 
     return (
         <form action={action} className="space-y-6 bg-white/40 p-8 rounded-3xl border border-black/5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+                {/* Volume Selection (Top Priority) */}
                 <div className="space-y-2">
-                    <label htmlFor="title" className="text-sm font-bold uppercase tracking-widest opacity-60">Judul Chapter</label>
-                    <input
-                        type="text"
-                        name="title"
-                        id="title"
-                        required
-                        defaultValue={chapter?.title}
-                        placeholder="Contoh: Chapter 1: Awal Mula"
-                        className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <label htmlFor="order" className="text-sm font-bold uppercase tracking-widest opacity-60">Urutan (Angka)</label>
-                    <input
-                        type="number"
-                        name="order"
-                        id="order"
-                        required
-                        defaultValue={chapter?.order}
-                        className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                    />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <label htmlFor="type" className="text-sm font-bold uppercase tracking-widest opacity-60">Tipe Konten</label>
-                    <select
-                        name="type"
-                        id="type"
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
-                    >
-                        <option value="STORY">📖 Cerita Utama</option>
-                        <option value="ILLUSTRATION">🎨 Ilustrasi</option>
-                        <option value="EPILOGUE">🔚 Epilog / Afterword</option>
-                        <option value="SIDESTORY">🌟 Side Story / Spin-off</option>
-                    </select>
-                </div>
-
-                <div className="space-y-2">
-                    <label htmlFor="volumeId" className="text-sm font-bold uppercase tracking-widest opacity-60">Pilih Volume (Opsional)</label>
+                    <label htmlFor="volumeId" className="text-sm font-bold uppercase tracking-widest opacity-60">Pilih Volume (Utama)</label>
                     <select
                         name="volumeId"
                         id="volumeId"
@@ -106,6 +64,50 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
                             <option value="">Tidak ada volume tersedia</option>
                         )}
                     </select>
+                </div>
+
+                {/* Type & Order */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label htmlFor="type" className="text-sm font-bold uppercase tracking-widest opacity-60">Tipe Konten</label>
+                        <select
+                            name="type"
+                            id="type"
+                            value={type}
+                            onChange={(e) => setType(e.target.value)}
+                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
+                        >
+                            <option value="STORY">📖 Cerita Utama</option>
+                            <option value="ILLUSTRATION">🎨 Ilustrasi</option>
+                            <option value="EPILOGUE">🔚 Epilog / Afterword</option>
+                            <option value="SIDESTORY">🌟 Side Story / Spin-off</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="order" className="text-sm font-bold uppercase tracking-widest opacity-60">Urutan (Angka)</label>
+                        <input
+                            type="number"
+                            name="order"
+                            id="order"
+                            required
+                            defaultValue={chapter?.order}
+                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
+                        />
+                    </div>
+                </div>
+
+                {/* Title (Optional) */}
+                <div className="space-y-2">
+                    <label htmlFor="title" className="text-sm font-bold uppercase tracking-widest opacity-60">Judul Chapter (Opsional)</label>
+                    <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        defaultValue={chapter?.title}
+                        placeholder="Misal: Chapter 1: Awal Mula (Kosongkan jika tidak ada)"
+                        className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
+                    />
                 </div>
             </div>
 

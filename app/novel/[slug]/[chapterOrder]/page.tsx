@@ -21,9 +21,10 @@ export async function generateMetadata({ params }: PageProps) {
 
     if (!chapter) return { title: "Bab Tidak Ditemukan" };
 
+    const titleStr = chapter.title ? `: ${chapter.title}` : "";
     return {
-        title: `Bab ${chapter.order}: ${chapter.title} - ${chapter.novel.title}`,
-        description: `Baca ${chapter.novel.title} Bab ${chapter.order}: ${chapter.title} di Lentera Baca.`,
+        title: `Bab ${chapter.order}${titleStr} - ${chapter.novel.title}`,
+        description: `Baca ${chapter.novel.title} Bab ${chapter.order}${titleStr} di Lentera Baca.`,
     };
 }
 
@@ -112,7 +113,9 @@ export default async function ReaderPage({ params }: PageProps) {
                     </nav>
 
                     <h1 className="text-4xl font-black mb-4 tracking-tight leading-tight dark:text-white">{chapter.novel.title}</h1>
-                    <h2 className="text-xl font-bold opacity-60 italic dark:text-gray-400">Bab {chapter.order}: {chapter.title}</h2>
+                    <h2 className="text-xl font-bold opacity-60 italic dark:text-gray-400">
+                        Bab {chapter.order}{chapter.title ? `: ${chapter.title}` : ""}
+                    </h2>
                 </header>
 
                 <div

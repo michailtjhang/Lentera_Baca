@@ -217,6 +217,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                     <LNUploader
                         onVolumesChanged={setVolumes}
                         currentVolumes={novel?.volumes}
+                        novelType={type}
                     />
                 </div>
             )}

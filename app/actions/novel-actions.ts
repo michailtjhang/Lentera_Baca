@@ -73,8 +73,8 @@ export async function createNovel(_: any, formData: FormData) {
                 create: volumesData.map((v: any, index: number) => ({
                     title: v.title,
                     order: v.order || index + 1,
-                    fileUrl: v.fileUrl,
-                    fileKey: v.fileKey,
+                    fileUrl: v.fileUrl || null,
+                    fileKey: v.fileKey || null,
                     fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
                 })),
             },
@@ -173,16 +173,16 @@ export async function updateNovel(novelId: string, formData: FormData) {
                     data: {
                         title: v.title,
                         order: v.order,
-                        fileUrl: v.fileUrl,
-                        fileKey: v.fileKey,
+                        fileUrl: v.fileUrl || null,
+                        fileKey: v.fileKey || null,
                         fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
                     }
                 })),
                 create: volumesToCreate.map((v: any, index: number) => ({
                     title: v.title,
                     order: v.order || (currentVolumes.length + index + 1),
-                    fileUrl: v.fileUrl,
-                    fileKey: v.fileKey,
+                    fileUrl: v.fileUrl || null,
+                    fileKey: v.fileKey || null,
                     fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
                 })),
             },
@@ -227,20 +227,20 @@ export async function deleteNovel(novelId: string) {
 export async function createChapter(novelId: string, formData: FormData) {
     await checkAdmin();
 
-    const title = formData.get("title") as string;
+    const title = (formData.get("title") as string) || null;
     const content = formData.get("content") as string;
     const order = parseInt(formData.get("order") as string);
     const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
     const volumeId = formData.get("volumeId") as string || null;
 
-    if (!title || !content || isNaN(order)) {
-        throw new Error("Title, Content, and Order (number) are required");
+    if (!content || isNaN(order)) {
+        throw new Error("Konten dan Urutan (angka) wajib diisi");
     }
 
     const chapter = await prisma.chapter.create({
-        data: { title, content, order, type, novelId, volumeId },
+        data: { title, content, order, type, novelId, volumeId } as any,
         include: { novel: true }
-    });
+    }) as any;
 
     revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");
@@ -250,21 +250,21 @@ export async function createChapter(novelId: string, formData: FormData) {
 export async function updateChapter(chapterId: string, formData: FormData) {
     await checkAdmin();
 
-    const title = formData.get("title") as string;
+    const title = (formData.get("title") as string) || null;
     const content = formData.get("content") as string;
     const order = parseInt(formData.get("order") as string);
     const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
     const volumeId = formData.get("volumeId") as string || null;
 
-    if (!title || !content || isNaN(order)) {
-        throw new Error("Title, Content, and Order (number) are required");
+    if (!content || isNaN(order)) {
+        throw new Error("Konten dan Urutan (angka) wajib diisi");
     }
 
     const chapter = await prisma.chapter.update({
         where: { id: chapterId },
-        data: { title, content, order, type, volumeId },
+        data: { title, content, order, type, volumeId } as any,
         include: { novel: true }
-    });
+    }) as any;
 
     revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");

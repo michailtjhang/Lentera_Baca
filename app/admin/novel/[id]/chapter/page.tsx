@@ -98,7 +98,7 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                                                 <span className="text-xs font-bold opacity-40 italic">Linked</span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <p className="text-sm font-bold">{item.title}</p>
+                                                <p className="text-sm font-bold">{item.title || `Chapter ${item.order}`}</p>
                                             </td>
                                             <td className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest opacity-30">
                                                 {new Date(item.updatedAt).toLocaleDateString('id-ID')}
@@ -145,7 +145,7 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                                             <span className="text-xs font-bold opacity-20 italic">-</span>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <p className="text-sm font-bold">{chapter.title}</p>
+                                            <p className="text-sm font-bold">{chapter.title || `Chapter ${chapter.order}`}</p>
                                         </td>
                                         <td className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest opacity-30">
                                             {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}

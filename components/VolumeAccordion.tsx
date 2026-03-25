@@ -7,7 +7,7 @@ import { ChapterType } from "@prisma/client";
 
 interface Chapter {
     id: string;
-    title: string;
+    title?: string | null;
     order: number;
     type: ChapterType;
 }
@@ -69,7 +69,7 @@ export default function VolumeAccordion({ volumes, standaloneChapters, slug, nov
             <div className="flex-1">
                 <div className="flex items-center gap-2">
                     {getChapterIcon(chapter.type)}
-                    <h3 className="text-sm font-bold truncate">{chapter.title}</h3>
+                    <h3 className="text-sm font-bold truncate">{chapter.title || `Chapter ${chapter.order}`}</h3>
                 </div>
                 {getChapterBadge(chapter.type) && (
                     <span className="text-[0.5rem] font-black uppercase tracking-widest opacity-40 mt-1 block">

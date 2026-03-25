@@ -64,7 +64,7 @@ model Tag {
 
 model Chapter {
   id        String      @id @default(cuid())
-  title     String
+  title     String?
   content   String      @db.Text
   order     Int
   type      ChapterType @default(STORY)
