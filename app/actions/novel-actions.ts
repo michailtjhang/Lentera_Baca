@@ -123,14 +123,22 @@ export async function updateNovel(novelId: string, formData: FormData) {
         await utapi.deleteFiles(currentNovel.coverImageKey);
     }
 
-    // Volume cleanup for PDF/EPUB
-    const currentVolumeKeys = currentNovel.volumes.map(v => v.fileKey).filter((key): key is string => !!key);
-    const nextVolumeKeys = volumesData.map((v: any) => v.fileKey).filter(Boolean);
-    const keysToDelete = currentVolumeKeys.filter(key => !nextVolumeKeys.includes(key));
+    // Volume matching and cleanup
+    const currentVolumes = currentNovel.volumes;
+    const incomingVolumes = volumesData;
+
+    // 1. Identify volumes to delete
+    const incomingIds = incomingVolumes.filter((v: any) => v.id).map((v: any) => v.id);
+    const volumesToDelete = currentVolumes.filter(v => !incomingIds.includes(v.id));
+    const keysToDelete = volumesToDelete.map(v => v.fileKey).filter((key): key is string => !!key);
 
     if (keysToDelete.length > 0) {
         await utapi.deleteFiles(keysToDelete);
     }
+
+    // 2. Separate incoming volumes into Updates and Creates
+    const volumesToUpdate = incomingVolumes.filter((v: any) => v.id);
+    const volumesToCreate = incomingVolumes.filter((v: any) => !v.id);
 
     const updated = await prisma.novel.update({
         where: { id: novelId },
@@ -159,10 +167,20 @@ export async function updateNovel(novelId: string, formData: FormData) {
                 }))
             },
             volumes: {
-                deleteMany: {},
-                create: volumesData.map((v: any, index: number) => ({
+                deleteMany: { id: { in: volumesToDelete.map(v => v.id) } },
+                update: volumesToUpdate.map((v: any) => ({
+                    where: { id: v.id },
+                    data: {
+                        title: v.title,
+                        order: v.order,
+                        fileUrl: v.fileUrl,
+                        fileKey: v.fileKey,
+                        fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
+                    }
+                })),
+                create: volumesToCreate.map((v: any, index: number) => ({
                     title: v.title,
-                    order: v.order || index + 1,
+                    order: v.order || (currentVolumes.length + index + 1),
                     fileUrl: v.fileUrl,
                     fileKey: v.fileKey,
                     fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),

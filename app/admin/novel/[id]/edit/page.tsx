@@ -23,7 +23,8 @@ export default async function EditNovelPage({ params }: { params: Promise<{ id: 
         where: { id },
         include: {
             genres: true,
-            tags: true
+            tags: true,
+            volumes: { orderBy: { order: "asc" } }
         }
     });
 

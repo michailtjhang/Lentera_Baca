@@ -82,7 +82,7 @@ export default function LNUploader({
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-black text-sm truncate">{vol.title}</h4>
                                 <p className="text-[0.6rem] font-bold text-black/30 uppercase tracking-widest">
-                                    {vol.fileType} • {vol.fileKey.slice(0, 15)}...
+                                    {vol.fileType} • {vol.fileKey ? `${vol.fileKey.slice(0, 15)}...` : "Grouping Volume"}
                                 </p>
                             </div>
                             <button

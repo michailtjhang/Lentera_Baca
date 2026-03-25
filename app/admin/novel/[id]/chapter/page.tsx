@@ -20,6 +20,13 @@ export default async function ChapterManagementPage({ params }: { params: Promis
 
     if (!novel) notFound();
 
+    const typeLabels: Record<string, string> = {
+        STORY: "📖 Cerita",
+        ILLUSTRATION: "🎨 Ilustrasi",
+        EPILOGUE: "🔚 Epilog",
+        SIDESTORY: "🌟 Side Story",
+    };
+
     return (
         <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723]">
             <nav className="border-b border-black/5 px-6 py-4 backdrop-blur-sm sticky top-0 bg-white/50 z-50">
@@ -64,7 +71,9 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                                         </span>
                                     </td>
                                     <td className="py-4 px-6">
-                                        <span className="text-xs font-bold opacity-60">{chapter.type}</span>
+                                        <span className="text-xs font-bold opacity-70 whitespace-nowrap">
+                                            {typeLabels[chapter.type] || chapter.type}
+                                        </span>
                                     </td>
                                     <td className="py-4 px-6">
                                         <span className="text-xs font-bold opacity-60 italic">{chapter.volume?.title || "-"}</span>
