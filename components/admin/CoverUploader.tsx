@@ -41,7 +41,8 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
                     canvas.toBlob(
                         (blob) => {
                             if (blob) {
-                                const webpFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                                const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+                                const webpFile = new File([blob], `${uniqueId}.webp`, {
                                     type: "image/webp",
                                 });
                                 resolve(webpFile);
@@ -64,10 +65,19 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
         
         try {
             const processedFile = file.type === "image/webp" ? file : await convertToWebP(file);
-            await startUpload([processedFile]);
+            
+            // Ensure unique name even if already webp
+            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            const extension = processedFile.name.split('.').pop();
+            const renamedFile = new File([processedFile], `${uniqueId}.${extension}`, { type: processedFile.type });
+            
+            await startUpload([renamedFile]);
         } catch (error) {
             console.error("Image processing error:", error);
-            await startUpload([file]); // Fallback to original file
+            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            const extension = file.name.split('.').pop();
+            const renamedFile = new File([file], `${uniqueId}.${extension}`, { type: file.type });
+            await startUpload([renamedFile]);
         }
     };
 

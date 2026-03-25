@@ -45,7 +45,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        await startUpload([file]);
+
+        const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        const extension = file.name.split('.').pop();
+        const renamedFile = new File([file], `${uniqueId}.${extension}`, { type: file.type });
+
+        await startUpload([renamedFile]);
     };
 
     const toggleButton = (action: string, options?: any) => (e: React.MouseEvent) => {

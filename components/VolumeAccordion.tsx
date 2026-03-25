@@ -124,7 +124,7 @@ export default function VolumeAccordion({ volumes, standaloneChapters, slug, nov
                                 {vol.chapters.length > 0 ? (
                                     vol.chapters.map(renderChapterLink)
                                 ) : (
-                                    <div className="p-8 text-center opacity-40 italic text-sm">Belum ada bab di volume ini.</div>
+                                    <div className="p-8 text-center opacity-40 italic text-sm">Belum ada chapter di volume ini.</div>
                                 )}
                             </div>
                         </div>

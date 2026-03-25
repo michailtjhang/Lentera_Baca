@@ -32,15 +32,15 @@ export default async function EditChapterPage({
         <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723]">
             <nav className="border-b border-black/5 px-6 py-4 backdrop-blur-sm sticky top-0 bg-white/50 z-50">
                 <div className="max-w-2xl mx-auto flex justify-between items-center">
-                    <Link href={`/admin/novel/${id}/chapter`} className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity">← Kembali ke Daftar Bab</Link>
+                    <Link href={`/admin/novel/${id}/chapter`} className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity">← Kembali ke Daftar Chapter</Link>
                 </div>
             </nav>
 
             <main className="max-w-2xl mx-auto px-6 py-12">
                 <header className="mb-8">
                     <span className="text-xs font-bold uppercase tracking-widest opacity-40">Novel: {novel.title}</span>
-                    <h2 className="text-3xl font-extrabold mb-2 tracking-tight">Edit Bab</h2>
-                    <p className="opacity-70">Ubah judul, urutan, atau isi konten untuk bab ini.</p>
+                    <h2 className="text-3xl font-extrabold mb-2 tracking-tight">Edit Chapter</h2>
+                    <p className="opacity-70">Ubah judul, urutan, atau isi konten untuk chapter ini.</p>
                 </header>
 
                 <AdminChapterForm

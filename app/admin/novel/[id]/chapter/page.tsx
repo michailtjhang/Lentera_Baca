@@ -38,15 +38,15 @@ export default async function ChapterManagementPage({ params }: { params: Promis
             <main className="max-w-4xl mx-auto px-6 py-12">
                 <header className="flex justify-between items-end mb-12">
                     <div>
-                        <span className="text-xs font-bold uppercase tracking-widest opacity-40">Manajemen Bab</span>
+                        <span className="text-xs font-bold uppercase tracking-widest opacity-40">Manajemen Chapter</span>
                         <h2 className="text-4xl font-extrabold mb-2 tracking-tight">{novel.title}</h2>
-                        <p className="text-lg opacity-70">Kelola daftar bab dan konten untuk novel ini.</p>
+                        <p className="text-lg opacity-70">Kelola daftar chapter dan konten untuk novel ini.</p>
                     </div>
                     <Link
                         href={`/admin/novel/${novel.id}/chapter/new`}
                         className="bg-[#3E2723] text-[#F5F5DC] px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95"
                     >
-                        + Tambah Bab Baru
+                        + Tambah Chapter Baru
                     </Link>
                 </header>
 
@@ -57,7 +57,7 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                                 <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Urutan</th>
                                 <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Tipe</th>
                                 <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Volume</th>
-                                <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Judul Bab</th>
+                                <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Judul Chapter</th>
                                 <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Update</th>
                                 <th className="py-4 px-6 text-right font-bold uppercase text-xs tracking-widest opacity-60">Aksi</th>
                             </tr>
@@ -115,7 +115,7 @@ export default async function ChapterManagementPage({ params }: { params: Promis
 
                     {novel.chapters.length === 0 && (
                         <div className="p-12 text-center">
-                            <p className="opacity-70">Belum ada bab untuk novel ini.</p>
+                            <p className="opacity-70">Belum ada chapter untuk novel ini.</p>
                         </div>
                     )}
                 </div>
