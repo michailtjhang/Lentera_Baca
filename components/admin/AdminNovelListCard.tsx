@@ -88,13 +88,15 @@ export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
                         <Settings size={18} className="group-hover/btn:rotate-90 transition-transform duration-500" />
                     </Link>
                     
-                    <Link
-                        href={`/admin/novel/${novel.id}/chapter`}
-                        className="p-3 text-[#3E2723]/40 hover:text-[#3E2723] hover:bg-white rounded-xl transition-all"
-                        title="Manage Chapters"
-                    >
-                        <List size={18} />
-                    </Link>
+                    {novel.type !== "PDF" && novel.type !== "EPUB" && (
+                        <Link
+                            href={`/admin/novel/${novel.id}/chapter`}
+                            className="p-3 text-[#3E2723]/40 hover:text-[#3E2723] hover:bg-white rounded-xl transition-all"
+                            title="Manage Chapters"
+                        >
+                            <List size={18} />
+                        </Link>
+                    )}
                 </div>
 
                 <Link

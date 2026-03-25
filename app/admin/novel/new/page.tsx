@@ -51,6 +51,7 @@ export default async function NewNovelPage({
                         tagSuggestions={tagSuggestions}
                         predefinedGenres={genreSuggestions}
                         mode="create"
+                        isLightNovel={true}
                     />
                 ) : (
                     <WebNovelForm

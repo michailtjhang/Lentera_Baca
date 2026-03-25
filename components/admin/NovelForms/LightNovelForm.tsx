@@ -15,7 +15,7 @@ export default function LightNovelForm(props: any) {
                     <p className="text-sm opacity-50 font-bold uppercase tracking-widest">Struktur berbasis Volume & Grouping</p>
                 </div>
             </header>
-            <BaseNovelForm {...props} isLightNovel={true} />
+            <BaseNovelForm {...props} />
         </div>
     );
 }

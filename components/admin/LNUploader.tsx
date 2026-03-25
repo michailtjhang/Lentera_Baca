@@ -50,8 +50,16 @@ export default function LNUploader({
         onVolumesChanged(updated);
     };
 
+    const updateVolumeTitle = (index: number, newTitle: string) => {
+        const updated = [...volumes];
+        updated[index].title = newTitle;
+        setVolumes(updated);
+        onVolumesChanged(updated);
+    };
+
     const removeVolume = (index: number) => {
-        const updated = volumes.filter((_, i) => i !== index);
+        const remaining = volumes.filter((_, i) => i !== index);
+        const updated = remaining.map((v, i) => ({ ...v, order: i + 1 }));
         setVolumes(updated);
         onVolumesChanged(updated);
     };
@@ -83,20 +91,26 @@ export default function LNUploader({
                 {/* List of Volumes */}
                 <div className="space-y-3">
                     {volumes.map((vol, idx) => (
-                        <div key={idx} className="flex items-center gap-4 bg-white/60 border border-black/5 p-4 rounded-2xl shadow-sm">
-                            <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center font-black text-xs">
+                        <div key={idx} className="flex items-center gap-4 bg-white/60 border border-black/5 p-4 rounded-2xl shadow-sm group/item">
+                            <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center font-black text-xs shrink-0">
                                 {idx + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h4 className="font-black text-sm truncate">{vol.title}</h4>
-                                <p className="text-[0.6rem] font-bold text-black/30 uppercase tracking-widest">
-                                    {vol.fileType} • {vol.fileKey ? `${vol.fileKey.slice(0, 15)}...` : "Grouping Volume"}
+                                <input
+                                    type="text"
+                                    value={vol.title}
+                                    onChange={(e) => updateVolumeTitle(idx, e.target.value)}
+                                    placeholder="Judul Volume..."
+                                    className="w-full bg-transparent font-black text-sm outline-none border-b border-transparent focus:border-black/10 pb-1"
+                                />
+                                <p className="text-[0.6rem] font-bold text-black/30 uppercase tracking-widest mt-1">
+                                    {vol.fileType || "Grouping"} • {vol.fileKey ? `${vol.fileKey.slice(0, 15)}...` : "Manual Entry"}
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => removeVolume(idx)}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover/item:opacity-100"
                                 title="Remove Volume"
                             >
                                 <Trash2 size={18} />
@@ -169,10 +183,16 @@ export default function LNUploader({
                 </div>
             </div>
             
-            <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl">
-                <p className="text-[0.6rem] font-black uppercase tracking-widest text-amber-600 leading-relaxed text-center">
-                    ⚠️ Menghapus volume di sini akan menghapus file aslinya di storage cloud setelah Anda menekan tombol "Simpan" di bawah.
+            <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-[2rem] space-y-3">
+                <p className="text-[0.65rem] font-black uppercase tracking-widest text-amber-700 text-center flex items-center justify-center gap-2">
+                    <span className="w-5 h-5 bg-amber-500 text-white rounded-full flex items-center justify-center italic font-serif">i</span>
+                    Tips Penggunaan
                 </p>
+                <ul className="text-[0.6rem] font-bold text-amber-600 space-y-2 opacity-80 px-4">
+                    <li>• File pertama yang diupload akan otomatis dinamai "Volume 1", file kedua "Volume 2", dst.</li>
+                    <li>• Anda dapat mengecilkan atau mengubah nama volume (misal: "Edisi Khusus") langsung pada daftar di atas.</li>
+                    <li>• Menghapus volume di sini akan menghapus file aslinya di storage cloud setelah Anda menekan tombol "Simpan" di bawah.</li>
+                </ul>
             </div>
         </div>
     );
