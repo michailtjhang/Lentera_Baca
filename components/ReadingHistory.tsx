@@ -6,7 +6,7 @@ interface ReadingHistoryProps {
     novelId: string;
     chapterId: string;
     chapterOrder: number;
-    chapterTitle: string;
+    chapterTitle: string | null;
 }
 
 export default function ReadingHistory({ novelId, chapterId, chapterOrder, chapterTitle }: ReadingHistoryProps) {
@@ -20,7 +20,7 @@ export default function ReadingHistory({ novelId, chapterId, chapterOrder, chapt
                 ...currentHistory[novelId],
                 chapterId,
                 chapterOrder,
-                chapterTitle,
+                chapterTitle: chapterTitle || `Chapter ${chapterOrder}`,
                 timestamp: Date.now(),
                 // Store all read chapter IDs in an array for that novel
                 readChapters: Array.from(new Set([...(currentHistory[novelId]?.readChapters || []), chapterId]))

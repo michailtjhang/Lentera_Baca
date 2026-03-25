@@ -129,10 +129,10 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                             onChange={(e) => setType(e.target.value)}
                             className={inputClass}
                         >
-                            <option value={NovelType.WEB}>Web Novel (Chapter)</option>
-                            <option value={"LIGHTNOVEL"}>Light Novel (Volume)</option>
-                            <option value={NovelType.PDF}>Light Novel (PDF)</option>
-                            <option value={NovelType.EPUB}>Light Novel (EPUB)</option>
+                            <option value="WEB">Web Novel (Chapter)</option>
+                            <option value="LIGHTNOVEL">Light Novel (Volume)</option>
+                            <option value="PDF">Light Novel (PDF)</option>
+                            <option value="EPUB">Light Novel (EPUB)</option>
                         </select>
                     </div>
                     <div className="space-y-2">
