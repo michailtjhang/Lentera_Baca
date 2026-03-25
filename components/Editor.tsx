@@ -4,6 +4,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
+import { useUploadThing } from "@/lib/uploadthing-client";
 import { 
     Bold, 
     Italic, 
@@ -14,7 +16,9 @@ import {
     Redo,
     Heading1,
     Heading2,
-    Quote
+    Quote,
+    Image as ImageIcon,
+    Loader2
 } from "lucide-react";
 
 interface EditorProps {
@@ -24,7 +28,25 @@ interface EditorProps {
 }
 
 const MenuBar = ({ editor }: { editor: any }) => {
+    const { startUpload, isUploading } = useUploadThing("illustrationUploader", {
+        onClientUploadComplete: (res) => {
+            const file = res[0];
+            if (file && editor) {
+                editor.chain().focus().setImage({ src: file.url }).run();
+            }
+        },
+        onUploadError: (error) => {
+            alert(`Gagal mengunggah gambar: ${error.message}`);
+        },
+    });
+
     if (!editor) return null;
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await startUpload([file]);
+    };
 
     const toggleButton = (action: string, options?: any) => (e: React.MouseEvent) => {
         e.preventDefault();
@@ -106,6 +128,20 @@ const MenuBar = ({ editor }: { editor: any }) => {
                 icon={Redo} 
                 title="Redo" 
             />
+            <div className="w-px h-4 bg-black/10 dark:bg-white/20 mx-1" />
+            
+            <label className="cursor-pointer">
+                <div className={`p-2 rounded-lg transition-all ${isUploading ? "opacity-40 animate-pulse" : "hover:bg-black/5 dark:hover:bg-white/5 opacity-60 hover:opacity-100"}`}>
+                    {isUploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
+                </div>
+                <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleFileChange} 
+                    disabled={isUploading} 
+                />
+            </label>
         </div>
     );
 };
@@ -115,6 +151,11 @@ export default function Editor({ value, onChange, placeholder }: EditorProps) {
         extensions: [
             StarterKit,
             Underline,
+            Image.configure({
+                HTMLAttributes: {
+                    class: "rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto",
+                },
+            }),
             Link.configure({
                 openOnClick: false,
             }),

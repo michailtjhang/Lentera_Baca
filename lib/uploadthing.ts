@@ -11,10 +11,16 @@ export const ourFileRouter = {
     return { url: file.ufsUrl, key: file.key };
   }),
 
-  // Upload light novel file (PDF utama, EPUB bonus, max 100MB)
   lightNovelUploader: f({
     pdf: { maxFileSize: "16MB", maxFileCount: 1 },
     blob: { maxFileSize: "16MB", maxFileCount: 1 },
+  }).onUploadComplete(async ({ file }) => {
+    return { url: file.ufsUrl, key: file.key };
+  }),
+
+  // Upload illustration for chapters
+  illustrationUploader: f({
+    image: { maxFileSize: "8MB", maxFileCount: 1 },
   }).onUploadComplete(async ({ file }) => {
     return { url: file.ufsUrl, key: file.key };
   }),
