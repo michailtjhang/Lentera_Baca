@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Editor from "@/components/Editor";
 import { useUploadThing } from "@/lib/uploadthing-client";
-import { Image as ImageIcon, Loader2, Trash2 } from "lucide-react";
+import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
+import { convertToWebP } from "@/lib/image-utils";
 
 interface ChapterFormProps {
     chapter?: any;
@@ -14,15 +15,36 @@ interface ChapterFormProps {
 export default function AdminChapterForm({ chapter, volumes = [], action }: ChapterFormProps) {
     const [content, setContent] = useState(chapter?.content || "");
     const [type, setType] = useState(chapter?.type || "STORY");
+
+    // For Illustration multi-image management
+    const [images, setImages] = useState<string[]>(() => {
+        if (chapter?.type === "ILLUSTRATION") {
+            const regex = /src="([^"]+)"/g;
+            const urls = [];
+            let match;
+            while ((match = regex.exec(chapter.content || "")) !== null) {
+                urls.push(match[1]);
+            }
+            return urls;
+        }
+        return [];
+    });
+
+    const syncImagesToContent = (newImages: string[]) => {
+        const html = newImages.map(url => 
+            `<img src="${url}" alt="illustration" class="rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto" />`
+        ).join('\n');
+        setContent(html);
+    };
     
     // For specialized Illustration upload
     const { startUpload, isUploading } = useUploadThing("illustrationUploader", {
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {
-                // For illustrations, we set the content to the image HTML
-                const imgHtml = `<img src="${file.url}" alt="illustration" class="rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto" />`;
-                setContent(imgHtml);
+                const newImages = [...images, file.url];
+                setImages(newImages);
+                syncImagesToContent(newImages);
             }
         },
         onUploadError: (error) => {
@@ -34,11 +56,33 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-        const extension = file.name.split('.').pop();
-        const renamedFile = new File([file], `${uniqueId}.${extension}`, { type: file.type });
+        try {
+            // Convert to WebP on client side
+            const webpFile = await convertToWebP(file);
+            
+            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            const renamedFile = new File([webpFile], `${uniqueId}.webp`, { type: "image/webp" });
 
-        await startUpload([renamedFile]);
+            await startUpload([renamedFile]);
+        } catch (err) {
+            alert("Gagal memproses gambar: " + (err as any).message);
+        }
+    };
+
+    const moveImage = (index: number, direction: 'up' | 'down') => {
+        const newImages = [...images];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= newImages.length) return;
+
+        [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
+        setImages(newImages);
+        syncImagesToContent(newImages);
+    };
+
+    const removeImage = (index: number) => {
+        const newImages = images.filter((_, i) => i !== index);
+        setImages(newImages);
+        syncImagesToContent(newImages);
     };
 
     return (
@@ -112,44 +156,91 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
             </div>
 
             {type === "ILLUSTRATION" ? (
-                <div className="space-y-4">
-                    <label className="text-sm font-bold uppercase tracking-widest opacity-60">Upload Ilustrasi</label>
-                    <div className="border-2 border-dashed border-black/10 rounded-[2rem] p-10 bg-white/40 flex flex-col items-center justify-center text-center">
-                        {content ? (
-                            <div className="relative group/img max-w-sm">
-                                <div dangerouslySetInnerHTML={{ __html: content }} className="prose-img:m-0" />
-                                <button
-                                    type="button"
-                                    onClick={() => setContent("")}
-                                    className="absolute -top-4 -right-4 bg-red-500 text-white p-2 rounded-full shadow-xl hover:bg-black transition-all"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="w-16 h-16 bg-black/5 rounded-2xl flex items-center justify-center mb-4">
-                                    <ImageIcon size={32} className="text-black/20" />
-                                </div>
-                                <label className="relative cursor-pointer">
-                                    <div className="bg-[#3E2723] text-[#F5F5DC] px-10 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-80 transition-all flex items-center gap-2 shadow-xl">
-                                        {isUploading ? (
-                                            <><Loader2 size={16} className="animate-spin" /> Uploading...</>
-                                        ) : (
-                                            "Pilih Gambar"
-                                        )}
-                                    </div>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleIllustrationChange}
-                                        disabled={isUploading}
-                                    />
-                                </label>
-                            </>
-                        )}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold uppercase tracking-widest opacity-60">Daftar Ilustrasi (Bisa Diurutkan)</label>
+                        <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 px-3 py-1 bg-black/5 rounded-full">
+                            {images.length} Gambar
+                        </span>
                     </div>
+
+                    {/* Image List */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {images.map((url, idx) => (
+                            <div key={idx} className="relative group rounded-2xl overflow-hidden bg-white/40 border border-black/5 aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-500">
+                                <img src={url} alt={`Illustration ${idx}`} className="w-full h-full object-cover" />
+                                
+                                {/* Controls Overlay */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => moveImage(idx, 'up')}
+                                            disabled={idx === 0}
+                                            className="p-2 bg-white/20 text-white rounded-lg hover:bg-white/40 disabled:opacity-20 transition-all"
+                                            title="Pindah ke Atas"
+                                        >
+                                            <ArrowUp size={16} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => moveImage(idx, 'down')}
+                                            disabled={idx === images.length - 1}
+                                            className="p-2 bg-white/20 text-white rounded-lg hover:bg-white/40 disabled:opacity-20 transition-all"
+                                            title="Pindah ke Bawah"
+                                        >
+                                            <ArrowDown size={16} />
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeImage(idx)}
+                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl text-[0.65rem] font-black uppercase tracking-widest hover:bg-black transition-all"
+                                    >
+                                        <Trash2 size={14} /> Hapus
+                                    </button>
+                                    <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-xs font-black shadow-lg">
+                                        {idx + 1}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Upload Button */}
+                        <label className={`relative cursor-pointer border-2 border-dashed border-black/10 rounded-2xl flex flex-col items-center justify-center p-8 bg-black/5 hover:bg-black/10 transition-all aspect-[3/4] ${isUploading ? 'pointer-events-none' : ''}`}>
+                            {isUploading ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <Loader2 className="animate-spin text-black/20" size={32} />
+                                    <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-20">Uploading...</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                                        <Plus size={20} className="text-[#3E2723]" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-[0.65rem] font-black uppercase tracking-widest opacity-60">Tambah Gambar</p>
+                                        <p className="text-[0.5rem] font-bold opacity-30 mt-1">WebP Auto-Convert</p>
+                                    </div>
+                                </div>
+                            )}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleIllustrationChange}
+                                disabled={isUploading}
+                            />
+                        </label>
+                    </div>
+
+                    {/* Hint */}
+                    <div className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center">
+                        <p className="text-[0.6rem] font-black uppercase tracking-widest text-blue-500/60 leading-relaxed">
+                            💡 Gunakan tombol panah di setiap gambar untuk merubah urutan tampilan pada halaman reader.
+                        </p>
+                    </div>
+
                     <input type="hidden" name="content" value={content} />
                 </div>
             ) : (
