@@ -3,6 +3,7 @@ import { checkAdmin } from "@/lib/admin";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteChapter } from "@/app/actions/novel-actions";
+import { NovelType } from "@prisma/client";
 
 export default async function ChapterManagementPage({ params }: { params: Promise<{ id: string }> }) {
     await checkAdmin();
@@ -63,53 +64,116 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-black/5">
-                            {novel.chapters.map((chapter) => (
-                                <tr key={chapter.id} className="hover:bg-white/40 transition-colors">
-                                    <td className="py-4 px-6">
-                                        <span className="text-sm font-semibold px-2 py-1 bg-black/5 rounded-md">
-                                            {chapter.order}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 px-6">
-                                        <span className="text-xs font-bold opacity-70 whitespace-nowrap">
-                                            {typeLabels[chapter.type] || chapter.type}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 px-6">
-                                        <span className="text-xs font-bold opacity-60 italic">{chapter.volume?.title || "-"}</span>
-                                    </td>
-                                    <td className="py-4 px-6">
-                                        <p className="font-bold">{chapter.title}</p>
-                                    </td>
-                                    <td className="py-4 px-6 text-[10px] opacity-40">
-                                        {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}
-                                    </td>
-                                    <td className="py-4 px-6 text-right">
-                                        <div className="flex gap-2 justify-end">
-                                            <Link
-                                                href={`/admin/novel/${novel.id}/chapter/${chapter.id}/edit`}
-                                                className="text-xs font-bold border border-black/10 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
-                                            >
-                                                Edit
-                                            </Link>
-                                            {/* We can use a client component for delete or just a link for now if we want to keep it simple, 
-                                                but a server action with a form is better for no-js. 
-                                                Let's stick to links for editing and simple action for delete. */}
-                                            <form action={async () => {
-                                                "use server";
-                                                await deleteChapter(chapter.id);
-                                            }}>
-                                                <button
-                                                    type="submit"
-                                                    className="text-xs font-bold text-red-600 border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                            {novel.type === ("LIGHTNOVEL" as any) ? (
+                                // Grouped view for Light Novels
+                                novel.chapters.reduce((acc: any[], chapter: any) => {
+                                    const lastVol = acc[acc.length - 1]?.volumeId;
+                                    if (chapter.volumeId !== lastVol) {
+                                        acc.push({ isHeader: true, volume: chapter.volume, volumeId: chapter.volumeId });
+                                    }
+                                    acc.push(chapter);
+                                    return acc;
+                                }, []).map((item, idx) => (
+                                    item.isHeader ? (
+                                        <tr key={`header-${idx}`} className="bg-black/5">
+                                            <td colSpan={6} className="py-3 px-6">
+                                                <span className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-[#3E2723]/40">
+                                                    📦 {item.volume?.title || "Tanpa Volume"}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        <tr key={item.id} className="hover:bg-white/40 transition-colors">
+                                            <td className="py-4 px-6">
+                                                <span className="text-xs font-bold px-2 py-1 bg-black/5 rounded-md">
+                                                    {item.order}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <span className="text-xs font-bold opacity-70 whitespace-nowrap">
+                                                    {typeLabels[item.type] || item.type}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <span className="text-xs font-bold opacity-40 italic">Linked</span>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <p className="text-sm font-bold">{item.title}</p>
+                                            </td>
+                                            <td className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest opacity-30">
+                                                {new Date(item.updatedAt).toLocaleDateString('id-ID')}
+                                            </td>
+                                            <td className="py-4 px-6 text-right">
+                                                <div className="flex gap-2 justify-end">
+                                                    <Link
+                                                        href={`/admin/novel/${novel.id}/chapter/${item.id}/edit`}
+                                                        className="text-[0.65rem] font-black uppercase tracking-widest border border-black/10 px-4 py-2 rounded-xl hover:bg-black hover:text-white transition-all"
+                                                    >
+                                                        Edit
+                                                    </Link>
+                                                    <form action={async () => {
+                                                        "use server";
+                                                        await deleteChapter(item.id);
+                                                    }}>
+                                                        <button
+                                                            type="submit"
+                                                            className="text-[0.65rem] font-black uppercase tracking-widest text-red-600 border border-red-100 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                                        >
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                ))
+                            ) : (
+                                // Standard view for Web Novels
+                                novel.chapters.map((chapter) => (
+                                    <tr key={chapter.id} className="hover:bg-white/40 transition-colors">
+                                        <td className="py-4 px-6">
+                                            <span className="text-xs font-bold px-2 py-1 bg-black/5 rounded-md">
+                                                {chapter.order}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <span className="text-xs font-bold opacity-70 whitespace-nowrap">
+                                                {typeLabels[chapter.type] || chapter.type}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <span className="text-xs font-bold opacity-20 italic">-</span>
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <p className="text-sm font-bold">{chapter.title}</p>
+                                        </td>
+                                        <td className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest opacity-30">
+                                            {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}
+                                        </td>
+                                        <td className="py-4 px-6 text-right">
+                                            <div className="flex gap-2 justify-end">
+                                                <Link
+                                                    href={`/admin/novel/${novel.id}/chapter/${chapter.id}/edit`}
+                                                    className="text-[0.65rem] font-black uppercase tracking-widest border border-black/10 px-4 py-2 rounded-xl hover:bg-black hover:text-white transition-all"
                                                 >
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                                    Edit
+                                                </Link>
+                                                <form action={async () => {
+                                                    "use server";
+                                                    await deleteChapter(chapter.id);
+                                                }}>
+                                                    <button
+                                                        type="submit"
+                                                        className="text-[0.65rem] font-black uppercase tracking-widest text-red-600 border border-red-100 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 

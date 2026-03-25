@@ -15,20 +15,22 @@ interface NovelFormProps {
     action: (novelId: string | any, formData: FormData) => Promise<void>;
     predefinedGenres: string[];
     mode: "create" | "edit";
+    isLightNovel?: boolean;
 }
 
 const inputClass = "w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium";
 const labelClass = "text-sm font-bold uppercase tracking-widest opacity-60";
 
 // Genres are now fetched dynamically from the database and passed as a prop
-export default function AdminNovelForm({ novel, tagSuggestions, action, predefinedGenres, mode }: NovelFormProps) {
+export default function AdminNovelForm({ novel, tagSuggestions, action, predefinedGenres, mode, isLightNovel }: NovelFormProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [description, setDescription] = useState(novel?.description || "");
     const [coverImage, setCoverImage] = useState(novel?.coverImage || "");
     const [coverImageKey, setCoverImageKey] = useState(novel?.coverImageKey || "");
     const [volumes, setVolumes] = useState<any[]>(novel?.volumes || []);
-    const [type, setType] = useState<string>(novel?.type || NovelType.WEB);
+    const defaultType = isLightNovel ? ("LIGHTNOVEL" as any) : (novel?.type || NovelType.WEB);
+    const [type, setType] = useState<string>(defaultType);
     const [error, setError] = useState("");
 
     const currentTags = novel?.tags?.map((t: any) => t.name).join(", ") || "";
@@ -128,6 +130,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                             className={inputClass}
                         >
                             <option value={NovelType.WEB}>Web Novel (Chapter)</option>
+                            <option value={"LIGHTNOVEL"}>Light Novel (Volume)</option>
                             <option value={NovelType.PDF}>Light Novel (PDF)</option>
                             <option value={NovelType.EPUB}>Light Novel (EPUB)</option>
                         </select>
@@ -203,8 +206,8 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                 </div>
             </div>
 
-            {/* Files Section (Only for PDF/EPUB) */}
-            {type !== NovelType.WEB && (
+            {/* Files Section (Only for LIGHTNOVEL, PDF, EPUB) */}
+            {(type === ("LIGHTNOVEL" as any) || type === NovelType.PDF || type === NovelType.EPUB) && (
                 <div className="bg-white/40 p-8 rounded-[2.5rem] border border-black/5 space-y-8">
                     <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
                         <span className="w-8 h-8 bg-[#3E2723] text-[#F5F5DC] rounded-lg flex items-center justify-center text-xs">F</span>

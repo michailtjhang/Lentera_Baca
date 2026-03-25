@@ -3,7 +3,9 @@ import { updateNovel } from "@/app/actions/novel-actions";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import AdminNovelForm from "@/components/admin/NovelForm";
+import WebNovelForm from "@/components/admin/NovelForms/WebNovelForm";
+import LightNovelForm from "@/components/admin/NovelForms/LightNovelForm";
+import { NovelType } from "@prisma/client";
 
 const PREDEFINED_GENRES = [
     "Action", "Adventure", "Adult", "Comedy", "Drama", "Ecchi",
@@ -55,13 +57,24 @@ export default async function EditNovelPage({ params }: { params: Promise<{ id: 
             </header>
 
             <div className="bg-white/80 border border-black/5 rounded-[3rem] p-10 shadow-2xl shadow-black/5">
-                <AdminNovelForm
-                    novel={novel}
-                    action={updateNovel}
-                    tagSuggestions={tagSuggestions}
-                    predefinedGenres={genreSuggestions}
-                    mode="edit"
-                />
+                {novel.type === "WEB" ? (
+                    <WebNovelForm
+                        novel={novel}
+                        action={updateNovel}
+                        tagSuggestions={tagSuggestions}
+                        predefinedGenres={genreSuggestions}
+                        mode="edit"
+                    />
+                ) : (
+                    <LightNovelForm
+                        novel={novel}
+                        action={updateNovel}
+                        tagSuggestions={tagSuggestions}
+                        predefinedGenres={genreSuggestions}
+                        mode="edit"
+                        isLightNovel={novel.type === ("LIGHTNOVEL" as any)}
+                    />
+                )}
             </div>
         </div>
     );

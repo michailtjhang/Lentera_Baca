@@ -32,6 +32,23 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                     </div>
                 </div>
 
+                <div className="flex flex-wrap gap-4 mt-6">
+                    <Link
+                        href="/admin/novel/new?type=web"
+                        className="flex items-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-[1.5rem] text-[0.7rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-blue-500/20"
+                    >
+                        <Plus size={18} />
+                        Tambah Web Novel
+                    </Link>
+                    <Link
+                        href="/admin/novel/new?type=lightnovel"
+                        className="flex items-center gap-3 bg-[#3E2723] text-[#F5F5DC] px-8 py-4 rounded-[1.5rem] text-[0.7rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-[#3E2723]/20"
+                    >
+                        <Plus size={18} />
+                        Tambah Light Novel
+                    </Link>
+                </div>
+
                 {/* Filters Row */}
                 <div className="flex flex-col md:flex-row gap-8 items-center border-t border-[#3E2723]/10 pt-10 mt-4">
                     <div className="relative flex-1 group w-full">
@@ -46,7 +63,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                     </div>
                     
                     <div className="flex items-center gap-2 bg-[#3E2723]/10 p-2 rounded-[1.5rem] w-full md:w-auto mt-4 md:mt-0">
-                        {["ALL", "WEB", "PDF", "EPUB"].map((type) => (
+                        {["ALL", "WEB", "LIGHTNOVEL", "PDF", "EPUB"].map((type) => (
                             <button
                                 key={type}
                                 onClick={() => setTypeFilter(type)}
@@ -56,7 +73,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                                         : "text-[#3E2723]/40 hover:text-[#3E2723]"
                                 }`}
                             >
-                                {type === "ALL" ? "Semua" : type}
+                                {type === "ALL" ? "Semua" : type === "LIGHTNOVEL" ? "L-Novel" : type}
                             </button>
                         ))}
                     </div>

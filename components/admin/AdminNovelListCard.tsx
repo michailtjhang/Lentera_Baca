@@ -23,7 +23,8 @@ interface AdminNovelListCardProps {
 
 export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
     const isWeb = novel.type === "WEB";
-    const countLabel = "CHAPTER";
+    const isLight = novel.type === "LIGHTNOVEL" || novel.type === "PDF" || novel.type === "EPUB";
+    const countLabel = isWeb ? "CHAPTER" : "VOLUME";
     const countValue = isWeb ? novel._count.chapters : novel._count.volumes;
 
     return (

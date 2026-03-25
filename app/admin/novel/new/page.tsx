@@ -2,7 +2,8 @@ import { checkAdmin } from "@/lib/admin";
 import { createNovel } from "@/app/actions/novel-actions";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import AdminNovelForm from "@/components/admin/NovelForm";
+import WebNovelForm from "@/components/admin/NovelForms/WebNovelForm";
+import LightNovelForm from "@/components/admin/NovelForms/LightNovelForm";
 
 const PREDEFINED_GENRES = [
     "Action", "Adventure", "Adult", "Comedy", "Drama", "Ecchi",
@@ -14,8 +15,14 @@ const PREDEFINED_GENRES = [
     "Supernatural", "Tragedy", "Urban-Life", "Yaoi", "Yuri"
 ].sort();
 
-export default async function NewNovelPage() {
+export default async function NewNovelPage({
+    searchParams
+}: {
+    searchParams: Promise<{ type?: string }>
+}) {
     await checkAdmin();
+    const { type } = await searchParams;
+    const isLightNovel = type === "lightnovel";
 
     // Fetch existing tags and genres to suggest
     const [existingTags, genres] = await Promise.all([
@@ -38,12 +45,21 @@ export default async function NewNovelPage() {
             </header>
 
             <div className="bg-white/80 border border-black/5 rounded-[3rem] p-10 shadow-2xl shadow-black/5">
-                <AdminNovelForm
-                    action={createNovel}
-                    tagSuggestions={tagSuggestions}
-                    predefinedGenres={genreSuggestions}
-                    mode="create"
-                />
+                {isLightNovel ? (
+                    <LightNovelForm
+                        action={createNovel}
+                        tagSuggestions={tagSuggestions}
+                        predefinedGenres={genreSuggestions}
+                        mode="create"
+                    />
+                ) : (
+                    <WebNovelForm
+                        action={createNovel}
+                        tagSuggestions={tagSuggestions}
+                        predefinedGenres={genreSuggestions}
+                        mode="create"
+                    />
+                )}
             </div>
         </div>
     );

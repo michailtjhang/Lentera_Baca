@@ -38,6 +38,7 @@ enum Status {
 
 enum NovelType {
   WEB
+  LIGHTNOVEL
   PDF
   EPUB
 }
