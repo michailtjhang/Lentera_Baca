@@ -17,7 +17,7 @@ export default async function VolumePage({ params }: VolumePageProps) {
         include: { novel: true }
     });
 
-    if (!volume || volume.novel.slug !== slug) {
+    if (!volume || volume.novel.slug !== slug || !volume.fileUrl) {
         return notFound();
     }
 
