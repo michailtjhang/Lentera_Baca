@@ -116,7 +116,11 @@ export default async function ReaderPage({ params }: PageProps) {
                 </header>
 
                 <div
-                    className="text-lg sm:text-xl leading-[1.8] sm:leading-[2] space-y-6 opacity-90 prose prose-lg dark:prose-invert max-w-none prose-p:mb-6"
+                    className={`text-lg sm:text-xl leading-[1.8] sm:leading-[2] space-y-6 opacity-90 prose prose-lg dark:prose-invert max-w-none prose-p:mb-6 ${
+                        chapter.type === "ILLUSTRATION" 
+                        ? "prose-img:mx-auto prose-img:rounded-2xl prose-img:shadow-2xl prose-img:max-h-[90vh] prose-img:w-auto" 
+                        : ""
+                    }`}
                     dangerouslySetInnerHTML={{ __html: chapter.content }}
                 />
 

@@ -10,7 +10,8 @@ export default async function NewChapterPage({ params }: { params: Promise<{ id:
     const { id } = await params;
 
     const novel = await prisma.novel.findUnique({
-        where: { id }
+        where: { id },
+        include: { volumes: { orderBy: { order: 'asc' } } }
     });
 
     if (!novel) notFound();
@@ -42,6 +43,7 @@ export default async function NewChapterPage({ params }: { params: Promise<{ id:
                 <AdminChapterForm
                     action={createChapterWithId}
                     chapter={{ order: nextOrder }}
+                    volumes={novel.volumes}
                 />
             </main>
         </div>

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { checkAdmin } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { NovelType, Region, Status, FileType } from "@prisma/client";
+import { NovelType, Region, Status, FileType, ChapterType } from "@prisma/client";
 import { utapi } from "@/lib/uploadthing";
 
 export async function createNovel(_: any, formData: FormData) {
@@ -124,7 +124,7 @@ export async function updateNovel(novelId: string, formData: FormData) {
     }
 
     // Volume cleanup for PDF/EPUB
-    const currentVolumeKeys = currentNovel.volumes.map(v => v.fileKey);
+    const currentVolumeKeys = currentNovel.volumes.map(v => v.fileKey).filter((key): key is string => !!key);
     const nextVolumeKeys = volumesData.map((v: any) => v.fileKey).filter(Boolean);
     const keysToDelete = currentVolumeKeys.filter(key => !nextVolumeKeys.includes(key));
 
@@ -212,13 +212,15 @@ export async function createChapter(novelId: string, formData: FormData) {
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
     const order = parseInt(formData.get("order") as string);
+    const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
+    const volumeId = formData.get("volumeId") as string || null;
 
     if (!title || !content || isNaN(order)) {
         throw new Error("Title, Content, and Order (number) are required");
     }
 
     const chapter = await prisma.chapter.create({
-        data: { title, content, order, novelId },
+        data: { title, content, order, type, novelId, volumeId },
         include: { novel: true }
     });
 
@@ -233,6 +235,8 @@ export async function updateChapter(chapterId: string, formData: FormData) {
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
     const order = parseInt(formData.get("order") as string);
+    const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
+    const volumeId = formData.get("volumeId") as string || null;
 
     if (!title || !content || isNaN(order)) {
         throw new Error("Title, Content, and Order (number) are required");
@@ -240,7 +244,7 @@ export async function updateChapter(chapterId: string, formData: FormData) {
 
     const chapter = await prisma.chapter.update({
         where: { id: chapterId },
-        data: { title, content, order },
+        data: { title, content, order, type, volumeId },
         include: { novel: true }
     });
 

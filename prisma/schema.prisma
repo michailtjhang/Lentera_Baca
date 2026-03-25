@@ -62,17 +62,28 @@ model Tag {
 }
 
 model Chapter {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   title     String
-  content   String   @db.Text
+  content   String      @db.Text
   order     Int
+  type      ChapterType @default(STORY)
   novelId   String
-  novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  novel     Novel       @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  volumeId  String?
+  volume    Volume?     @relation(fields: [volumeId], references: [id], onDelete: SetNull)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@index([novelId])
   @@index([order])
+  @@index([volumeId])
+}
+
+enum ChapterType {
+  STORY
+  ILLUSTRATION
+  EPILOGUE
+  SIDESTORY
 }
 
 // ── Volumes (Shared for PDF/EPUB) ──────────────────────────────────
@@ -80,11 +91,12 @@ model Volume {
   id        String   @id @default(cuid())
   title     String   // Misal: "Volume 1", "Edisi Spesial"
   order     Int      @default(1)
-  fileUrl   String   // URL dari UploadThing
-  fileKey   String   // Key dari UploadThing untuk hapus file
+  fileUrl   String?  // URL dari UploadThing (Optional for WEB grouped volumes)
+  fileKey   String?  // Key dari UploadThing untuk hapus file
   fileType  FileType @default(PDF)
   novelId   String
   novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  chapters  Chapter[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

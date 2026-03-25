@@ -12,7 +12,8 @@ export default async function ChapterManagementPage({ params }: { params: Promis
         where: { id },
         include: {
             chapters: {
-                orderBy: { order: 'asc' }
+                orderBy: { order: 'asc' },
+                include: { volume: true }
             }
         }
     });
@@ -47,8 +48,10 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                         <thead>
                             <tr className="border-b border-black/5">
                                 <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Urutan</th>
+                                <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Tipe</th>
+                                <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Volume</th>
                                 <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Judul Bab</th>
-                                <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Update Terakhir</th>
+                                <th className="py-4 px-6 font-bold uppercase text-xs tracking-widest opacity-60">Update</th>
                                 <th className="py-4 px-6 text-right font-bold uppercase text-xs tracking-widest opacity-60">Aksi</th>
                             </tr>
                         </thead>
@@ -61,14 +64,16 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                                         </span>
                                     </td>
                                     <td className="py-4 px-6">
+                                        <span className="text-xs font-bold opacity-60">{chapter.type}</span>
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        <span className="text-xs font-bold opacity-60 italic">{chapter.volume?.title || "-"}</span>
+                                    </td>
+                                    <td className="py-4 px-6">
                                         <p className="font-bold">{chapter.title}</p>
                                     </td>
-                                    <td className="py-4 px-6 text-sm opacity-60">
-                                        {new Date(chapter.updatedAt).toLocaleDateString('id-ID', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric'
-                                        })}
+                                    <td className="py-4 px-6 text-[10px] opacity-40">
+                                        {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}
                                     </td>
                                     <td className="py-4 px-6 text-right">
                                         <div className="flex gap-2 justify-end">

@@ -8,7 +8,9 @@ import ChapterList from "@/components/ChapterList";
 import HistoryDisplay from "@/components/HistoryDisplay";
 import ThemeToggle from "@/components/ThemeToggle";
 import ReadButton from "@/components/ReadButton";
+import VolumeAccordion from "@/components/VolumeAccordion";
 import VolumeList from "@/components/VolumeList";
+import { ChapterType } from "@prisma/client";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -44,10 +46,13 @@ export default async function NovelOverviewPage({ params }: PageProps) {
         where: { slug },
         include: {
             chapters: { orderBy: { order: 'asc' } },
-            volumes: { orderBy: { order: 'asc' } },
+            volumes: { 
+                orderBy: { order: 'asc' },
+                include: { chapters: { orderBy: { order: 'asc' } } }
+            },
             genres: true,
             tags: true,
-        } as any
+        }
     });
 
     const novel = novelResult as any;
@@ -213,7 +218,16 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                     {novel.type === 'WEB' ? (
                         <>
                             <HistoryDisplay novelId={novel.id} slug={slug} />
-                            <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
+                            {novel.volumes.length > 0 ? (
+                                <VolumeAccordion
+                                    volumes={novel.volumes}
+                                    standaloneChapters={novel.chapters.filter((c: any) => !c.volumeId)}
+                                    slug={slug}
+                                    novelId={novel.id}
+                                />
+                            ) : (
+                                <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
+                            )}
                         </>
                     ) : (
                         <VolumeList volumes={novel.volumes as any} slug={slug} />

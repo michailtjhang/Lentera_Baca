@@ -14,7 +14,8 @@ export default async function EditChapterPage({
     const { id, chapterId } = await params;
 
     const novel = await prisma.novel.findUnique({
-        where: { id }
+        where: { id },
+        include: { volumes: { orderBy: { order: 'asc' } } }
     });
 
     if (!novel) notFound();
@@ -44,6 +45,7 @@ export default async function EditChapterPage({
 
                 <AdminChapterForm
                     chapter={chapter}
+                    volumes={novel.volumes}
                     action={updateChapterWithId}
                 />
             </main>
