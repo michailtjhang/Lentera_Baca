@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useUploadThing } from "@/lib/uploadthing-client";
 import { Image, X, Loader2 } from "lucide-react";
+import { deleteFiles } from "@/app/actions/novel-actions";
 
 interface CoverUploaderProps {
     onUploaded: (url: string, key: string) => void;
@@ -12,11 +13,13 @@ interface CoverUploaderProps {
 
 export default function CoverUploader({ onUploaded, currentUrl, currentKey }: CoverUploaderProps) {
     const [url, setUrl] = useState(currentUrl || "");
+    const [key, setKey] = useState(currentKey || "");
     const { startUpload, isUploading } = useUploadThing("coverUploader", {
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {
                 setUrl(file.url);
+                setKey(file.key);
                 onUploaded(file.url, file.key);
             }
         },
@@ -96,7 +99,12 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
                         />
                         <button
                             type="button"
-                            onClick={() => { setUrl(""); onUploaded("", ""); }}
+                            onClick={async () => { 
+                                if (key) await deleteFiles(key);
+                                setUrl(""); 
+                                setKey("");
+                                onUploaded("", ""); 
+                            }}
                             className="absolute -top-4 -right-4 p-2.5 bg-red-500 text-white rounded-full shadow-2xl hover:bg-black transition-all z-20 hover:scale-110 active:scale-90 border-2 border-white"
                         >
                             <X size={18} />

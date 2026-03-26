@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useUploadThing } from "@/lib/uploadthing-client";
 import { FileText, X, Plus, Trash2, Loader2 } from "lucide-react";
+import { deleteFiles } from "@/app/actions/novel-actions";
 
 interface Volume {
     id?: string;
@@ -57,7 +58,14 @@ export default function LNUploader({
         onVolumesChanged(updated);
     };
 
-    const removeVolume = (index: number) => {
+    const removeVolume = async (index: number) => {
+        const volumeToRemove = volumes[index];
+        
+        // If it's a newly uploaded file (no ID yet), delete from cloud immediately
+        if (!volumeToRemove.id && volumeToRemove.fileKey) {
+            await deleteFiles(volumeToRemove.fileKey);
+        }
+
         const remaining = volumes.filter((_, i) => i !== index);
         const updated = remaining.map((v, i) => ({ ...v, order: i + 1 }));
         setVolumes(updated);

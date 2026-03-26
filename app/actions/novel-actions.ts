@@ -119,7 +119,7 @@ export async function updateNovel(novelId: string, formData: FormData) {
     if (!currentNovel) throw new Error("Novel not found");
 
     // Handle File Deletion from UploadThing if changed or removed
-    if (currentNovel.coverImageKey && coverImageKey && currentNovel.coverImageKey !== coverImageKey) {
+    if (currentNovel.coverImageKey && currentNovel.coverImageKey !== coverImageKey) {
         await utapi.deleteFiles(currentNovel.coverImageKey);
     }
 
@@ -212,6 +212,22 @@ export async function deleteNovel(novelId: string) {
         if (v.fileKey) keys.push(v.fileKey);
     });
 
+    // Also cleanup illustrations from chapters
+    const chapters = await prisma.chapter.findMany({
+        where: { novelId: novelId, type: ("ILLUSTRATION" as any) }
+    });
+    
+    chapters.forEach(chapter => {
+        const regex = /src="([^"]+)"/g;
+        let match;
+        while ((match = regex.exec(chapter.content || "")) !== null) {
+            const url = match[1];
+            if (url.includes("utfs.io/f/")) {
+                keys.push(url.split("/f/").pop() || "");
+            }
+        }
+    });
+
     if (keys.length > 0) {
         await utapi.deleteFiles(keys);
     }
@@ -280,8 +296,37 @@ export async function deleteChapter(chapterId: string) {
         include: { novel: true }
     });
 
+    // Cleanup illustrations if type is ILLUSTRATION
+    if (chapter.type === ("ILLUSTRATION" as any)) {
+        const regex = /src="([^"]+)"/g;
+        const keys: string[] = [];
+        let match;
+        while ((match = regex.exec(chapter.content || "")) !== null) {
+            const url = match[1];
+            if (url.includes("utfs.io/f/")) {
+                keys.push(url.split("/f/").pop() || "");
+            }
+        }
+        if (keys.length > 0) {
+            await utapi.deleteFiles(keys);
+        }
+    }
+
     revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");
     revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
     return { success: true };
+}
+
+export async function deleteFiles(keys: string | string[]) {
+    await checkAdmin();
+    try {
+        const keyArray = Array.isArray(keys) ? keys : [keys];
+        if (keyArray.length === 0) return { success: true };
+        await utapi.deleteFiles(keyArray);
+        return { success: true };
+    } catch (error) {
+        console.error("UT Delete Error:", error);
+        return { success: false, error: (error as any).message };
+    }
 }

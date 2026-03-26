@@ -55,7 +55,7 @@ export default function Sidebar() {
             </button>
 
             {/* Sidebar Desktop/Mobile */}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/60 backdrop-blur-xl border-r border-black/5 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/60 backdrop-blur-xl border-r border-black/5 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
                 <div className="h-full flex flex-col p-6">
                     {/* Branding */}
                     <div className="mb-10 px-4">

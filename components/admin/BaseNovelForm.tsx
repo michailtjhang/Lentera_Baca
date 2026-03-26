@@ -78,7 +78,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
         <>
             {isPending && <LoadingOverlay />}
             <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-white/40 p-8 rounded-[2.5rem] border border-black/5 space-y-8">
+            <div className="bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 space-y-8 max-w-7xl mx-auto">
                 {/* Judul & Penulis & Illustrator */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-1 space-y-2">
@@ -130,7 +130,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                             className={inputClass}
                         >
                             <option value="WEB">Web Novel (Chapter)</option>
-                            <option value="LIGHTNOVEL">Light Novel (Volume)</option>
+                            <option value="LIGHTNOVEL">Light Novel (Web)</option>
                             <option value="PDF">Light Novel (PDF)</option>
                             <option value="EPUB">Light Novel (EPUB)</option>
                         </select>
@@ -208,7 +208,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
 
             {/* Files Section (Only for LIGHTNOVEL, PDF, EPUB) */}
             {(type === ("LIGHTNOVEL" as any) || type === NovelType.PDF || type === NovelType.EPUB) && (
-                <div className="bg-white/40 p-8 rounded-[2.5rem] border border-black/5 space-y-8">
+                <div className="bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 space-y-8 max-w-7xl mx-auto">
                     <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
                         <span className="w-8 h-8 bg-[#3E2723] text-[#F5F5DC] rounded-lg flex items-center justify-center text-xs">F</span>
                         Files & Volumes
@@ -228,7 +228,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                 </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 max-w-7xl mx-auto w-full">
                 <button
                     type="button"
                     onClick={() => router.back()}

@@ -5,6 +5,7 @@ import Editor from "@/components/Editor";
 import { useUploadThing } from "@/lib/uploadthing-client";
 import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { convertToWebP } from "@/lib/image-utils";
+import { deleteFiles } from "@/app/actions/novel-actions";
 
 interface ChapterFormProps {
     chapter?: any;
@@ -17,22 +18,24 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
     const [type, setType] = useState(chapter?.type || "STORY");
 
     // For Illustration multi-image management
-    const [images, setImages] = useState<string[]>(() => {
+    const [images, setImages] = useState<{url: string, key?: string}[]>(() => {
         if (chapter?.type === "ILLUSTRATION") {
             const regex = /src="([^"]+)"/g;
             const urls = [];
             let match;
             while ((match = regex.exec(chapter.content || "")) !== null) {
-                urls.push(match[1]);
+                const url = match[1];
+                const key = url.includes("utfs.io/f/") ? url.split("/f/").pop() : undefined;
+                urls.push({ url, key });
             }
             return urls;
         }
         return [];
     });
 
-    const syncImagesToContent = (newImages: string[]) => {
-        const html = newImages.map(url => 
-            `<img src="${url}" alt="illustration" class="rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto" />`
+    const syncImagesToContent = (newImages: {url: string, key?: string}[]) => {
+        const html = newImages.map(img => 
+            `<img src="${img.url}" alt="illustration" class="rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto" />`
         ).join('\n');
         setContent(html);
     };
@@ -42,7 +45,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {
-                const newImages = [...images, file.url];
+                const newImages = [...images, { url: file.url, key: file.key }];
                 setImages(newImages);
                 syncImagesToContent(newImages);
             }
@@ -79,14 +82,18 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
         syncImagesToContent(newImages);
     };
 
-    const removeImage = (index: number) => {
+    const removeImage = async (index: number) => {
+        const imgToRemove = images[index];
+        if (imgToRemove.key) {
+            await deleteFiles(imgToRemove.key);
+        }
         const newImages = images.filter((_, i) => i !== index);
         setImages(newImages);
         syncImagesToContent(newImages);
     };
 
     return (
-        <form action={action} className="space-y-6 bg-white/40 p-8 rounded-3xl border border-black/5">
+        <form action={action} className="space-y-6 bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 max-w-7xl mx-auto shadow-sm">
             <div className="space-y-6">
                 {/* Volume Selection (Top Priority) */}
                 <div className="space-y-2">
@@ -166,9 +173,9 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
 
                     {/* Image List */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {images.map((url, idx) => (
+                        {images.map((img, idx) => (
                             <div key={idx} className="relative group rounded-2xl overflow-hidden bg-white/40 border border-black/5 aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-500">
-                                <img src={url} alt={`Illustration ${idx}`} className="w-full h-full object-cover" />
+                                <img src={img.url} alt={`Illustration ${idx}`} className="w-full h-full object-cover" />
                                 
                                 {/* Controls Overlay */}
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm">

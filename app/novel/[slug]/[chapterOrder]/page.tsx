@@ -19,12 +19,12 @@ export async function generateMetadata({ params }: PageProps) {
         include: { novel: true },
     });
 
-    if (!chapter) return { title: "Bab Tidak Ditemukan" };
+    if (!chapter) return { title: "Chapter Tidak Ditemukan" };
 
     const titleStr = chapter.title ? `: ${chapter.title}` : "";
     return {
-        title: `Bab ${chapter.order}${titleStr} - ${chapter.novel.title}`,
-        description: `Baca ${chapter.novel.title} Bab ${chapter.order}${titleStr} di Lentera Baca.`,
+        title: `Chapter ${chapter.order}${titleStr} - ${chapter.novel.title}`,
+        description: `Baca ${chapter.novel.title} Chapter ${chapter.order}${titleStr} di Lentera Baca.`,
     };
 }
 
@@ -95,7 +95,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                         <div className="flex flex-col items-center gap-1">
                             <div className="text-[0.6rem] font-black uppercase tracking-[0.3em] opacity-30 dark:text-gray-500">
-                                Bab {chapter.order}
+                                Chapter {chapter.order}
                             </div>
                             <Link href={basePath} className="text-[0.6rem] font-black uppercase tracking-[0.1em] opacity-60 hover:opacity-100 transition-opacity border-b border-current dark:text-gray-400">
                                 Daftar Isi
@@ -114,7 +114,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                     <h1 className="text-4xl font-black mb-4 tracking-tight leading-tight dark:text-white">{chapter.novel.title}</h1>
                     <h2 className="text-xl font-bold opacity-60 italic dark:text-gray-400">
-                        Bab {chapter.order}{chapter.title ? `: ${chapter.title}` : ""}
+                        Chapter {chapter.order}{chapter.title ? `: ${chapter.title}` : ""}
                     </h2>
                 </header>
 

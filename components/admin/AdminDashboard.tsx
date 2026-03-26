@@ -20,7 +20,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
     });
 
     return (
-        <div className="p-8 lg:p-12 space-y-12 text-[#3E2723]">
+        <div className="p-6 lg:p-10 space-y-10 text-[#3E2723]">
             {/* Header section with Stats & Context */}
             <div className="flex flex-col gap-6">
                 <div>
@@ -30,23 +30,6 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                          <Layers size={14} className="opacity-70" />
                          Manage <span className="text-[#3E2723] font-black">{initialNovels.length}</span> Active Collections
                     </div>
-                </div>
-
-                <div className="flex flex-wrap gap-4 mt-6">
-                    <Link
-                        href="/admin/novel/new?type=web"
-                        className="flex items-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-[1.5rem] text-[0.7rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-blue-500/20"
-                    >
-                        <Plus size={18} />
-                        Tambah Web Novel
-                    </Link>
-                    <Link
-                        href="/admin/novel/new?type=lightnovel"
-                        className="flex items-center gap-3 bg-[#3E2723] text-[#F5F5DC] px-8 py-4 rounded-[1.5rem] text-[0.7rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-[#3E2723]/20"
-                    >
-                        <Plus size={18} />
-                        Tambah Light Novel
-                    </Link>
                 </div>
 
                 {/* Filters Row */}
@@ -73,7 +56,10 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                                         : "text-[#3E2723]/40 hover:text-[#3E2723]"
                                 }`}
                             >
-                                {type === "ALL" ? "Semua" : type === "LIGHTNOVEL" ? "L-Novel" : type}
+                                {type === "ALL" ? "Semua" : 
+                                 type === "WEB" ? "Web" :
+                                 type === "LIGHTNOVEL" ? "Volume" :
+                                 type === "PDF" ? "PDF" : "EPUB"}
                             </button>
                         ))}
                     </div>
@@ -81,7 +67,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
             </div>
 
             {/* List display */}
-            <div className="flex flex-col gap-8 max-w-6xl">
+            <div className="flex flex-col gap-8 max-w-7xl">
                 {filteredNovels.map((novel) => (
                     <AdminNovelListCard key={novel.id} novel={novel} />
                 ))}

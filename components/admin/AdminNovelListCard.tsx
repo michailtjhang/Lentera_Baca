@@ -24,11 +24,18 @@ interface AdminNovelListCardProps {
 export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
     const isWeb = novel.type === "WEB";
     const isLight = novel.type === "LIGHTNOVEL" || novel.type === "PDF" || novel.type === "EPUB";
+    const typeLabels: Record<string, string> = {
+        WEB: "Web Novel",
+        LIGHTNOVEL: "L-Novel (Volume)",
+        PDF: "L-Novel (PDF)",
+        EPUB: "L-Novel (EPUB)",
+    };
+
     const countLabel = isWeb ? "CHAPTER" : "VOLUME";
     const countValue = isWeb ? novel._count.chapters : novel._count.volumes;
 
     return (
-        <div className="group relative bg-white rounded-[2rem] p-4 pr-10 flex items-center gap-8 border border-[#3E2723]/10 hover:border-[#3E2723]/20 transition-all duration-500 hover:shadow-[0_30px_70px_-20px_rgba(62,39,35,0.12)]">
+        <div className="group relative bg-white rounded-[1.5rem] p-3 pr-6 flex items-center gap-6 border border-[#3E2723]/10 hover:border-[#3E2723]/20 transition-all duration-500 hover:shadow-[0_20px_50px_-15px_rgba(62,39,35,0.08)]">
             {/* Cover Image Container */}
             <div className="relative w-24 h-32 flex-shrink-0 overflow-hidden rounded-[1.25rem] shadow-lg group-hover:scale-105 transition-transform duration-500">
                 {novel.coverImage ? (
@@ -44,7 +51,7 @@ export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
                 )}
                 {/* Type Badge Overlay */}
                 <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-white px-2 py-0.5 rounded-md text-[0.5rem] font-black uppercase tracking-widest">
-                    {novel.type}
+                    {typeLabels[novel.type] || novel.type}
                 </div>
             </div>
 
@@ -101,9 +108,9 @@ export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
 
                 <Link
                     href={`/novel/${novel.slug}`}
-                    className="flex items-center gap-3 bg-black text-white px-8 py-3.5 rounded-[1.5rem] text-[0.7rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl shadow-black/20"
+                    className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-[1.2rem] text-[0.65rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-lg shadow-black/10"
                 >
-                    <ExternalLink size={16} />
+                    <ExternalLink size={14} />
                     Preview
                 </Link>
 
