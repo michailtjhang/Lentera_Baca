@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Edit2, Trash2, Book, Image as ImageIcon, Sparkles, LogOut, Layers, ArrowUp, ArrowDown, Save, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, Trash2, Book, Image as ImageIcon, Sparkles, LogOut, Layers, ArrowUp, ArrowDown, Save, X, Loader2 } from "lucide-react";
 import { deleteChapter, swapVolumeOrders, updateVolumeTitle, swapChapterOrders } from "@/app/actions/novel-actions";
 
 interface Chapter {
@@ -64,14 +64,29 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
         return acc;
     }, {});
 
-    // State for inline volume title editing
+    const [isProcessing, setIsProcessing] = useState(false);
     const [editingVolumeId, setEditingVolumeId] = useState<string | null>(null);
     const [editTitleValue, setEditTitleValue] = useState("");
 
     const handleSaveVolumeTitle = async (id: string) => {
-        if (!editTitleValue.trim()) return;
-        await updateVolumeTitle(id, editTitleValue.trim());
-        setEditingVolumeId(null);
+        if (!editTitleValue.trim() || isProcessing) return;
+        setIsProcessing(true);
+        try {
+            await updateVolumeTitle(id, editTitleValue.trim());
+            setEditingVolumeId(null);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleSwapChapter = async (id1: string, id2: string) => {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        try {
+            await swapChapterOrders(id1, id2);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const renderChapterRow = (chapter: Chapter, index: number, chapters: Chapter[]) => {
@@ -111,20 +126,20 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                 <td className="py-3 px-4 text-right">
                     <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                            onClick={() => swapChapterOrders(chapter.id, chapters[index - 1].id)}
-                            disabled={index === 0}
+                            onClick={() => handleSwapChapter(chapter.id, chapters[index - 1].id)}
+                            disabled={index === 0 || isProcessing}
                             className="p-1.5 text-black/20 hover:text-black hover:bg-white rounded-lg disabled:opacity-5 transition-all"
                             title="Pindah ke Atas"
                         >
-                            <ArrowUp size={12} />
+                            {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <ArrowUp size={12} />}
                         </button>
                         <button
-                            onClick={() => swapChapterOrders(chapter.id, chapters[index + 1].id)}
-                            disabled={index === chapters.length - 1}
+                            onClick={() => handleSwapChapter(chapter.id, chapters[index + 1].id)}
+                            disabled={index === chapters.length - 1 || isProcessing}
                             className="p-1.5 text-black/20 hover:text-black hover:bg-white rounded-lg disabled:opacity-5 transition-all"
                             title="Pindah ke Bawah"
                         >
-                            <ArrowDown size={12} />
+                            {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <ArrowDown size={12} />}
                         </button>
                         <div className="w-px h-4 bg-black/5 mx-1" />
                         <Link
@@ -208,7 +223,8 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                                                             </span>
                                                             <button
                                                                 onClick={() => { setEditingVolumeId(vol.id); setEditTitleValue(vol.title); }}
-                                                                className="opacity-0 group-hover/vol:opacity-40 hover:opacity-100 transition-opacity"
+                                                                disabled={isProcessing}
+                                                                className="opacity-0 group-hover/vol:opacity-40 hover:opacity-100 transition-opacity disabled:pointer-events-none"
                                                             >
                                                                 <Edit2 size={12} />
                                                             </button>

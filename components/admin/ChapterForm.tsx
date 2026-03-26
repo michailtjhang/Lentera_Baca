@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import Editor from "@/components/Editor";
 import { useUploadThing } from "@/lib/uploadthing-client";
 import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
@@ -12,6 +13,21 @@ interface ChapterFormProps {
     volumes?: any[];
     action: (formData: FormData) => void;
     novelType?: string;
+}
+
+function SubmitButton({ isEdit }: { isEdit: boolean }) {
+    const { pending } = useFormStatus();
+    
+    return (
+        <button
+            type="submit"
+            disabled={pending}
+            className="w-full bg-[#3E2723] text-[#F5F5DC] py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        >
+            {pending && <Loader2 className="animate-spin" size={20} />}
+            {pending ? "Sedang Memproses..." : (isEdit ? "Update Chapter" : "Simpan Chapter")}
+        </button>
+    );
 }
 
 export default function AdminChapterForm({ chapter, volumes = [], action, novelType }: ChapterFormProps) {
@@ -268,12 +284,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 </div>
             )}
 
-            <button
-                type="submit"
-                className="w-full bg-[#3E2723] text-[#F5F5DC] py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all active:scale-[0.98]"
-            >
-                {chapter ? "Update Chapter" : "Simpan Chapter"}
-            </button>
+            <SubmitButton isEdit={!!chapter} />
         </form>
     );
 }
