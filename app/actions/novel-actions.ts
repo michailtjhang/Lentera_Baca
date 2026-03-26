@@ -330,3 +330,49 @@ export async function deleteFiles(keys: string | string[]) {
         return { success: false, error: (error as any).message };
     }
 }
+
+export async function swapVolumeOrders(volId1: string, volId2: string) {
+    await checkAdmin();
+    const vol1 = await prisma.volume.findUnique({ where: { id: volId1 } });
+    const vol2 = await prisma.volume.findUnique({ where: { id: volId2 } });
+
+    if (!vol1 || !vol2) throw new Error("Volume not found");
+
+    await prisma.$transaction([
+        prisma.volume.update({ where: { id: volId1 }, data: { order: vol2.order } }),
+        prisma.volume.update({ where: { id: volId2 }, data: { order: vol1.order } }),
+    ]);
+
+    revalidatePath("/admin");
+    revalidatePath(`/novel/${vol1.novelId}`); // Assuming we might need this
+    return { success: true };
+}
+
+export async function updateVolumeTitle(volumeId: string, title: string) {
+    await checkAdmin();
+    const vol = await prisma.volume.update({
+        where: { id: volumeId },
+        data: { title }
+    });
+
+    revalidatePath("/admin");
+    return { success: true };
+}
+
+export async function swapChapterOrders(id1: string, id2: string) {
+    await checkAdmin();
+    const ch1 = await prisma.chapter.findUnique({ where: { id: id1 }, include: { novel: true } });
+    const ch2 = await prisma.chapter.findUnique({ where: { id: id2 } });
+
+    if (!ch1 || !ch2) throw new Error("Chapter not found");
+
+    await prisma.$transaction([
+        prisma.chapter.update({ where: { id: id1 }, data: { order: ch2.order } }),
+        prisma.chapter.update({ where: { id: id2 }, data: { order: ch1.order } }),
+    ]);
+
+    revalidatePath(`/novel/${ch1.novel.slug}`);
+    revalidatePath("/admin");
+    revalidatePath(`/admin/novel/${ch1.novelId}/chapter`);
+    return { success: true };
+}

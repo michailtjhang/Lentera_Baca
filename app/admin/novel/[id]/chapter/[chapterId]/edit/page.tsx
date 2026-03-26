@@ -47,6 +47,7 @@ export default async function EditChapterPage({
                     chapter={chapter}
                     volumes={novel.volumes}
                     action={updateChapterWithId}
+                    novelType={novel.type}
                 />
             </main>
         </div>

@@ -13,6 +13,7 @@ export default async function ChapterManagementPage({ params }: { params: Promis
     const novel = await prisma.novel.findUnique({
         where: { id },
         include: {
+            volumes: { orderBy: { order: 'asc' } },
             chapters: {
                 orderBy: { order: 'asc' },
                 include: { volume: true }
@@ -55,6 +56,7 @@ export default async function ChapterManagementPage({ params }: { params: Promis
                 <AdminChapterList
                     novel={{ id: novel.id, title: novel.title, type: novel.type }}
                     chapters={novel.chapters as any}
+                    volumes={novel.volumes as any}
                 />
             </main>
         </div >

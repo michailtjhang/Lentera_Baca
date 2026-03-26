@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useUploadThing } from "@/lib/uploadthing-client";
-import { FileText, X, Plus, Trash2, Loader2 } from "lucide-react";
+import { FileText, X, Plus, Trash2, Loader2, ArrowUp, ArrowDown, Edit2 } from "lucide-react";
 import { deleteFiles } from "@/app/actions/novel-actions";
 
 interface Volume {
@@ -72,6 +72,19 @@ export default function LNUploader({
         onVolumesChanged(updated);
     };
 
+    const moveVolume = (index: number, direction: 'up' | 'down') => {
+        const newVolumes = [...volumes];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= newVolumes.length) return;
+
+        [newVolumes[index], newVolumes[targetIndex]] = [newVolumes[targetIndex], newVolumes[index]];
+        
+        // Update orders
+        const updated = newVolumes.map((v, i) => ({ ...v, order: i + 1 }));
+        setVolumes(updated);
+        onVolumesChanged(updated);
+    };
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -104,25 +117,48 @@ export default function LNUploader({
                                 {idx + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <input
-                                    type="text"
-                                    value={vol.title}
-                                    onChange={(e) => updateVolumeTitle(idx, e.target.value)}
-                                    placeholder="Judul Volume..."
-                                    className="w-full bg-transparent font-black text-sm outline-none border-b border-transparent focus:border-black/10 pb-1"
-                                />
+                                <div className="flex items-center gap-2 group/title">
+                                    <input
+                                        type="text"
+                                        value={vol.title}
+                                        onChange={(e) => updateVolumeTitle(idx, e.target.value)}
+                                        placeholder="Judul Volume (Klik untuk ubah)..."
+                                        className="flex-1 bg-transparent font-black text-sm outline-none border-b border-dashed border-black/5 focus:border-[#3E2723]/30 pb-1 transition-colors"
+                                    />
+                                    <Edit2 size={12} className="opacity-0 group-hover/title:opacity-20 transition-opacity" />
+                                </div>
                                 <p className="text-[0.6rem] font-bold text-black/30 uppercase tracking-widest mt-1">
                                     {vol.fileType || "Grouping"} • {vol.fileKey ? `${vol.fileKey.slice(0, 15)}...` : "Manual Entry"}
                                 </p>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => removeVolume(idx)}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover/item:opacity-100"
-                                title="Remove Volume"
-                            >
-                                <Trash2 size={18} />
-                            </button>
+                            <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <button
+                                    type="button"
+                                    onClick={() => moveVolume(idx, 'up')}
+                                    disabled={idx === 0}
+                                    className="p-2 text-black/40 hover:text-black hover:bg-black/5 rounded-xl disabled:opacity-10"
+                                    title="Pindah Ke Atas"
+                                >
+                                    <ArrowUp size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => moveVolume(idx, 'down')}
+                                    disabled={idx === volumes.length - 1}
+                                    className="p-2 text-black/40 hover:text-black hover:bg-black/5 rounded-xl disabled:opacity-10"
+                                    title="Pindah Ke Bawah"
+                                >
+                                    <ArrowDown size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => removeVolume(idx)}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                    title="Remove Volume"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
                         </div>
                     ))}
 

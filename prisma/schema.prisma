@@ -81,10 +81,12 @@ model Chapter {
 }
 
 enum ChapterType {
+  PROLOGUE
   STORY
   ILLUSTRATION
   EPILOGUE
   SIDESTORY
+  INTERLUDE
 }
 
 // ── Volumes (Shared for PDF/EPUB) ──────────────────────────────────

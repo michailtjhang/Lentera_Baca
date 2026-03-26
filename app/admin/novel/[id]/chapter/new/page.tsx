@@ -44,6 +44,7 @@ export default async function NewChapterPage({ params }: { params: Promise<{ id:
                     action={createChapterWithId}
                     chapter={{ order: nextOrder }}
                     volumes={novel.volumes}
+                    novelType={novel.type}
                 />
             </main>
         </div>

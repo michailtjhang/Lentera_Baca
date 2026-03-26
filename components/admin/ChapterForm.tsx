@@ -11,9 +11,11 @@ interface ChapterFormProps {
     chapter?: any;
     volumes?: any[];
     action: (formData: FormData) => void;
+    novelType?: string;
 }
 
-export default function AdminChapterForm({ chapter, volumes = [], action }: ChapterFormProps) {
+export default function AdminChapterForm({ chapter, volumes = [], action, novelType }: ChapterFormProps) {
+    const isWeb = novelType === "WEB";
     const [content, setContent] = useState(chapter?.content || "");
     const [type, setType] = useState(chapter?.type || "STORY");
 
@@ -95,45 +97,53 @@ export default function AdminChapterForm({ chapter, volumes = [], action }: Chap
     return (
         <form action={action} className="space-y-6 bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 max-w-7xl mx-auto shadow-sm">
             <div className="space-y-6">
-                {/* Volume Selection (Top Priority) */}
-                <div className="space-y-2">
-                    <label htmlFor="volumeId" className="text-sm font-bold uppercase tracking-widest opacity-60">Pilih Volume (Utama)</label>
-                    <select
-                        name="volumeId"
-                        id="volumeId"
-                        defaultValue={chapter?.volumeId || ""}
-                        className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
-                    >
-                        {volumes.length > 0 ? (
-                            <>
-                                <option value="">Tanpa Volume</option>
-                                {volumes.map((vol) => (
-                                    <option key={vol.id} value={vol.id}>{vol.title}</option>
-                                ))}
-                            </>
-                        ) : (
-                            <option value="">Tidak ada volume tersedia</option>
-                        )}
-                    </select>
-                </div>
+                {/* Volume Selection (Top Priority) - Hidden for WEB */}
+                {!isWeb && (
+                    <div className="space-y-2">
+                        <label htmlFor="volumeId" className="text-sm font-bold uppercase tracking-widest opacity-60">Pilih Volume (Utama)</label>
+                        <select
+                            name="volumeId"
+                            id="volumeId"
+                            defaultValue={chapter?.volumeId || ""}
+                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
+                        >
+                            {volumes.length > 0 ? (
+                                <>
+                                    <option value="">Tanpa Volume</option>
+                                    {volumes.map((vol) => (
+                                        <option key={vol.id} value={vol.id}>{vol.title}</option>
+                                    ))}
+                                </>
+                            ) : (
+                                <option value="">Tidak ada volume tersedia</option>
+                            )}
+                        </select>
+                    </div>
+                )}
 
                 {/* Type & Order */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label htmlFor="type" className="text-sm font-bold uppercase tracking-widest opacity-60">Tipe Konten</label>
-                        <select
-                            name="type"
-                            id="type"
-                            value={type}
-                            onChange={(e) => setType(e.target.value)}
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
-                        >
-                            <option value="STORY">📖 Cerita Utama</option>
-                            <option value="ILLUSTRATION">🎨 Ilustrasi</option>
-                            <option value="EPILOGUE">🔚 Epilog / Afterword</option>
-                            <option value="SIDESTORY">🌟 Side Story / Spin-off</option>
-                        </select>
-                    </div>
+                    {!isWeb ? (
+                        <div className="space-y-2">
+                            <label htmlFor="type" className="text-sm font-bold uppercase tracking-widest opacity-60">Tipe Konten</label>
+                            <select
+                                name="type"
+                                id="type"
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                                className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
+                            >
+                                <option value="PROLOGUE">🎬 Prolog</option>
+                                <option value="STORY">📖 Cerita Utama</option>
+                                <option value="ILLUSTRATION">🎨 Ilustrasi</option>
+                                <option value="EPILOGUE">🔚 Epilog / Afterword</option>
+                                <option value="SIDESTORY">🌟 Side Story / Spin-off</option>
+                                <option value="INTERLUDE">↔️ Selingan / Interlude</option>
+                            </select>
+                        </div>
+                    ) : (
+                        <input type="hidden" name="type" value="STORY" />
+                    )}
 
                     <div className="space-y-2">
                         <label htmlFor="order" className="text-sm font-bold uppercase tracking-widest opacity-60">Urutan (Angka)</label>

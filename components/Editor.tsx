@@ -6,6 +6,8 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import { useUploadThing } from "@/lib/uploadthing-client";
+import { convertToWebP } from "@/lib/image-utils";
+import { deleteFiles } from "@/app/actions/novel-actions";
 import { 
     Bold, 
     Italic, 
@@ -18,7 +20,8 @@ import {
     Heading2,
     Quote,
     Image as ImageIcon,
-    Loader2
+    Loader2,
+    Trash
 } from "lucide-react";
 
 interface EditorProps {
@@ -46,11 +49,30 @@ const MenuBar = ({ editor }: { editor: any }) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-        const extension = file.name.split('.').pop();
-        const renamedFile = new File([file], `${uniqueId}.${extension}`, { type: file.type });
+        try {
+            const webpFile = await convertToWebP(file);
+            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            const renamedFile = new File([webpFile], `${uniqueId}.webp`, { type: "image/webp" });
+            await startUpload([renamedFile]);
+        } catch (error) {
+            console.error("WebP conversion failed:", error);
+            // Fallback to original
+            await startUpload([file]);
+        }
+    };
 
-        await startUpload([renamedFile]);
+    const handleDeleteImage = async () => {
+        const attrs = editor.getAttributes("image");
+        if (attrs.src) {
+            if (confirm("Hapus gambar ini dari server?")) {
+                const url = attrs.src;
+                if (url.includes("utfs.io/f/")) {
+                    const key = url.split("/f/").pop();
+                    if (key) await deleteFiles(key);
+                }
+                editor.chain().focus().deleteSelection().run();
+            }
+        }
     };
 
     const toggleButton = (action: string, options?: any) => (e: React.MouseEvent) => {
@@ -147,6 +169,15 @@ const MenuBar = ({ editor }: { editor: any }) => {
                     disabled={isUploading} 
                 />
             </label>
+
+            {editor.isActive("image") && (
+                <Button 
+                    onClick={handleDeleteImage} 
+                    icon={Trash} 
+                    title="Hapus Gambar dari Server"
+                    isActive={false}
+                />
+            )}
         </div>
     );
 };
