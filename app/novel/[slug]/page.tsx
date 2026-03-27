@@ -152,11 +152,11 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/5 flex flex-col md:block items-center text-center md:text-left">
                                 <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest mb-2">
-                                    {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? 'Total Chapter' : 'Total Volume'}
+                                    {(novel.type === 'WEB') ? 'Total Chapter' : 'Total Volume'}
                                 </p>
                                 <div className="flex items-end gap-2">
                                     <span className="text-4xl font-black">
-                                        {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? novel.chapters.length : novel.volumes.length}
+                                        {(novel.type === 'WEB') ? novel.chapters.length : novel.volumes.length}
                                     </span>
                                     <BookOpen size={20} className="mb-1.5 opacity-20" />
                                 </div>
@@ -209,11 +209,11 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-12">
                         <h2 className="text-4xl font-black tracking-tighter">
-                            {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? 'Daftar Chapter' : 'Koleksi Volume'}
+                            {(novel.type === 'WEB') ? 'Daftar Chapter' : 'Koleksi Volume'}
                         </h2>
                         <div className="h-px flex-1 mx-8 bg-black/5 dark:bg-white/5 hidden md:block" />
                         <span className="text-xs font-black opacity-20 tracking-[0.3em] uppercase">
-                            {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? `${novel.chapters.length} Chapter` : `${novel.volumes.length} Volume`}
+                            {(novel.type === 'WEB') ? `${novel.chapters.length} Chapter` : `${novel.volumes.length} Volume`}
                         </span>
                     </div>
 

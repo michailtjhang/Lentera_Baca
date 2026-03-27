@@ -9,198 +9,209 @@ import { utapi } from "@/lib/uploadthing";
 import { generateSlug, getChapterSlug } from "@/lib/slug-utils";
 
 export async function createNovel(_: any, formData: FormData) {
-    await checkAdmin();
+    let novelSlug = "";
+    
+    try {
+        await checkAdmin();
 
-    const title = formData.get("title") as string;
-    const author = formData.get("author") as string;
-    const illustrator = formData.get("illustrator") as string;
-    const description = formData.get("description") as string;
-    const coverImage = formData.get("coverImage") as string;
-    const coverImageKey = formData.get("coverImageKey") as string;
-    const type = (formData.get("type") as NovelType) || NovelType.WEB;
-    const region = (formData.get("region") as Region) || Region.OTHER;
-    const status = (formData.get("status") as Status) || Status.ONGOING;
+        const title = formData.get("title") as string;
+        const author = formData.get("author") as string;
+        const illustrator = formData.get("illustrator") as string;
+        const description = formData.get("description") as string;
+        const coverImage = formData.get("coverImage") as string;
+        const coverImageKey = formData.get("coverImageKey") as string;
+        const type = (formData.get("type") as NovelType) || NovelType.WEB;
+        const region = (formData.get("region") as Region) || Region.OTHER;
+        const status = (formData.get("status") as Status) || Status.ONGOING;
 
-    // Get genres and tags
-    const genres = formData.getAll("genres") as string[];
-    const tagsInput = formData.get("tags") as string;
-    const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter(Boolean) : [];
+        if (!title || !author) {
+            return { success: false, error: "Judul dan Penulis wajib diisi" };
+        }
 
-    // Volumes for PDF/EPUB
-    const volumesRaw = formData.get("volumes") as string;
-    const volumesData = volumesRaw ? JSON.parse(volumesRaw) : [];
+        // Get genres and tags
+        const genres = formData.getAll("genres") as string[];
+        const tagsInput = formData.get("tags") as string;
+        const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter(Boolean) : [];
 
-    if (!title || !author) {
-        throw new Error("Title and Author are required");
+        // Volumes for PDF/EPUB
+        const volumesRaw = formData.get("volumes") as string;
+        const volumesData = volumesRaw ? JSON.parse(volumesRaw) : [];
+
+        // simple slug generator
+        let slug = generateSlug(title);
+
+        const novel = await prisma.novel.create({
+            data: {
+                title,
+                slug,
+                author,
+                illustrator,
+                description,
+                coverImage,
+                coverImageKey,
+                type,
+                region,
+                status,
+                genres: {
+                    connectOrCreate: genres.map((name: string) => ({
+                        where: { name },
+                        create: { name }
+                    }))
+                },
+                tags: {
+                    connectOrCreate: tags.map((name: string) => ({
+                        where: { name },
+                        create: { name }
+                    }))
+                },
+                volumes: {
+                    create: volumesData.map((v: any, index: number) => ({
+                        title: v.title,
+                        order: v.order || index + 1,
+                        fileUrl: v.fileUrl || null,
+                        fileKey: v.fileKey || null,
+                        fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
+                    })),
+                },
+            },
+        });
+
+        novelSlug = novel.slug;
+        revalidatePath("/");
+        revalidatePath(`/novel/${novelSlug}`);
+        revalidatePath("/admin");
+    } catch (error: any) {
+        console.error("Create Novel Error:", error);
+        return { success: false, error: error.message || "Gagal menerbitkan novel" };
     }
 
-    // simple slug generator
-    let slug = generateSlug(title);
-
-    const novel = await prisma.novel.create({
-        data: {
-            title,
-            slug,
-            author,
-            illustrator,
-            description,
-            coverImage,
-            coverImageKey,
-            type,
-            region,
-            status,
-            genres: {
-                connectOrCreate: genres.map((name: string) => ({
-                    where: { name },
-                    create: { name }
-                }))
-            },
-            tags: {
-                connectOrCreate: tags.map((name: string) => ({
-                    where: { name },
-                    create: { name }
-                }))
-            },
-            volumes: {
-                create: volumesData.map((v: any, index: number) => ({
-                    title: v.title,
-                    order: v.order || index + 1,
-                    fileUrl: v.fileUrl || null,
-                    fileKey: v.fileKey || null,
-                    fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
-                })),
-            },
-        },
-    });
-
-    revalidatePath("/");
-    revalidatePath(`/novel/${novel.slug}`);
-    revalidatePath("/admin");
     redirect("/admin");
 }
 
 export async function updateNovel(novelId: string, formData: FormData) {
-    await checkAdmin();
+    let novelSlug = "";
 
-    const title = formData.get("title") as string;
-    const author = formData.get("author") as string;
-    const illustrator = formData.get("illustrator") as string;
-    const description = formData.get("description") as string;
-    const coverImage = formData.get("coverImage") as string;
-    const coverImageKey = formData.get("coverImageKey") as string;
-    const type = (formData.get("type") as NovelType) || NovelType.WEB;
-    const region = (formData.get("region") as Region) || Region.OTHER;
-    const status = (formData.get("status") as Status) || Status.ONGOING;
+    try {
+        await checkAdmin();
 
-    const genres = formData.getAll("genres") as string[];
-    const tagsInput = formData.get("tags") as string;
-    const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter(Boolean) : [];
+        const title = formData.get("title") as string;
+        const author = formData.get("author") as string;
+        const illustrator = formData.get("illustrator") as string;
+        const description = formData.get("description") as string;
+        const coverImage = formData.get("coverImage") as string;
+        const coverImageKey = formData.get("coverImageKey") as string;
+        const type = (formData.get("type") as NovelType) || NovelType.WEB;
+        const region = (formData.get("region") as Region) || Region.OTHER;
+        const status = (formData.get("status") as Status) || Status.ONGOING;
 
-    const volumesRaw = formData.get("volumes") as string;
-    const volumesData = volumesRaw ? JSON.parse(volumesRaw) : [];
-
-    if (!title || !author) {
-        throw new Error("Title and Author are required");
-    }
-
-    const currentNovel = await prisma.novel.findUnique({
-        where: { id: novelId },
-        include: { genres: true, tags: true, volumes: true }
-    });
-
-    if (!currentNovel) throw new Error("Novel not found");
-
-    // Handle File Deletion from UploadThing if changed or removed
-    if (currentNovel.coverImageKey && currentNovel.coverImageKey !== coverImageKey) {
-        await utapi.deleteFiles(currentNovel.coverImageKey);
-    }
-
-    // Volume matching and cleanup
-    const currentVolumes = currentNovel.volumes;
-    const incomingVolumes = volumesData;
-
-    // 1. Identify volumes to delete
-    const incomingIds = incomingVolumes.filter((v: any) => v.id).map((v: any) => v.id);
-    const volumesToDelete = currentVolumes.filter(v => !incomingIds.includes(v.id));
-    const keysToDelete = volumesToDelete.map(v => v.fileKey).filter((key): key is string => !!key);
-
-    if (keysToDelete.length > 0) {
-        await utapi.deleteFiles(keysToDelete);
-    }
-
-    // 2. Separate incoming volumes into Updates and Creates
-    // Identify if the current slug is "bad" (long hash)
-    const isBadSlug = currentNovel.slug.length > 50 || currentNovel.slug.includes("bti0sbt");
-    let newSlug = currentNovel.slug;
-    
-    // If title changed OR it's a bad slug, regenerate
-    if (currentNovel.title !== title || isBadSlug) {
-        newSlug = generateSlug(title);
-        // Check for collision
-        const slugExists = await prisma.novel.findFirst({
-            where: { slug: newSlug, id: { not: novelId } }
-        });
-        if (slugExists) {
-            newSlug = `${newSlug}-${Math.random().toString(36).substring(2, 7)}`;
+        if (!title || !author) {
+            return { success: false, error: "Judul dan Penulis wajib diisi" };
         }
-    }
 
-    const volumesToUpdate = incomingVolumes.filter((v: any) => v.id);
-    const volumesToCreate = incomingVolumes.filter((v: any) => !v.id);
+        const genres = formData.getAll("genres") as string[];
+        const tagsInput = formData.get("tags") as string;
+        const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter(Boolean) : [];
 
-    const updated = await prisma.novel.update({
-        where: { id: novelId },
-        data: {
-            title,
-            slug: newSlug,
-            author,
-            illustrator,
-            description,
-            coverImage,
-            coverImageKey,
-            type,
-            region,
-            status,
-            genres: {
-                set: [],
-                connectOrCreate: genres.map((name: string) => ({
-                    where: { name },
-                    create: { name }
-                }))
-            },
-            tags: {
-                set: [],
-                connectOrCreate: tags.map((name: string) => ({
-                    where: { name },
-                    create: { name }
-                }))
-            },
-            volumes: {
-                deleteMany: { id: { in: volumesToDelete.map(v => v.id) } },
-                update: volumesToUpdate.map((v: any) => ({
-                    where: { id: v.id },
-                    data: {
+        const volumesRaw = formData.get("volumes") as string;
+        const incomingVolumes = volumesRaw ? JSON.parse(volumesRaw) : [];
+
+        const currentNovel = await prisma.novel.findUnique({
+            where: { id: novelId },
+            include: { genres: true, tags: true, volumes: true }
+        });
+
+        if (!currentNovel) throw new Error("Novel tidak ditemukan");
+
+        // Handle File Deletion from UploadThing if changed or removed
+        if (currentNovel.coverImageKey && currentNovel.coverImageKey !== coverImageKey) {
+            await utapi.deleteFiles(currentNovel.coverImageKey);
+        }
+
+        // Volume matching and cleanup
+        const currentVolumes = currentNovel.volumes;
+        const incomingIds = incomingVolumes.filter((v: any) => v.id).map((v: any) => v.id);
+        const volumesToDelete = currentVolumes.filter(v => !incomingIds.includes(v.id));
+        const keysToDelete = volumesToDelete.map(v => v.fileKey).filter((key): key is string => !!key);
+
+        if (keysToDelete.length > 0) {
+            await utapi.deleteFiles(keysToDelete);
+        }
+
+        const isBadSlug = currentNovel.slug.length > 50 || currentNovel.slug.includes("bti0sbt");
+        let newSlug = currentNovel.slug;
+        if (currentNovel.title !== title || isBadSlug) {
+            newSlug = generateSlug(title);
+            const slugExists = await prisma.novel.findFirst({
+                where: { slug: newSlug, id: { not: novelId } }
+            });
+            if (slugExists) {
+                newSlug = `${newSlug}-${Math.random().toString(36).substring(2, 7)}`;
+            }
+        }
+
+        const volumesToUpdate = incomingVolumes.filter((v: any) => v.id);
+        const volumesToCreate = incomingVolumes.filter((v: any) => !v.id);
+
+        const updated = await prisma.novel.update({
+            where: { id: novelId },
+            data: {
+                title,
+                slug: newSlug,
+                author,
+                illustrator,
+                description,
+                coverImage,
+                coverImageKey,
+                type,
+                region,
+                status,
+                genres: {
+                    set: [],
+                    connectOrCreate: genres.map((name: string) => ({
+                        where: { name },
+                        create: { name }
+                    }))
+                },
+                tags: {
+                    set: [],
+                    connectOrCreate: tags.map((name: string) => ({
+                        where: { name },
+                        create: { name }
+                    }))
+                },
+                volumes: {
+                    deleteMany: { id: { in: volumesToDelete.map(v => v.id) } },
+                    update: volumesToUpdate.map((v: any) => ({
+                        where: { id: v.id },
+                        data: {
+                            title: v.title,
+                            order: v.order,
+                            fileUrl: v.fileUrl || null,
+                            fileKey: v.fileKey || null,
+                            fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
+                        }
+                    })),
+                    create: volumesToCreate.map((v: any, index: number) => ({
                         title: v.title,
-                        order: v.order,
+                        order: v.order || (currentVolumes.length + index + 1),
                         fileUrl: v.fileUrl || null,
                         fileKey: v.fileKey || null,
                         fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
-                    }
-                })),
-                create: volumesToCreate.map((v: any, index: number) => ({
-                    title: v.title,
-                    order: v.order || (currentVolumes.length + index + 1),
-                    fileUrl: v.fileUrl || null,
-                    fileKey: v.fileKey || null,
-                    fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
-                })),
+                    })),
+                },
             },
-        },
-    });
+        });
 
-    revalidatePath("/");
-    revalidatePath(`/novel/${updated.slug}`);
-    revalidatePath("/admin");
+        novelSlug = updated.slug;
+        revalidatePath("/");
+        revalidatePath(`/novel/${novelSlug}`);
+        revalidatePath("/admin");
+    } catch (error: any) {
+        if (error.digest?.includes("NEXT_REDIRECT")) throw error;
+        console.error("Update Novel Error:", error);
+        return { success: false, error: error.message || "Gagal memperbarui novel" };
+    }
+
     redirect("/admin");
 }
 
@@ -250,66 +261,88 @@ export async function deleteNovel(novelId: string) {
 
 // Chapter Actions (Unchanged mostly, but ensure novelId works)
 export async function createChapter(novelId: string, formData: FormData) {
-    await checkAdmin();
+    let chapterSlug = "";
+    let novelSlug = "";
+    
+    try {
+        await checkAdmin();
 
-    const title = (formData.get("title") as string) || null;
-    const content = formData.get("content") as string;
-    let order = parseInt(formData.get("order") as string);
-    const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
-    const volumeId = formData.get("volumeId") as string || null;
+        const title = (formData.get("title") as string) || null;
+        const content = formData.get("content") as string;
+        let order = parseInt(formData.get("order") as string);
+        const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
+        const volumeId = formData.get("volumeId") as string || null;
 
-    if (!content) {
-        throw new Error("Konten wajib diisi");
+        if (!content) {
+            return { success: false, error: "Konten chapter tidak boleh kosong" };
+        }
+
+        if (isNaN(order)) {
+            // Find max order
+            const lastChapter = await prisma.chapter.findFirst({
+                where: { novelId },
+                orderBy: { order: "desc" }
+            });
+            order = (lastChapter?.order || 0) + 1;
+        }
+
+        const chapter = await prisma.chapter.create({
+            data: { title, content, order, type, novelId, volumeId } as any,
+            include: { novel: true }
+        }) as any;
+
+        novelSlug = chapter.novel.slug;
+        revalidatePath(`/novel/${novelSlug}`);
+        revalidatePath("/admin");
+        
+        const allChapters = await prisma.chapter.findMany({ where: { novelId }, orderBy: { order: "asc" } });
+        chapterSlug = getChapterSlug(chapter, allChapters);
+    } catch (error: any) {
+        console.error("Create Chapter Error:", error);
+        return { success: false, error: error.message || "Gagal membuat chapter" };
     }
 
-    if (isNaN(order)) {
-        // Find max order
-        const lastChapter = await prisma.chapter.findFirst({
-            where: { novelId },
-            orderBy: { order: "desc" }
-        });
-        order = (lastChapter?.order || 0) + 1;
-    }
-
-    const chapter = await prisma.chapter.create({
-        data: { title, content, order, type, novelId, volumeId } as any,
-        include: { novel: true }
-    }) as any;
-
-    revalidatePath(`/novel/${chapter.novel.slug}`);
-    revalidatePath("/admin");
-    const allChapters = await prisma.chapter.findMany({ where: { novelId }, orderBy: { order: "asc" } });
-    const chapterSlug = getChapterSlug(chapter, allChapters);
-    redirect(`/novel/${chapter.novel.slug}/${chapterSlug}`);
+    redirect(`/novel/${novelSlug}/${chapterSlug}`);
 }
 
 export async function updateChapter(chapterId: string, formData: FormData) {
-    await checkAdmin();
+    let chapterSlug = "";
+    let novelSlug = "";
 
-    const title = (formData.get("title") as string) || null;
-    const content = formData.get("content") as string;
-    const orderRaw = formData.get("order");
-    const order = orderRaw ? parseInt(orderRaw as string) : undefined;
-    const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
-    const volumeId = formData.get("volumeId") as string || null;
+    try {
+        await checkAdmin();
 
-    if (!content) {
-        throw new Error("Konten wajib diisi");
+        const title = (formData.get("title") as string) || null;
+        const content = formData.get("content") as string;
+        const orderRaw = formData.get("order");
+        const order = orderRaw ? parseInt(orderRaw as string) : undefined;
+        const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
+        const volumeId = formData.get("volumeId") as string || null;
+
+        if (!content) {
+            return { success: false, error: "Konten chapter tidak boleh kosong" };
+        }
+
+        const chapter = await prisma.chapter.update({
+            where: { id: chapterId },
+            data: { title, content, order, type, volumeId } as any,
+            include: { novel: true }
+        }) as any;
+
+        novelSlug = chapter.novel.slug;
+        revalidatePath(`/novel/${novelSlug}`);
+        revalidatePath("/admin");
+        revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
+        
+        const allChapters = await prisma.chapter.findMany({ where: { novelId: chapter.novelId }, orderBy: { order: "asc" } });
+        chapterSlug = getChapterSlug(chapter, allChapters);
+    } catch (error: any) {
+        if (error.digest?.includes("NEXT_REDIRECT")) throw error;
+        console.error("Update Chapter Error:", error);
+        return { success: false, error: error.message || "Gagal memperbarui chapter" };
     }
 
-    const chapter = await prisma.chapter.update({
-        where: { id: chapterId },
-        data: { title, content, order, type, volumeId } as any,
-        include: { novel: true }
-    }) as any;
-
-    revalidatePath(`/novel/${chapter.novel.slug}`);
-    revalidatePath("/admin");
-    revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
-    
-    const allChapters = await prisma.chapter.findMany({ where: { novelId: chapter.novelId }, orderBy: { order: "asc" } });
-    const chapterSlug = getChapterSlug(chapter, allChapters);
-    redirect(`/novel/${chapter.novel.slug}/${chapterSlug}`);
+    redirect(`/novel/${novelSlug}/${chapterSlug}`);
 }
 
 export async function deleteChapter(chapterId: string) {

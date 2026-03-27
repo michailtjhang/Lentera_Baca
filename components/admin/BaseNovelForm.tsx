@@ -48,14 +48,22 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
 
         startTransition(async () => {
             try {
+                let result: any;
                 if (mode === "create") {
-                    await action(null, formData);
+                    result = await action(null, formData);
                 } else {
-                    await action(novel.id, formData);
+                    result = await action(novel.id, formData);
                 }
-                router.push("/admin");
-                router.refresh();
+
+                if (result && result.success === false) {
+                    setError(result.error);
+                } else {
+                    router.push("/admin");
+                    router.refresh();
+                }
             } catch (err: any) {
+                // Ignore redirect errors as they are expected
+                if (err.message === "NEXT_REDIRECT") return;
                 setError(err.message || "Gagal menyimpan data.");
             }
         });
