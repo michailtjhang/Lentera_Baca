@@ -161,16 +161,8 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                         <input type="hidden" name="type" value="STORY" />
                     )}
 
-                    <div className="space-y-2">
-                        <label htmlFor="order" className="text-sm font-bold uppercase tracking-widest opacity-60">Urutan (Angka)</label>
-                        <input
-                            type="number"
-                            name="order"
-                            id="order"
-                            required
-                            defaultValue={chapter?.order}
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
-                        />
+                    <div className="hidden">
+                        <input type="hidden" name="order" defaultValue={chapter?.order} />
                     </div>
                 </div>
 

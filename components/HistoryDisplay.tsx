@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { getChapterSlug } from "@/lib/slug-utils";
 
 interface HistoryData {
     chapterId: string;
@@ -14,9 +15,10 @@ interface HistoryData {
 interface HistoryDisplayProps {
     novelId: string;
     slug: string;
+    allChapters: any[];
 }
 
-export default function HistoryDisplay({ novelId, slug }: HistoryDisplayProps) {
+export default function HistoryDisplay({ novelId, slug, allChapters }: HistoryDisplayProps) {
     const [history, setHistory] = useState<HistoryData | null>(null);
 
     useEffect(() => {
@@ -31,6 +33,10 @@ export default function HistoryDisplay({ novelId, slug }: HistoryDisplayProps) {
 
     if (!history) return null;
 
+    const targetChapter = allChapters.find(c => c.id === history.chapterId) || 
+                          allChapters.find(c => c.order === history.chapterOrder);
+    const chapterSlug = targetChapter ? getChapterSlug(targetChapter, allChapters) : `chapter-${history.chapterOrder}`;
+
     return (
         <div className="mb-6 p-5 bg-gradient-to-r from-[#3E2723] to-[#5D4037] text-[#F5F5DC] rounded-2xl shadow-lg border border-white/10 animate-in fade-in slide-in-from-bottom-2 duration-700">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -41,7 +47,7 @@ export default function HistoryDisplay({ novelId, slug }: HistoryDisplayProps) {
                     </h3>
                 </div>
                 <Link
-                    href={`/novel/${slug}/chapter-${history.chapterOrder}`}
+                    href={`/novel/${slug}/${chapterSlug}`}
                     className="group w-full sm:w-auto flex items-center justify-center gap-2 bg-[#F5F5DC] text-[#3E2723] px-6 py-2.5 rounded-xl font-bold hover:bg-white transition-all active:scale-95 shadow-md"
                 >
                     Lanjutkan

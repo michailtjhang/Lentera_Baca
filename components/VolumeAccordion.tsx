@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Image as ImageIcon, Book, Sparkles, LogOut, Hash, Layers } from "lucide-react";
 import { ChapterType } from "@prisma/client";
+import { getChapterSlug } from "@/lib/slug-utils";
 
 interface Chapter {
     id: string;
@@ -22,11 +23,12 @@ interface Volume {
 interface VolumeAccordionProps {
     volumes: Volume[];
     standaloneChapters: Chapter[];
+    allChapters: Chapter[]; // Added to calculate index within type
     slug: string;
     novelId: string;
 }
 
-export default function VolumeAccordion({ volumes, standaloneChapters, slug, novelId }: VolumeAccordionProps) {
+export default function VolumeAccordion({ volumes, standaloneChapters, allChapters, slug, novelId }: VolumeAccordionProps) {
     const [openVolumes, setOpenVolumes] = useState<Record<string, boolean>>(() => {
         // Open the last volume by default
         if (volumes.length > 0) {
@@ -64,7 +66,7 @@ export default function VolumeAccordion({ volumes, standaloneChapters, slug, nov
     const renderChapterLink = (chapter: Chapter) => (
         <Link
             key={chapter.id}
-            href={`/novel/${slug}/chapter-${chapter.order}`}
+            href={`/novel/${slug}/${getChapterSlug(chapter, allChapters)}`}
             className="flex items-center gap-4 p-4 hover:bg-white/60 dark:hover:bg-white/5 transition-all group border-b border-black/5 dark:border-white/5 last:border-0"
         >
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 group-hover:bg-black group-hover:text-white transition-colors">

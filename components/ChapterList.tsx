@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { getChapterSlug } from "@/lib/slug-utils";
+
+import { ChapterType } from "@prisma/client";
 
 interface Chapter {
     id: string;
     title: string;
     order: number;
+    type: ChapterType;
     createdAt: Date | string;
 }
 
@@ -42,7 +46,7 @@ export default function ChapterList({ chapters, slug, novelId }: ChapterListProp
                     return (
                         <Link
                             key={chapter.id}
-                            href={`/novel/${slug}/chapter-${chapter.order}`}
+                            href={`/novel/${slug}/${getChapterSlug(chapter, chapters)}`}
                             className={`flex items-center gap-4 p-4 hover:bg-white/60 transition-all group ${isLastRead ? "bg-white/80 border-l-4 border-l-[#3E2723]" : ""
                                 } ${isRead && !isLastRead ? "opacity-50" : "opacity-100"}`}
                         >

@@ -6,6 +6,8 @@ import { UserButton, SignedIn } from "@clerk/nextjs";
 import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import ReadingHistory from "@/components/ReadingHistory";
+import { getChapterBySlug, getChapterSlug } from "@/lib/slug-utils";
+import { ChapterType } from "@prisma/client";
 
 interface PageProps {
     params: Promise<{ slug: string; chapterOrder: string }>;
@@ -13,13 +15,17 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
     const { slug, chapterOrder } = await params;
-    const orderNumber = parseInt(chapterOrder.replace("chapter-", ""));
-    const chapter = await prisma.chapter.findFirst({
-        where: { order: orderNumber, novel: { slug: slug } },
-        include: { novel: true },
+    
+    const novel = await prisma.novel.findUnique({
+        where: { slug: slug },
+        include: { chapters: { orderBy: { order: 'asc' } } }
     });
     
+    if (!novel) return { title: "Novel Tidak Ditemukan" };
+    
+    const chapter = getChapterBySlug(chapterOrder, novel.chapters) as any;
     if (!chapter) return { title: "Chapter Tidak Ditemukan" };
+    chapter.novel = novel;
 
     const titleStr = chapter.title ? `: ${chapter.title}` : "";
     const chapterName = chapter.type.toString() === "PROLOGUE" ? "Prolog" : 
@@ -38,27 +44,23 @@ export default async function ReaderPage({ params }: PageProps) {
     const user = await currentUser();
     const theme = (user?.publicMetadata?.theme as string) || "light";
 
-    // Parse order from "chapter-1", "chapter-2", etc.
-    const orderNumber = parseInt(chapterOrder.replace("chapter-", ""));
-    if (isNaN(orderNumber)) return notFound();
-
-    const chapter = await prisma.chapter.findFirst({
-        where: { order: orderNumber, novel: { slug: slug } },
-        include: { novel: true },
+    const novel = await prisma.novel.findUnique({
+        where: { slug },
+        include: { chapters: { orderBy: { order: 'asc' } } }
     });
 
-    if (!chapter) return notFound();
+    if (!novel) return notFound();
 
-    const [prevChapter, nextChapter] = await Promise.all([
-        prisma.chapter.findFirst({
-            where: { novelId: chapter.novelId, order: chapter.order - 1 },
-        }),
-        prisma.chapter.findFirst({
-            where: { novelId: chapter.novelId, order: chapter.order + 1 },
-        })
-    ]);
+    const chapter = getChapterBySlug(chapterOrder, novel.chapters) as any;
+    if (!chapter) return notFound();
+    chapter.novel = novel;
+
+    const currentIndex = novel.chapters.findIndex(c => c.id === chapter.id);
+    const prevChapter = novel.chapters[currentIndex - 1];
+    const nextChapter = novel.chapters[currentIndex + 1];
 
     const basePath = `/novel/${slug}`;
+    const getLink = (c: any) => `${basePath}/${getChapterSlug(c, novel.chapters)}`;
 
     return (
         <div className="min-h-screen transition-colors duration-500 ease-in-out bg-[#F5F5DC] text-[#3E2723] dark:bg-[#121212] dark:text-[#e0e0e0]">
@@ -90,7 +92,7 @@ export default async function ReaderPage({ params }: PageProps) {
                     <nav className="flex justify-between items-center mb-12 py-4 border-y border-black/5 dark:border-white/5">
                         {prevChapter ? (
                             <Link
-                                href={`${basePath}/chapter-${prevChapter.order}`}
+                                href={getLink(prevChapter)}
                                 className="flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                             >
                                 <ChevronLeft size={16} /> Prev
@@ -110,7 +112,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                         {nextChapter ? (
                             <Link
-                                href={`${basePath}/chapter-${nextChapter.order}`}
+                                href={getLink(nextChapter)}
                                 className="flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                             >
                                 Next <ChevronRight size={16} />
@@ -138,7 +140,7 @@ export default async function ReaderPage({ params }: PageProps) {
                 <nav className="mt-24 flex justify-between items-center border-t border-black/5 pt-12 dark:border-white/5">
                     {prevChapter ? (
                         <Link
-                            href={`${basePath}/chapter-${prevChapter.order}`}
+                            href={getLink(prevChapter)}
                             className="flex items-center justify-center w-14 h-14 rounded-2xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                             title="Sebelumnya"
                         >
@@ -152,7 +154,7 @@ export default async function ReaderPage({ params }: PageProps) {
 
                     {nextChapter ? (
                         <Link
-                            href={`${basePath}/chapter-${nextChapter.order}`}
+                            href={getLink(nextChapter)}
                             className="flex items-center justify-center w-14 h-14 rounded-2xl border transition-all active:scale-95 border-black/5 hover:bg-black/5 text-[#3E2723] dark:border-white/10 dark:hover:bg-white/5 dark:text-white shadow-sm"
                             title="Selanjutnya"
                         >

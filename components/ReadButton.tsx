@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Play } from "lucide-react";
+import { getChapterSlug } from "@/lib/slug-utils";
 
 interface ReadButtonProps {
     novelId: string;
     slug: string;
     firstChapterOrder: number;
+    allChapters: any[];
 }
 
-export default function ReadButton({ novelId, slug, firstChapterOrder }: ReadButtonProps) {
+export default function ReadButton({ novelId, slug, firstChapterOrder, allChapters }: ReadButtonProps) {
     const [history, setHistory] = useState<{ chapterOrder: number } | null>(null);
 
     useEffect(() => {
@@ -25,10 +27,12 @@ export default function ReadButton({ novelId, slug, firstChapterOrder }: ReadBut
 
     const targetOrder = history ? history.chapterOrder : firstChapterOrder;
     const label = history ? "Lanjut Baca" : "Mulai Baca";
+    const targetChapter = allChapters.find(c => c.order === targetOrder) || allChapters[0];
+    const chapterSlug = targetChapter ? getChapterSlug(targetChapter, allChapters) : `chapter-${targetOrder}`;
 
     return (
         <Link
-            href={`/novel/${slug}/chapter-${targetOrder}`}
+            href={`/novel/${slug}/${chapterSlug}`}
             className="flex-1 flex items-center justify-center gap-3 bg-[#3E2723] dark:bg-white text-[#F5F5DC] dark:text-black rounded-[2rem] font-black uppercase tracking-widest text-[0.7rem] hover:shadow-2xl transition-all active:scale-95 group"
         >
             <Play size={16} className="fill-current group-hover:scale-110 transition-transform" />

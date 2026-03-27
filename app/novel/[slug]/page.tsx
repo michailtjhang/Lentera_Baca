@@ -170,6 +170,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                             novelId={novel.id}
                                             slug={slug}
                                             firstChapterOrder={novel.chapters[0].order}
+                                            allChapters={novel.chapters}
                                         />
                                     )
                                 ) : (
@@ -218,11 +219,12 @@ export default async function NovelOverviewPage({ params }: PageProps) {
 
                     {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? (
                         <>
-                            <HistoryDisplay novelId={novel.id} slug={slug} />
+                            <HistoryDisplay novelId={novel.id} slug={slug} allChapters={novel.chapters} />
                             {novel.volumes.length > 0 ? (
                                 <VolumeAccordion
                                     volumes={novel.volumes}
                                     standaloneChapters={novel.chapters.filter((c: any) => !c.volumeId)}
+                                    allChapters={novel.chapters}
                                     slug={slug}
                                     novelId={novel.id}
                                 />

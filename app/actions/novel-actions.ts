@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { NovelType, Region, Status, FileType, ChapterType } from "@prisma/client";
 import { utapi } from "@/lib/uploadthing";
+import { generateSlug, getChapterSlug } from "@/lib/slug-utils";
 
 export async function createNovel(_: any, formData: FormData) {
     await checkAdmin();
@@ -34,16 +35,7 @@ export async function createNovel(_: any, formData: FormData) {
     }
 
     // simple slug generator
-    let slug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
-
-    const existing = await prisma.novel.findUnique({ where: { slug } });
-    if (existing) {
-        slug = `${slug}-${Math.random().toString(36).substr(2, 5)}`;
-    }
+    let slug = generateSlug(title);
 
     const novel = await prisma.novel.create({
         data: {
@@ -137,6 +129,22 @@ export async function updateNovel(novelId: string, formData: FormData) {
     }
 
     // 2. Separate incoming volumes into Updates and Creates
+    // Identify if the current slug is "bad" (long hash)
+    const isBadSlug = currentNovel.slug.length > 50 || currentNovel.slug.includes("bti0sbt");
+    let newSlug = currentNovel.slug;
+    
+    // If title changed OR it's a bad slug, regenerate
+    if (currentNovel.title !== title || isBadSlug) {
+        newSlug = generateSlug(title);
+        // Check for collision
+        const slugExists = await prisma.novel.findFirst({
+            where: { slug: newSlug, id: { not: novelId } }
+        });
+        if (slugExists) {
+            newSlug = `${newSlug}-${Math.random().toString(36).substring(2, 7)}`;
+        }
+    }
+
     const volumesToUpdate = incomingVolumes.filter((v: any) => v.id);
     const volumesToCreate = incomingVolumes.filter((v: any) => !v.id);
 
@@ -144,6 +152,7 @@ export async function updateNovel(novelId: string, formData: FormData) {
         where: { id: novelId },
         data: {
             title,
+            slug: newSlug,
             author,
             illustrator,
             description,
@@ -245,12 +254,21 @@ export async function createChapter(novelId: string, formData: FormData) {
 
     const title = (formData.get("title") as string) || null;
     const content = formData.get("content") as string;
-    const order = parseInt(formData.get("order") as string);
+    let order = parseInt(formData.get("order") as string);
     const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
     const volumeId = formData.get("volumeId") as string || null;
 
-    if (!content || isNaN(order)) {
-        throw new Error("Konten dan Urutan (angka) wajib diisi");
+    if (!content) {
+        throw new Error("Konten wajib diisi");
+    }
+
+    if (isNaN(order)) {
+        // Find max order
+        const lastChapter = await prisma.chapter.findFirst({
+            where: { novelId },
+            orderBy: { order: "desc" }
+        });
+        order = (lastChapter?.order || 0) + 1;
     }
 
     const chapter = await prisma.chapter.create({
@@ -260,7 +278,9 @@ export async function createChapter(novelId: string, formData: FormData) {
 
     revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");
-    redirect(`/admin/novel/${novelId}/chapter`);
+    const allChapters = await prisma.chapter.findMany({ where: { novelId }, orderBy: { order: "asc" } });
+    const chapterSlug = getChapterSlug(chapter, allChapters);
+    redirect(`/novel/${chapter.novel.slug}/${chapterSlug}`);
 }
 
 export async function updateChapter(chapterId: string, formData: FormData) {
@@ -268,12 +288,13 @@ export async function updateChapter(chapterId: string, formData: FormData) {
 
     const title = (formData.get("title") as string) || null;
     const content = formData.get("content") as string;
-    const order = parseInt(formData.get("order") as string);
+    const orderRaw = formData.get("order");
+    const order = orderRaw ? parseInt(orderRaw as string) : undefined;
     const type = (formData.get("type") as ChapterType) || ChapterType.STORY;
     const volumeId = formData.get("volumeId") as string || null;
 
-    if (!content || isNaN(order)) {
-        throw new Error("Konten dan Urutan (angka) wajib diisi");
+    if (!content) {
+        throw new Error("Konten wajib diisi");
     }
 
     const chapter = await prisma.chapter.update({
@@ -285,7 +306,10 @@ export async function updateChapter(chapterId: string, formData: FormData) {
     revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");
     revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
-    redirect(`/admin/novel/${chapter.novelId}/chapter`);
+    
+    const allChapters = await prisma.chapter.findMany({ where: { novelId: chapter.novelId }, orderBy: { order: "asc" } });
+    const chapterSlug = getChapterSlug(chapter, allChapters);
+    redirect(`/novel/${chapter.novel.slug}/${chapterSlug}`);
 }
 
 export async function deleteChapter(chapterId: string) {
