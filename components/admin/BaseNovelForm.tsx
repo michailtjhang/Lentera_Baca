@@ -12,7 +12,7 @@ import { Save, Loader2, ArrowLeft } from "lucide-react";
 interface NovelFormProps {
     novel?: any;
     tagSuggestions: string[];
-    action: (novelId: string | any, formData: FormData) => Promise<void>;
+    action: (arg1: any, arg2: any, arg3?: any) => Promise<any>;
     predefinedGenres: string[];
     mode: "create" | "edit";
     isLightNovel?: boolean;

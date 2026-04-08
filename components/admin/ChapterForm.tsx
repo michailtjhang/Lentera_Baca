@@ -11,7 +11,7 @@ import { deleteFiles } from "@/app/actions/novel-actions";
 interface ChapterFormProps {
     chapter?: any;
     volumes?: any[];
-    action: (formData: FormData) => void;
+    action: (prevState: any, formData: FormData) => Promise<any>;
     novelType?: string;
 }
 

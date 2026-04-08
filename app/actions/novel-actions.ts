@@ -97,7 +97,7 @@ export async function createNovel(_: any, formData: FormData) {
     redirect("/admin");
 }
 
-export async function updateNovel(novelId: string, formData: FormData) {
+export async function updateNovel(novelId: string, prevState: any, formData: FormData) {
     let novelSlug = "";
 
     try {
