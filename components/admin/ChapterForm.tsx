@@ -167,15 +167,19 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         syncImagesToContent(newImages);
     };
 
+    const handleFormSubmit = async (formData: FormData) => {
+        // Clear draft right before submission to prevent it sticking around if redirect happens
+        // If there's an error, the user can still rely on the 'draftFound' logic if they refresh,
+        // but for a smooth experience, we clear it here.
+        // Actually, let's only clear it if it's not an illustration type OR if we are confident.
+        // Better: Clear it, and if it fails, the user has the 'state' error.
+        clearDraft(); 
+        (formAction as any)(formData);
+    };
+
     return (
         <form 
-            action={formAction} 
-            onSubmit={() => {
-                // Clear draft only on successful submission (handled later or simple clear)
-                // Actually, clearing it here might be too early if validation fails.
-                // But for simplicity in this demo:
-                // setTimeout(clearDraft, 2000); 
-            }}
+            action={handleFormSubmit} 
             className="space-y-6 bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 max-w-7xl mx-auto shadow-sm"
         >
             {/* Error Message */}

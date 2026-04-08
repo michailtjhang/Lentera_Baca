@@ -56,8 +56,11 @@ export default async function NovelOverviewPage({ params }: PageProps) {
     });
 
     const novel = novelResult as any;
-
     if (!novel) return notFound();
+
+    const rank = await prisma.novel.count({
+        where: { views: { gt: novel.views } }
+    }) + 1;
 
     const statusColors: Record<string, string> = {
         ONGOING: "text-blue-500 bg-blue-500/10",
@@ -105,6 +108,17 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                     {/* Hero Right: Content */}
                     <div className="lg:col-span-8 space-y-12">
                         <div>
+                            <div className="flex flex-wrap items-center gap-4 mb-4">
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-[0.6rem] font-black uppercase tracking-[0.2em] shadow-lg ${
+                                    rank === 1 ? "bg-yellow-500 text-white animate-pulse" :
+                                    rank === 2 ? "bg-slate-400 text-white" :
+                                    rank === 3 ? "bg-orange-600 text-white" :
+                                    "bg-stone-500 text-white opacity-40"
+                                }`}>
+                                    🏆 Peringkat #{rank} Populer
+                                </div>
+                            </div>
+
                             <div className="flex flex-wrap items-center gap-4 mb-8">
                                 <span className={`text-[0.6rem] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full ${statusColors[novel.status]}`}>
                                     {novel.status}

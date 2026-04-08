@@ -58,8 +58,8 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                             >
                                 {type === "ALL" ? "Semua" : 
                                  type === "WEB" ? "Web" :
-                                 type === "LIGHTNOVEL_WEB" ? "Volume" :
-                                 type === "LIGHTNOVEL_PDF" ? "PDF" : "EPUB"}
+                                 type === "LIGHTNOVEL_WEB" ? "LN (Web)" :
+                                 type === "LIGHTNOVEL_PDF" ? "LN (PDF)" : "EPUB"}
                             </button>
                         ))}
                     </div>

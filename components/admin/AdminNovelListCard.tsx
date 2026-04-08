@@ -26,9 +26,9 @@ export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
     const isLight = novel.type === "LIGHTNOVEL_WEB" || novel.type === "LIGHTNOVEL_PDF" || novel.type === "EPUB";
     const typeLabels: Record<string, string> = {
         WEB: "Web Novel",
-        LIGHTNOVEL_WEB: "L-Novel (Web)",
-        LIGHTNOVEL_PDF: "L-Novel (PDF)",
-        EPUB: "L-Novel (EPUB)",
+        LIGHTNOVEL_WEB: "Light Novel (Web)",
+        LIGHTNOVEL_PDF: "Light Novel (PDF)",
+        EPUB: "Light Novel (EPUB)",
     };
 
     const countLabel = isWeb ? "CHAPTER" : "VOLUME";
@@ -108,6 +108,7 @@ export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
 
                 <Link
                     href={`/novel/${novel.slug}`}
+                    target="_blank"
                     className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-[1.2rem] text-[0.65rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-lg shadow-black/10"
                 >
                     <ExternalLink size={14} />
