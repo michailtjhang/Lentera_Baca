@@ -8,6 +8,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import ReadingHistory from "@/components/ReadingHistory";
 import { getChapterBySlug, getChapterSlug } from "@/lib/slug-utils";
 import { ChapterType } from "@prisma/client";
+import { incrementView } from "@/app/actions/novel-actions";
 
 interface PageProps {
     params: Promise<{ slug: string; chapterOrder: string }>;
@@ -58,6 +59,9 @@ export default async function ReaderPage({ params }: PageProps) {
     const currentIndex = novel.chapters.findIndex(c => c.id === chapter.id);
     const prevChapter = novel.chapters[currentIndex - 1];
     const nextChapter = novel.chapters[currentIndex + 1];
+
+    // Increment view count for the chapter (and novel)
+    await incrementView(chapter.id, 'CHAPTER');
 
     const basePath = `/novel/${slug}`;
     const getLink = (c: any) => `${basePath}/${getChapterSlug(c, novel.chapters)}`;

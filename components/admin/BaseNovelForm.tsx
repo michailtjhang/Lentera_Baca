@@ -29,7 +29,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
     const [coverImage, setCoverImage] = useState(novel?.coverImage || "");
     const [coverImageKey, setCoverImageKey] = useState(novel?.coverImageKey || "");
     const [volumes, setVolumes] = useState<any[]>(novel?.volumes || []);
-    const defaultType = isLightNovel ? ("LIGHTNOVEL" as any) : (novel?.type || NovelType.WEB);
+    const defaultType = isLightNovel ? ("LIGHTNOVEL_WEB" as any) : (novel?.type || NovelType.WEB);
     const [type, setType] = useState<string>(defaultType);
     const [error, setError] = useState("");
 
@@ -138,8 +138,8 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                             className={inputClass}
                         >
                             <option value="WEB">Web Novel (Chapter)</option>
-                            <option value="LIGHTNOVEL">Light Novel (Web)</option>
-                            <option value="PDF">Light Novel (PDF)</option>
+                            <option value="LIGHTNOVEL_WEB">Light Novel (Web)</option>
+                            <option value="LIGHTNOVEL_PDF">Light Novel (PDF)</option>
                             <option value="EPUB">Light Novel (EPUB)</option>
                         </select>
                     </div>
@@ -214,8 +214,8 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                 </div>
             </div>
 
-            {/* Files Section (Only for LIGHTNOVEL, PDF, EPUB) */}
-            {(type === ("LIGHTNOVEL" as any) || type === NovelType.PDF || type === NovelType.EPUB) && (
+            {/* Files Section (Only for LIGHTNOVEL_PDF, EPUB) */}
+            {(type === "LIGHTNOVEL_PDF" || type === NovelType.EPUB) && (
                 <div className="bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 space-y-8 max-w-7xl mx-auto">
                     <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
                         <span className="w-8 h-8 bg-[#3E2723] text-[#F5F5DC] rounded-lg flex items-center justify-center text-xs">F</span>

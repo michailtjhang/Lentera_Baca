@@ -16,11 +16,20 @@ export async function createNovel(_: any, formData: FormData) {
 
         const title = formData.get("title") as string;
         const author = formData.get("author") as string;
+        
+        let typeValue = formData.get("type") as any;
+        // Map old types if they somehow leak in
+        if (typeValue === "LIGHTNOVEL") typeValue = "LIGHTNOVEL_WEB";
+        if (typeValue === "PDF") typeValue = "LIGHTNOVEL_PDF";
+        // Ensure it's a valid enum or fallback to WEB
+        if (!["WEB", "LIGHTNOVEL_WEB", "LIGHTNOVEL_PDF", "EPUB"].includes(typeValue)) {
+            typeValue = "WEB";
+        }
+        const type = typeValue as NovelType;
         const illustrator = formData.get("illustrator") as string;
         const description = formData.get("description") as string;
         const coverImage = formData.get("coverImage") as string;
         const coverImageKey = formData.get("coverImageKey") as string;
-        const type = (formData.get("type") as NovelType) || NovelType.WEB;
         const region = (formData.get("region") as Region) || Region.OTHER;
         const status = (formData.get("status") as Status) || Status.ONGOING;
 
@@ -96,11 +105,19 @@ export async function updateNovel(novelId: string, formData: FormData) {
 
         const title = formData.get("title") as string;
         const author = formData.get("author") as string;
+
         const illustrator = formData.get("illustrator") as string;
         const description = formData.get("description") as string;
         const coverImage = formData.get("coverImage") as string;
         const coverImageKey = formData.get("coverImageKey") as string;
-        const type = (formData.get("type") as NovelType) || NovelType.WEB;
+
+        let typeValue = formData.get("type") as any;
+        if (typeValue === "LIGHTNOVEL") typeValue = "LIGHTNOVEL_WEB";
+        if (typeValue === "PDF") typeValue = "LIGHTNOVEL_PDF";
+        if (!["WEB", "LIGHTNOVEL_WEB", "LIGHTNOVEL_PDF", "EPUB"].includes(typeValue)) {
+            typeValue = "WEB";
+        }
+        const type = typeValue as NovelType;
         const region = (formData.get("region") as Region) || Region.OTHER;
         const status = (formData.get("status") as Status) || Status.ONGOING;
 
@@ -432,4 +449,55 @@ export async function swapChapterOrders(id1: string, id2: string) {
     revalidatePath("/admin");
     revalidatePath(`/admin/novel/${ch1.novelId}/chapter`);
     return { success: true };
+}
+
+export async function incrementView(id: string, type: 'NOVEL' | 'CHAPTER' | 'VOLUME') {
+    try {
+        if (type === 'NOVEL') {
+            await prisma.novel.update({
+                where: { id },
+                data: { views: { increment: 1 } }
+            });
+        } else if (type === 'CHAPTER') {
+            const chapter = await prisma.chapter.update({
+                where: { id },
+                data: { views: { increment: 1 } },
+                include: { novel: true }
+            });
+            // Also increment total novel views when a chapter is read
+            if (chapter.novelId) {
+                await prisma.novel.update({
+                    where: { id: chapter.novelId },
+                    data: { views: { increment: 1 } }
+                });
+            }
+        } else if (type === 'VOLUME') {
+            const volume = await prisma.volume.update({
+                where: { id },
+                data: { views: { increment: 1 } },
+                include: { novel: true }
+            });
+            if (volume.novelId) {
+                await prisma.novel.update({
+                    where: { id: volume.novelId },
+                    data: { views: { increment: 1 } }
+                });
+            }
+        }
+        return { success: true };
+    } catch (error) {
+        console.error("Increment View Error:", error);
+        return { success: false };
+    }
+}
+
+export async function getPopularNovels(limit = 10) {
+    return await prisma.novel.findMany({
+        orderBy: { views: 'desc' },
+        take: limit,
+        include: {
+            chapters: { select: { id: true } },
+            volumes: { select: { id: true } }
+        }
+    });
 }

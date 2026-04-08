@@ -18,10 +18,10 @@ export default async function Home() {
 
     // Fetch novels for different sections
     const [trendingRaw, latestRaw, newestRaw] = await Promise.all([
-        // 1. Trending (Simulated for now by using a mix or specific titles if we had popularity score)
+        // 1. Trending (Based on real views)
         prisma.novel.findMany({
             take: 10,
-            orderBy: { chapters: { _count: 'desc' } }, // More chapters as a proxy for popularity for now
+            orderBy: { views: 'desc' },
             include: { _count: { select: { chapters: true, volumes: true } }, genres: true } as any
         }),
         // 2. Latest Updated (by update time)
@@ -67,7 +67,9 @@ export default async function Home() {
                             )}
                             <div className="absolute top-4 right-4 flex flex-col items-end gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                                 <span className="text-[0.45rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black backdrop-blur shadow-xl">
-                                    {novel.type}
+                                    {novel.type === 'LIGHTNOVEL_WEB' ? 'LN (WEB)' : 
+                                     novel.type === 'LIGHTNOVEL_PDF' ? 'LN (PDF)' : 
+                                     novel.type}
                                 </span>
                                 <span className="text-[0.45rem] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur shadow-xl">
                                     {(novel.status === 'ONGOING' ? 'On' : novel.status === 'COMPLETE' ? 'Done' : novel.status).toLowerCase()}

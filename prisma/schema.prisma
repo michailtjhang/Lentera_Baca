@@ -25,6 +25,7 @@ model Novel {
   tags          Tag[]
   chapters      Chapter[]
   volumes       Volume[]                               // relasi ke volumes (untuk PDF/EPUB)
+  views         Int       @default(0)                    // total views novel
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -38,8 +39,8 @@ enum Status {
 
 enum NovelType {
   WEB
-  LIGHTNOVEL
-  PDF
+  LIGHTNOVEL_WEB
+  LIGHTNOVEL_PDF
   EPUB
 }
 
@@ -72,6 +73,7 @@ model Chapter {
   novel     Novel       @relation(fields: [novelId], references: [id], onDelete: Cascade)
   volumeId  String?
   volume    Volume?     @relation(fields: [volumeId], references: [id], onDelete: SetNull)
+  views     Int         @default(0)                    // total views per chapter
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -100,6 +102,7 @@ model Volume {
   novelId   String
   novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
   chapters  Chapter[]
+  views     Int      @default(0)                    // total views per volume
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

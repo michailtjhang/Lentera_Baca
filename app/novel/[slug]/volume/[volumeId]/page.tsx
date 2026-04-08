@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import ReaderWrapper from "@/components/ReaderWrapper";
+import { incrementView } from "@/app/actions/novel-actions";
 
 interface VolumePageProps {
     params: Promise<{
@@ -20,6 +21,9 @@ export default async function VolumePage({ params }: VolumePageProps) {
     if (!volume || volume.novel.slug !== slug || !volume.fileUrl) {
         return notFound();
     }
+
+    // Increment view count for the volume (and novel)
+    await incrementView(volume.id, 'VOLUME');
 
     return (
         <main className="min-h-screen bg-black">

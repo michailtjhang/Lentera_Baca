@@ -72,7 +72,7 @@ export default async function EditNovelPage({ params }: { params: Promise<{ id: 
                         tagSuggestions={tagSuggestions}
                         predefinedGenres={genreSuggestions}
                         mode="edit"
-                        isLightNovel={novel.type === ("LIGHTNOVEL" as any)}
+                        isLightNovel={novel.type === "LIGHTNOVEL_WEB"}
                     />
                 )}
             </div>

@@ -46,7 +46,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                     </div>
                     
                     <div className="flex items-center gap-2 bg-[#3E2723]/10 p-2 rounded-[1.5rem] w-full md:w-auto mt-4 md:mt-0">
-                        {["ALL", "WEB", "LIGHTNOVEL", "PDF", "EPUB"].map((type) => (
+                        {["ALL", "WEB", "LIGHTNOVEL_WEB", "LIGHTNOVEL_PDF", "EPUB"].map((type) => (
                             <button
                                 key={type}
                                 onClick={() => setTypeFilter(type)}
@@ -58,8 +58,8 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                             >
                                 {type === "ALL" ? "Semua" : 
                                  type === "WEB" ? "Web" :
-                                 type === "LIGHTNOVEL" ? "Volume" :
-                                 type === "PDF" ? "PDF" : "EPUB"}
+                                 type === "LIGHTNOVEL_WEB" ? "Volume" :
+                                 type === "LIGHTNOVEL_PDF" ? "PDF" : "EPUB"}
                             </button>
                         ))}
                     </div>

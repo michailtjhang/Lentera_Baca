@@ -22,12 +22,12 @@ interface AdminNovelListCardProps {
 }
 
 export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
-    const isWeb = novel.type === "WEB";
-    const isLight = novel.type === "LIGHTNOVEL" || novel.type === "PDF" || novel.type === "EPUB";
+    const isWeb = novel.type === "WEB" || novel.type === "LIGHTNOVEL_WEB";
+    const isLight = novel.type === "LIGHTNOVEL_WEB" || novel.type === "LIGHTNOVEL_PDF" || novel.type === "EPUB";
     const typeLabels: Record<string, string> = {
         WEB: "Web Novel",
-        LIGHTNOVEL: "L-Novel (Volume)",
-        PDF: "L-Novel (PDF)",
+        LIGHTNOVEL_WEB: "L-Novel (Web)",
+        LIGHTNOVEL_PDF: "L-Novel (PDF)",
         EPUB: "L-Novel (EPUB)",
     };
 
@@ -95,7 +95,7 @@ export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
                         <Settings size={18} className="group-hover/btn:rotate-90 transition-transform duration-500" />
                     </Link>
                     
-                    {novel.type !== "PDF" && novel.type !== "EPUB" && (
+                    {(novel.type === "WEB" || novel.type === "LIGHTNOVEL_WEB") && (
                         <Link
                             href={`/admin/novel/${novel.id}/chapter`}
                             className="p-3 text-[#3E2723]/40 hover:text-[#3E2723] hover:bg-white rounded-xl transition-all"

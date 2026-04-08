@@ -68,9 +68,9 @@ export default async function NovelOverviewPage({ params }: PageProps) {
 
     const typeLabels: Record<string, string> = {
         WEB: "Web Novel",
-        LIGHTNOVEL: "Light Novel",
-        PDF: "Light Novel",
-        EPUB: "Light Novel",
+        LIGHTNOVEL_WEB: "Light Novel (Web)",
+        LIGHTNOVEL_PDF: "Light Novel (PDF)",
+        EPUB: "Light Novel (EPUB)",
     };
 
     return (
@@ -164,7 +164,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             
                             {/* Actions */}
                             <div className="md:col-span-3 flex items-stretch gap-4 h-16 md:h-auto">
-                                {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? (
+                                {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL_WEB') ? (
                                     novel.chapters.length > 0 && (
                                         <ReadButton
                                             novelId={novel.id}
@@ -217,7 +217,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                         </span>
                     </div>
 
-                    {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL') ? (
+                    {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL_WEB') ? (
                         <>
                             <HistoryDisplay novelId={novel.id} slug={slug} allChapters={novel.chapters} />
                             {novel.volumes.length > 0 ? (

@@ -165,7 +165,7 @@ export default function LNUploader({
                     {/* Add Volume Options */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Manual Entry (Title Only) - Hidden for PDF/EPUB */}
-                        {novelType === "LIGHTNOVEL" && (
+                        {novelType === "LIGHTNOVEL_WEB" && (
                             <div className="border border-black/5 bg-white/20 rounded-[1.5rem] p-6 flex flex-col justify-center gap-3">
                                 <label className="text-[0.6rem] font-black uppercase tracking-widest opacity-40 px-1">Tanpa File (Grup Chapter)</label>
                                 <div className="flex gap-2">
@@ -192,7 +192,7 @@ export default function LNUploader({
                         )}
 
                         {/* File Uploader - Hidden for LIGHTNOVEL if they only want grouping */}
-                        {(novelType === "PDF" || novelType === "EPUB") && (
+                        {(novelType === "LIGHTNOVEL_PDF" || novelType === "EPUB") && (
                             <div className="border-2 border-dashed border-black/5 rounded-[1.5rem] p-6 bg-white/20 flex flex-col items-center justify-center gap-2 col-span-full">
                                 <div className="flex items-center gap-3">
                                     <FileText size={20} className="opacity-20" />
