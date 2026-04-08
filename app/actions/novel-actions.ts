@@ -277,7 +277,7 @@ export async function deleteNovel(novelId: string) {
 }
 
 // Chapter Actions (Unchanged mostly, but ensure novelId works)
-export async function createChapter(novelId: string, formData: FormData) {
+export async function createChapter(novelId: string, prevState: any, formData: FormData) {
     let chapterSlug = "";
     let novelSlug = "";
     
@@ -322,7 +322,7 @@ export async function createChapter(novelId: string, formData: FormData) {
     redirect(`/novel/${novelSlug}/${chapterSlug}`);
 }
 
-export async function updateChapter(chapterId: string, formData: FormData) {
+export async function updateChapter(chapterId: string, prevState: any, formData: FormData) {
     let chapterSlug = "";
     let novelSlug = "";
 

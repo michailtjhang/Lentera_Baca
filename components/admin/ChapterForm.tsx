@@ -42,44 +42,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
     const [title, setTitle] = useState(chapter?.title || "");
     const [type, setType] = useState(chapter?.type || "STORY");
     const [draftFound, setDraftFound] = useState(false);
-
-    // Draft persistence
-    useEffect(() => {
-        const savedDraft = localStorage.getItem(draftKey);
-        if (savedDraft) {
-            const parsed = JSON.parse(savedDraft);
-            // If draft content is different from initial content
-            if (parsed.content !== (chapter?.content || "")) {
-                setDraftFound(true);
-            }
-        }
-    }, [draftKey, chapter?.content]);
-
-    useEffect(() => {
-        if (content || title) {
-            localStorage.setItem(draftKey, JSON.stringify({ 
-                title, 
-                content, 
-                timestamp: Date.now() 
-            }));
-        }
-    }, [content, title, draftKey]);
-
-    const restoreDraft = () => {
-        const savedDraft = localStorage.getItem(draftKey);
-        if (savedDraft) {
-            const parsed = JSON.parse(savedDraft);
-            setContent(parsed.content);
-            if (parsed.title) setTitle(parsed.title);
-            setDraftFound(false);
-            alert("Draft berhasil dipulihkan!");
-        }
-    };
-
-    const clearDraft = () => {
-        localStorage.removeItem(draftKey);
-        setDraftFound(false);
-    };
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
 
     // For Illustration multi-image management
     const [images, setImages] = useState<{url: string, key?: string}[]>(() => {
@@ -96,6 +59,54 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         }
         return [];
     });
+
+    // Draft persistence
+    useEffect(() => {
+        const savedDraft = localStorage.getItem(draftKey);
+        if (savedDraft) {
+            const parsed = JSON.parse(savedDraft);
+            // If draft content is different from initial content
+            if (parsed.content !== (chapter?.content || "")) {
+                setDraftFound(true);
+            }
+        }
+    }, [draftKey, chapter?.content]);
+
+    useEffect(() => {
+        if (content || title || (type === "ILLUSTRATION" && images.length > 0)) {
+            setIsSavingDraft(true);
+            const timer = setTimeout(() => {
+                localStorage.setItem(draftKey, JSON.stringify({ 
+                    title, 
+                    content,
+                    type,
+                    images,
+                    timestamp: Date.now() 
+                }));
+                setIsSavingDraft(false);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [content, title, type, images, draftKey]);
+
+    const restoreDraft = () => {
+        const savedDraft = localStorage.getItem(draftKey);
+        if (savedDraft) {
+            const parsed = JSON.parse(savedDraft);
+            setContent(parsed.content);
+            if (parsed.title) setTitle(parsed.title);
+            if (parsed.type) setType(parsed.type);
+            if (parsed.images) setImages(parsed.images);
+            setDraftFound(false);
+            alert("Draft berhasil dipulihkan!");
+        }
+    };
+
+    const clearDraft = () => {
+        localStorage.removeItem(draftKey);
+        setDraftFound(false);
+    };
+
 
     const syncImagesToContent = (newImages: {url: string, key?: string}[]) => {
         const html = newImages.map(img => 
@@ -180,13 +191,16 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 <div className="bg-amber-100 border border-amber-200 text-amber-800 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <span className="text-xl">💡</span>
-                        <p className="text-sm font-bold">Ada draf tersimpan yang belum Anda simpan ke server.</p>
+                        <div className="flex flex-col">
+                            <p className="text-sm font-bold">Ada draf tersimpan yang belum Anda simpan ke server.</p>
+                            <p className="text-[0.65rem] opacity-70 italic font-black">Draf ini mencakup teks dan urutan ilustrasi yang terakhir Anda unggah.</p>
+                        </div>
                     </div>
                     <div className="flex gap-2">
                         <button 
                             type="button" 
                             onClick={restoreDraft}
-                            className="bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-700 transition-colors"
+                            className="bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-700 transition-colors shadow-lg"
                         >
                             Pulihkan Draf
                         </button>
@@ -198,6 +212,13 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                             <Trash2 size={16} />
                         </button>
                     </div>
+                </div>
+            )}
+
+            {isSavingDraft && (
+                <div className="fixed bottom-8 left-8 flex items-center gap-3 bg-[#3E2723] text-[#F5F5DC] px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 z-[999]">
+                    <Loader2 size={16} className="animate-spin" />
+                    <span className="text-[0.65rem] font-black uppercase tracking-widest">Menyimpan draf lokal...</span>
                 </div>
             )}
 
