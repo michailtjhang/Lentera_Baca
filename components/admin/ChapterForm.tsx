@@ -216,7 +216,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
             )}
 
             {isSavingDraft && (
-                <div className="fixed bottom-8 left-8 flex items-center gap-3 bg-[#3E2723] text-[#F5F5DC] px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 z-[999]">
+                <div className="fixed top-24 right-8 flex items-center gap-3 bg-[#3E2723] text-[#F5F5DC] px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 z-[999] border border-white/10">
                     <Loader2 size={16} className="animate-spin" />
                     <span className="text-[0.65rem] font-black uppercase tracking-widest">Menyimpan draf lokal...</span>
                 </div>

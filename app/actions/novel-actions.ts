@@ -314,12 +314,13 @@ export async function createChapter(novelId: string, prevState: any, formData: F
         
         const allChapters = await prisma.chapter.findMany({ where: { novelId }, orderBy: { order: "asc" } });
         chapterSlug = getChapterSlug(chapter, allChapters);
+        
+        redirect(`/admin/novel/${novelId}/chapter`);
     } catch (error: any) {
+        if (error.digest?.includes("NEXT_REDIRECT")) throw error;
         console.error("Create Chapter Error:", error);
         return { success: false, error: error.message || "Gagal membuat chapter" };
     }
-
-    redirect(`/novel/${novelSlug}/${chapterSlug}`);
 }
 
 export async function updateChapter(chapterId: string, prevState: any, formData: FormData) {
@@ -353,13 +354,13 @@ export async function updateChapter(chapterId: string, prevState: any, formData:
         
         const allChapters = await prisma.chapter.findMany({ where: { novelId: chapter.novelId }, orderBy: { order: "asc" } });
         chapterSlug = getChapterSlug(chapter, allChapters);
+
+        redirect(`/admin/novel/${chapter.novelId}/chapter`);
     } catch (error: any) {
         if (error.digest?.includes("NEXT_REDIRECT")) throw error;
         console.error("Update Chapter Error:", error);
         return { success: false, error: error.message || "Gagal memperbarui chapter" };
     }
-
-    redirect(`/novel/${novelSlug}/${chapterSlug}`);
 }
 
 export async function deleteChapter(chapterId: string) {
