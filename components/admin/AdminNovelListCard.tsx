@@ -22,7 +22,7 @@ interface AdminNovelListCardProps {
 }
 
 export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
-    const isWeb = novel.type === "WEB" || novel.type === "LIGHTNOVEL_WEB";
+    const isWeb = novel.type === "WEB";
     const isLight = novel.type === "LIGHTNOVEL_WEB" || novel.type === "LIGHTNOVEL_PDF" || novel.type === "EPUB";
     const typeLabels: Record<string, string> = {
         WEB: "Web Novel",

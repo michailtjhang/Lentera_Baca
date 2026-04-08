@@ -68,9 +68,9 @@ export default async function NovelOverviewPage({ params }: PageProps) {
 
     const typeLabels: Record<string, string> = {
         WEB: "Web Novel",
-        LIGHTNOVEL_WEB: "Light Novel (Web)",
-        LIGHTNOVEL_PDF: "Light Novel (PDF)",
-        EPUB: "Light Novel (EPUB)",
+        LIGHTNOVEL_WEB: "Light Novel",
+        LIGHTNOVEL_PDF: "Light Novel",
+        EPUB: "Light Novel",
     };
 
     return (

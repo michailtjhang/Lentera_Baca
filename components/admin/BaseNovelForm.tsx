@@ -214,8 +214,8 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                 </div>
             </div>
 
-            {/* Files Section (Only for LIGHTNOVEL_PDF, EPUB) */}
-            {(type === "LIGHTNOVEL_PDF" || type === NovelType.EPUB) && (
+            {/* Files Section (Only for LIGHTNOVEL variants and EPUB) */}
+            {(type === "LIGHTNOVEL_WEB" || type === "LIGHTNOVEL_PDF" || type === NovelType.EPUB) && (
                 <div className="bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 space-y-8 max-w-7xl mx-auto">
                     <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
                         <span className="w-8 h-8 bg-[#3E2723] text-[#F5F5DC] rounded-lg flex items-center justify-center text-xs">F</span>
