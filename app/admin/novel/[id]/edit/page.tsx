@@ -60,7 +60,7 @@ export default async function EditNovelPage({ params }: { params: Promise<{ id: 
                 {novel.type === "WEB" ? (
                     <WebNovelForm
                         novel={novel}
-                        action={updateNovel}
+                        action={updateNovelWithId}
                         tagSuggestions={tagSuggestions}
                         predefinedGenres={genreSuggestions}
                         mode="edit"
@@ -68,7 +68,7 @@ export default async function EditNovelPage({ params }: { params: Promise<{ id: 
                 ) : (
                     <LightNovelForm
                         novel={novel}
-                        action={updateNovel}
+                        action={updateNovelWithId}
                         tagSuggestions={tagSuggestions}
                         predefinedGenres={genreSuggestions}
                         mode="edit"

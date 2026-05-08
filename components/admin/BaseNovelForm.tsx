@@ -48,12 +48,7 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
 
         startTransition(async () => {
             try {
-                let result: any;
-                if (mode === "create") {
-                    result = await action(null, formData);
-                } else {
-                    result = await action(novel.id, formData);
-                }
+                const result = await action(null, formData);
 
                 if (result && result.success === false) {
                     setError(result.error);
