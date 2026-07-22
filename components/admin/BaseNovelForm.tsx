@@ -18,7 +18,7 @@ interface NovelFormProps {
     isLightNovel?: boolean;
 }
 
-const inputClass = "w-full bg-white dark:bg-white/5 border border-black/8 dark:border-white/8 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500/40 transition-all font-medium text-sm placeholder:opacity-30";
+const inputClass = "w-full bg-white dark:bg-white/5 border border-black/8 dark:border-white/8 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500/40 transition-all font-medium text-sm text-[#3E2723] dark:text-[#e8e8e8] placeholder:text-[#3E2723]/30 dark:placeholder:text-[#e8e8e8]/30";
 const labelClass = "block text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 mb-2";
 
 const SectionCard = ({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) => (

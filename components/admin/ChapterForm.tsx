@@ -22,9 +22,9 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
         <button
             type="submit"
             disabled={pending}
-            className="w-full bg-[#3E2723] text-[#F5F5DC] py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white py-4 rounded-xl font-black text-sm tracking-wider hover:shadow-xl transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-amber-700/20"
         >
-            {pending && <Loader2 className="animate-spin" size={20} />}
+            {pending && <Loader2 className="animate-spin" size={18} />}
             {pending ? "Sedang Memproses..." : (isEdit ? "Update Chapter" : "Simpan Chapter")}
         </button>
     );
@@ -34,7 +34,6 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
     const isWeb = novelType === "WEB";
     const [state, formAction] = useFormState(action as any, null as { error?: string } | null);
     
-    // Key for local storage drafting
     const novelId = chapter?.novelId || chapter?.novel?.id;
     const draftKey = `lb_draft_${novelId || 'unknown'}_${chapter?.id || 'new'}`;
 
@@ -44,7 +43,6 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
     const [draftFound, setDraftFound] = useState(false);
     const [isSavingDraft, setIsSavingDraft] = useState(false);
 
-    // For Illustration multi-image management
     const [images, setImages] = useState<{url: string, key?: string}[]>(() => {
         if (chapter?.type === "ILLUSTRATION") {
             const regex = /src="([^"]+)"/g;
@@ -60,12 +58,10 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         return [];
     });
 
-    // Draft persistence
     useEffect(() => {
         const savedDraft = localStorage.getItem(draftKey);
         if (savedDraft) {
             const parsed = JSON.parse(savedDraft);
-            // If draft content is different from initial content
             if (parsed.content !== (chapter?.content || "")) {
                 setDraftFound(true);
             }
@@ -115,7 +111,6 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         setContent(html);
     };
     
-    // For specialized Illustration upload
     const { startUpload, isUploading } = useUploadThing("illustrationUploader", {
         onClientUploadComplete: (res) => {
             const file = res[0];
@@ -135,12 +130,9 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         if (!file) return;
 
         try {
-            // Convert to WebP on client side
             const webpFile = await convertToWebP(file);
-            
             const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
             const renamedFile = new File([webpFile], `${uniqueId}.webp`, { type: "image/webp" });
-
             await startUpload([renamedFile]);
         } catch (err) {
             alert("Gagal memproses gambar: " + (err as any).message);
@@ -168,31 +160,28 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
     };
 
     const handleFormSubmit = async (formData: FormData) => {
-        // Clear draft right before submission to prevent it sticking around if redirect happens
-        // If there's an error, the user can still rely on the 'draftFound' logic if they refresh,
-        // but for a smooth experience, we clear it here.
-        // Actually, let's only clear it if it's not an illustration type OR if we are confident.
-        // Better: Clear it, and if it fails, the user has the 'state' error.
         clearDraft(); 
         (formAction as any)(formData);
     };
 
+    const inputClasses = "w-full bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/25 transition-all font-medium text-sm text-[#3E2723] dark:text-white placeholder:text-[#3E2723]/30 dark:placeholder:text-white/30";
+
     return (
         <form 
             action={handleFormSubmit} 
-            className="space-y-6 bg-white/40 p-6 md:p-10 rounded-[2.5rem] border border-black/5 max-w-7xl mx-auto shadow-sm"
+            className="space-y-6 bg-white dark:bg-white/4 p-6 md:p-10 rounded-3xl border border-black/5 dark:border-white/5 max-w-7xl mx-auto shadow-sm"
         >
             {/* Error Message */}
             {state?.error && (
-                <div className="bg-red-500 text-white p-4 rounded-2xl font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
-                    <Trash2 size={20} />
+                <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-2xl font-bold flex items-center gap-3 text-sm">
+                    <Trash2 size={16} className="shrink-0" />
                     {state.error}
                 </div>
             )}
 
             {/* Draft Notification */}
             {draftFound && (
-                <div className="bg-amber-100 border border-amber-200 text-amber-800 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 text-amber-800 dark:text-amber-400 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <span className="text-xl">💡</span>
                         <div className="flex flex-col">
@@ -204,14 +193,14 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                         <button 
                             type="button" 
                             onClick={restoreDraft}
-                            className="bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-700 transition-colors shadow-lg"
+                            className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm"
                         >
                             Pulihkan Draf
                         </button>
                         <button 
                             type="button" 
                             onClick={clearDraft}
-                            className="text-amber-800/50 hover:text-amber-800 transition-colors"
+                            className="text-amber-800/50 hover:text-amber-800 dark:text-amber-400/50 dark:hover:text-amber-400 transition-colors p-2 bg-black/5 dark:bg-white/5 rounded-xl hover:bg-black/10 dark:hover:bg-white/10"
                         >
                             <Trash2 size={16} />
                         </button>
@@ -220,9 +209,9 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
             )}
 
             {isSavingDraft && (
-                <div className="fixed top-24 right-8 flex items-center gap-3 bg-[#3E2723] text-[#F5F5DC] px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 z-[999] border border-white/10">
+                <div className="fixed top-24 right-8 flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 z-[999] border border-white/10">
                     <Loader2 size={16} className="animate-spin" />
-                    <span className="text-[0.65rem] font-black uppercase tracking-widest">Menyimpan draf lokal...</span>
+                    <span className="text-[0.65rem] font-black uppercase tracking-widest">Menyimpan draf...</span>
                 </div>
             )}
 
@@ -230,12 +219,12 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 {/* Volume Selection (Top Priority) - Hidden for WEB */}
                 {!isWeb && (
                     <div className="space-y-2">
-                        <label htmlFor="volumeId" className="text-sm font-bold uppercase tracking-widest opacity-60">Pilih Volume (Utama)</label>
+                        <label htmlFor="volumeId" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 block">Pilih Volume (Utama)</label>
                         <select
                             name="volumeId"
                             id="volumeId"
                             defaultValue={chapter?.volumeId || ""}
-                            className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
+                            className={`${inputClasses} appearance-none`}
                         >
                             {volumes.length > 0 ? (
                                 <>
@@ -255,13 +244,13 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {!isWeb ? (
                         <div className="space-y-2">
-                            <label htmlFor="type" className="text-sm font-bold uppercase tracking-widest opacity-60">Tipe Konten</label>
+                            <label htmlFor="type" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 block">Tipe Konten</label>
                             <select
                                 name="type"
                                 id="type"
                                 value={type}
                                 onChange={(e) => setType(e.target.value)}
-                                className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium appearance-none"
+                                className={`${inputClasses} appearance-none`}
                             >
                                 <option value="PROLOGUE">🎬 Prolog</option>
                                 <option value="STORY">📖 Cerita Utama</option>
@@ -282,7 +271,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
 
                 {/* Title (Optional) */}
                 <div className="space-y-2">
-                    <label htmlFor="title" className="text-sm font-bold uppercase tracking-widest opacity-60">Judul Chapter (Opsional)</label>
+                    <label htmlFor="title" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 block">Judul Chapter (Opsional)</label>
                     <input
                         type="text"
                         name="title"
@@ -290,7 +279,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Misal: Chapter 1: Awal Mula (Kosongkan jika tidak ada)"
-                        className="w-full bg-white/80 border border-black/5 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 transition-all font-medium"
+                        className={inputClasses}
                     />
                 </div>
             </div>
@@ -298,8 +287,8 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
             {type === "ILLUSTRATION" ? (
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-bold uppercase tracking-widest opacity-60">Daftar Ilustrasi (Bisa Diurutkan)</label>
-                        <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 px-3 py-1 bg-black/5 rounded-full">
+                        <label className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50">Daftar Ilustrasi (Bisa Diurutkan)</label>
+                        <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-60 px-3 py-1 bg-black/5 dark:bg-white/10 rounded-full">
                             {images.length} Gambar
                         </span>
                     </div>
@@ -307,7 +296,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                     {/* Image List */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {images.map((img, idx) => (
-                            <div key={idx} className="relative group rounded-2xl overflow-hidden bg-white/40 border border-black/5 aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-500">
+                            <div key={idx} className="relative group rounded-2xl overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-500">
                                 <img src={img.url} alt={`Illustration ${idx}`} className="w-full h-full object-cover" />
                                 
                                 {/* Controls Overlay */}
@@ -335,7 +324,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                                     <button
                                         type="button"
                                         onClick={() => removeImage(idx)}
-                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl text-[0.65rem] font-black uppercase tracking-widest hover:bg-black transition-all"
+                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl text-[0.65rem] font-black uppercase tracking-widest hover:bg-red-600 transition-all"
                                     >
                                         <Trash2 size={14} /> Hapus
                                     </button>
@@ -347,16 +336,16 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                         ))}
 
                         {/* Upload Button */}
-                        <label className={`relative cursor-pointer border-2 border-dashed border-black/10 rounded-2xl flex flex-col items-center justify-center p-8 bg-black/5 hover:bg-black/10 transition-all aspect-[3/4] ${isUploading ? 'pointer-events-none' : ''}`}>
+                        <label className={`relative cursor-pointer border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center p-8 bg-black/2 dark:bg-white/2 hover:bg-black/5 dark:hover:bg-white/5 transition-all aspect-[3/4] ${isUploading ? 'pointer-events-none' : ''}`}>
                             {isUploading ? (
                                 <div className="flex flex-col items-center gap-2">
-                                    <Loader2 className="animate-spin text-black/20" size={32} />
-                                    <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-20">Uploading...</span>
+                                    <Loader2 className="animate-spin opacity-40" size={32} />
+                                    <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-40 mt-2">Uploading...</span>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                                        <Plus size={20} className="text-[#3E2723]" />
+                                    <div className="w-12 h-12 bg-white dark:bg-white/10 rounded-full flex items-center justify-center shadow-sm">
+                                        <Plus size={20} className="text-[#3E2723] dark:text-white" />
                                     </div>
                                     <div className="text-center">
                                         <p className="text-[0.65rem] font-black uppercase tracking-widest opacity-60">Tambah Gambar</p>
@@ -375,8 +364,8 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                     </div>
 
                     {/* Hint */}
-                    <div className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center">
-                        <p className="text-[0.6rem] font-black uppercase tracking-widest text-blue-500/60 leading-relaxed">
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 p-4 rounded-2xl text-center">
+                        <p className="text-[0.6rem] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 opacity-80 leading-relaxed">
                             💡 Gunakan tombol panah di setiap gambar untuk merubah urutan tampilan pada halaman reader.
                         </p>
                     </div>
@@ -385,7 +374,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 </div>
             ) : (
                 <div className="space-y-2">
-                    <label htmlFor="content" className="text-sm font-bold uppercase tracking-widest opacity-60">Konten Chapter</label>
+                    <label htmlFor="content" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 block">Konten Chapter</label>
                     <input type="hidden" name="content" value={content} />
                     <Editor value={content} onChange={setContent} placeholder="Tulis isi cerita chapter ini..." />
                 </div>
