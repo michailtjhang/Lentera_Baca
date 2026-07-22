@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminChapterForm from "@/components/admin/ChapterForm";
+import { ChevronLeft, Plus } from "lucide-react";
 
 export default async function NewChapterPage({ params }: { params: Promise<{ id: string }> }) {
     await checkAdmin();
@@ -16,7 +17,6 @@ export default async function NewChapterPage({ params }: { params: Promise<{ id:
 
     if (!novel) notFound();
 
-    // Get the highest order to suggest the next one
     const lastChapter = await prisma.chapter.findFirst({
         where: { novelId: id },
         orderBy: { order: 'desc' }
@@ -26,19 +26,30 @@ export default async function NewChapterPage({ params }: { params: Promise<{ id:
     const createChapterWithId = createChapter.bind(null, id);
 
     return (
-        <div className="min-h-screen bg-[#F5F5DC] text-[#3E2723]">
-            <nav className="border-b border-black/5 px-6 py-4 backdrop-blur-sm sticky top-0 bg-white/50 z-50">
-                <div className="max-w-2xl mx-auto flex justify-between items-center">
-                    <Link href={`/admin/novel/${id}/chapter`} className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity">← Kembali ke Daftar Chapter</Link>
+        <div className="min-h-screen">
+            {/* Page Header */}
+            <div className="sticky top-0 z-10 bg-[#F7F3EC]/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5 px-6 py-4">
+                <div className="flex items-center gap-4 max-w-4xl mx-auto">
+                    <Link href={`/admin/novel/${id}/chapter`} className="group flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">
+                        <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                        Daftar Chapter
+                    </Link>
+                    <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
+                    <div className="flex items-center gap-2">
+                        <Plus size={14} className="opacity-40" />
+                        <h1 className="text-sm font-black tracking-tight">Chapter Baru</h1>
+                    </div>
                 </div>
-            </nav>
+            </div>
 
-            <main className="max-w-2xl mx-auto px-6 py-12">
-                <header className="mb-8">
-                    <span className="text-xs font-bold uppercase tracking-widest opacity-40">Novel: {novel.title}</span>
-                    <h2 className="text-3xl font-extrabold mb-2 tracking-tight">Tambah Chapter Baru</h2>
-                    <p className="opacity-70">Tambahkan konten cerita untuk chapter selanjutnya.</p>
-                </header>
+            <div className="p-6 lg:p-10 max-w-4xl mx-auto">
+                <div className="mb-8">
+                    <p className="text-[0.65rem] font-black uppercase tracking-[0.3em] opacity-30 mb-1">
+                        Novel: {novel.title}
+                    </p>
+                    <h2 className="text-3xl font-black tracking-tighter mb-2">Tambah Chapter Baru</h2>
+                    <p className="text-sm opacity-40 font-medium">Chapter #{nextOrder} — tambahkan konten cerita untuk chapter ini.</p>
+                </div>
 
                 <AdminChapterForm
                     action={createChapterWithId}
@@ -46,7 +57,7 @@ export default async function NewChapterPage({ params }: { params: Promise<{ id:
                     volumes={novel.volumes}
                     novelType={novel.type}
                 />
-            </main>
+            </div>
         </div>
     );
 }

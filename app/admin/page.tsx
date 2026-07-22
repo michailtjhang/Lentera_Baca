@@ -8,10 +8,13 @@ export default async function AdminPage() {
     const novels = await prisma.novel.findMany({
         include: {
             _count: {
-                select: { 
+                select: {
                     chapters: true,
                     volumes: true
                 }
+            },
+            tags: {
+                select: { name: true }
             }
         },
         orderBy: { createdAt: 'desc' }

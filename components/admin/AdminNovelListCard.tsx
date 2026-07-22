@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Edit2, ExternalLink, BookOpen, Trash2, Settings, List, Layers } from "lucide-react";
+import { Edit2, ExternalLink, BookOpen, List, Settings, Layers, AlertTriangle } from "lucide-react";
 import DeleteButton from "./DeleteButton";
 import { deleteNovel } from "@/app/actions/novel-actions";
 
@@ -13,7 +13,9 @@ interface AdminNovelListCardProps {
         coverImage: string | null;
         type: string;
         region: string;
+        status: string;
         author: string | null;
+        tags?: { name: string }[];
         _count: {
             chapters: number;
             volumes: number;
@@ -21,108 +23,146 @@ interface AdminNovelListCardProps {
     };
 }
 
+const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
+
+function hasAdultContent(tags?: { name: string }[]): boolean {
+    if (!tags) return false;
+    return tags.some(t => ADULT_TAGS.some(a => t.name.toLowerCase().includes(a.toLowerCase())));
+}
+
+const TYPE_LABELS: Record<string, string> = {
+    WEB: "Web Novel",
+    LIGHTNOVEL_WEB: "LN Web",
+    LIGHTNOVEL_PDF: "LN PDF",
+    EPUB: "EPUB",
+};
+
+const TYPE_COLORS: Record<string, string> = {
+    WEB: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+    LIGHTNOVEL_WEB: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+    LIGHTNOVEL_PDF: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
+    EPUB: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+    ONGOING: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
+    COMPLETE: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+    DROP: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+    HIATUS: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+    ONGOING: "Ongoing",
+    COMPLETE: "Selesai",
+    DROP: "Drop",
+    HIATUS: "Hiatus",
+};
+
 export default function AdminNovelListCard({ novel }: AdminNovelListCardProps) {
     const isWeb = novel.type === "WEB";
-    const isLight = novel.type === "LIGHTNOVEL_WEB" || novel.type === "LIGHTNOVEL_PDF" || novel.type === "EPUB";
-    const typeLabels: Record<string, string> = {
-        WEB: "Web Novel",
-        LIGHTNOVEL_WEB: "Light Novel (Web)",
-        LIGHTNOVEL_PDF: "Light Novel (PDF)",
-        EPUB: "Light Novel (EPUB)",
-    };
-
-    const countLabel = isWeb ? "CHAPTER" : "VOLUME";
+    const countLabel = isWeb ? "Ch" : "Vol";
     const countValue = isWeb ? novel._count.chapters : novel._count.volumes;
+    const isAdult = hasAdultContent(novel.tags);
 
     return (
-        <div className="group relative bg-white rounded-[1.5rem] p-3 pr-6 flex items-center gap-6 border border-[#3E2723]/10 hover:border-[#3E2723]/20 transition-all duration-500 hover:shadow-[0_20px_50px_-15px_rgba(62,39,35,0.08)]">
-            {/* Cover Image Container */}
-            <div className="relative w-24 h-32 flex-shrink-0 overflow-hidden rounded-[1.25rem] shadow-lg group-hover:scale-105 transition-transform duration-500">
-                {novel.coverImage ? (
-                    <img 
-                        src={novel.coverImage} 
-                        alt={novel.title}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div className="w-full h-full bg-[#3E2723]/5 flex items-center justify-center">
-                        <BookOpen size={24} className="text-[#3E2723]/20" />
+        <div className="group bg-white dark:bg-white/4 rounded-2xl border border-black/6 dark:border-white/6 hover:border-black/12 dark:hover:border-white/12 hover:shadow-lg dark:hover:shadow-black/20 transition-all duration-300 overflow-hidden">
+            <div className="flex items-center gap-4 p-4">
+                {/* Cover */}
+                <div className="relative w-16 h-22 shrink-0 overflow-hidden rounded-xl shadow-md group-hover:shadow-lg transition-shadow">
+                    <div className="w-16 h-22 aspect-[10/14]">
+                        {novel.coverImage ? (
+                            <img
+                                src={novel.coverImage}
+                                alt={novel.title}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-zinc-700 dark:to-zinc-800 flex items-center justify-center">
+                                <BookOpen size={18} className="opacity-30" />
+                            </div>
+                        )}
                     </div>
-                )}
-                {/* Type Badge Overlay */}
-                <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-white px-2 py-0.5 rounded-md text-[0.5rem] font-black uppercase tracking-widest">
-                    {typeLabels[novel.type] || novel.type}
-                </div>
-            </div>
-
-            {/* Content Section */}
-            <div className="flex-1 flex flex-col gap-5 py-2">
-                {/* Meta Row */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[0.6rem] font-black uppercase tracking-tight border border-blue-100/50">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                        On-Going
-                    </span>
-                    <span className="bg-[#3E2723]/5 text-[#3E2723]/50 px-3 py-1 rounded-full text-[0.6rem] font-black uppercase tracking-wider border border-[#3E2723]/5">
-                        {novel.region}
-                    </span>
-                    <div className="h-4 w-px bg-[#3E2723]/10 mx-1" />
-                    <div className="flex items-center gap-1.5 text-[#3E2723]/60 text-[0.65rem] font-bold uppercase tracking-wider">
-                        <Layers size={14} className="text-[#3E2723]/30" />
-                        {countValue} {countLabel}
-                    </div>
-                </div>
-
-                {/* Title & Author */}
-                <div className="max-w-xl">
-                    <h3 className="text-xl font-black tracking-tight text-[#3E2723] hover:text-black transition-colors leading-tight mb-1.5">
-                        {novel.title}
-                    </h3>
-                    <p className="text-[0.65rem] font-black text-[#3E2723]/40 uppercase tracking-[0.15em] flex items-center gap-2">
-                        Authored by <span className="text-[#3E2723]">{novel.author || "Unknown"}</span>
-                    </p>
-                </div>
-            </div>
-
-            {/* Actions Section */}
-            <div className="flex items-center gap-3">
-                <div className="flex items-center bg-[#F5F5DC]/50 p-1.5 rounded-2xl border border-[#3E2723]/5">
-                    <Link
-                        href={`/admin/novel/${novel.id}/edit`}
-                        className="p-3 text-[#3E2723]/40 hover:text-[#3E2723] hover:bg-white rounded-xl transition-all group/btn"
-                        title="Edit Novel"
-                    >
-                        <Settings size={18} className="group-hover/btn:rotate-90 transition-transform duration-500" />
-                    </Link>
-                    
-                    {(novel.type === "WEB" || novel.type === "LIGHTNOVEL_WEB") && (
-                        <Link
-                            href={`/admin/novel/${novel.id}/chapter`}
-                            className="p-3 text-[#3E2723]/40 hover:text-[#3E2723] hover:bg-white rounded-xl transition-all"
-                            title="Manage Chapters"
-                        >
-                            <List size={18} />
-                        </Link>
+                    {/* 18+ badge on cover */}
+                    {isAdult && (
+                        <div className="absolute top-1 left-1 bg-red-500 text-white px-1.5 py-0.5 rounded-md text-[0.45rem] font-black uppercase tracking-widest">
+                            18+
+                        </div>
                     )}
                 </div>
 
-                <Link
-                    href={`/novel/${novel.slug}`}
-                    target="_blank"
-                    className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-[1.2rem] text-[0.65rem] font-black uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-lg shadow-black/10"
-                >
-                    <ExternalLink size={14} />
-                    Preview
-                </Link>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-[0.6rem] font-black uppercase tracking-wider ${TYPE_COLORS[novel.type] || "bg-zinc-100 text-zinc-600"}`}>
+                            {TYPE_LABELS[novel.type] || novel.type}
+                        </span>
+                        <span className={`px-2.5 py-1 rounded-lg text-[0.6rem] font-black uppercase tracking-wider ${STATUS_COLORS[novel.status] || "bg-zinc-100 text-zinc-600"}`}>
+                            {STATUS_LABELS[novel.status] || novel.status}
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg text-[0.6rem] font-bold uppercase tracking-wider bg-black/5 dark:bg-white/5 opacity-60">
+                            {novel.region}
+                        </span>
+                        {isAdult && (
+                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[0.6rem] font-black uppercase tracking-wider bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                                <AlertTriangle size={9} />
+                                Dewasa
+                            </span>
+                        )}
+                    </div>
 
-                <div className="w-px h-8 bg-[#3E2723]/10 mx-2" />
+                    <h3 className="font-black text-base tracking-tight truncate mb-0.5 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+                        {novel.title}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                        <p className="text-[0.65rem] font-semibold opacity-40 truncate">
+                            {novel.author || "Unknown"}
+                        </p>
+                        <span className="text-[0.6rem] opacity-30">•</span>
+                        <div className="flex items-center gap-1 text-[0.65rem] font-black opacity-40 uppercase tracking-wider">
+                            <Layers size={11} />
+                            {countValue} {countLabel}
+                        </div>
+                    </div>
+                </div>
 
-                <DeleteButton 
-                    id={novel.id} 
-                    novelTitle={novel.title} 
-                    deleteAction={deleteNovel}
-                    variant="list"
-                />
+                {/* Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1 bg-black/4 dark:bg-white/4 p-1.5 rounded-xl">
+                        <Link
+                            href={`/admin/novel/${novel.id}/edit`}
+                            className="p-2.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-white dark:hover:bg-white/10 rounded-lg transition-all"
+                            title="Edit Novel"
+                        >
+                            <Settings size={15} className="group-hover:rotate-45 transition-transform duration-300" />
+                        </Link>
+
+                        {(novel.type === "WEB" || novel.type === "LIGHTNOVEL_WEB") && (
+                            <Link
+                                href={`/admin/novel/${novel.id}/chapter`}
+                                className="p-2.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-white dark:hover:bg-white/10 rounded-lg transition-all"
+                                title="Manage Chapters"
+                            >
+                                <List size={15} />
+                            </Link>
+                        )}
+                    </div>
+
+                    <Link
+                        href={`/novel/${novel.slug}`}
+                        target="_blank"
+                        className="flex items-center gap-1.5 bg-[#3E2723] dark:bg-white text-white dark:text-black px-4 py-2.5 rounded-xl text-[0.6rem] font-black uppercase tracking-wider hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all"
+                    >
+                        <ExternalLink size={12} />
+                        Preview
+                    </Link>
+
+                    <DeleteButton
+                        id={novel.id}
+                        novelTitle={novel.title}
+                        deleteAction={deleteNovel}
+                        variant="list"
+                    />
+                </div>
             </div>
         </div>
     );
