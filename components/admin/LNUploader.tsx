@@ -125,7 +125,7 @@ export default function LNUploader({
                                     <Edit2 size={12} className="opacity-0 group-hover/title:opacity-20 transition-opacity" />
                                 </div>
                                 <p className="text-[0.6rem] font-bold text-black/30 uppercase tracking-widest mt-1">
-                                    {vol.fileType || "Grouping"} • {vol.fileKey ? `${vol.fileKey.slice(0, 15)}...` : "Manual Entry"}
+                                    Grouping • {vol.fileKey ? `${vol.fileKey.slice(0, 15)}...` : "Manual Entry"}
                                 </p>
                             </div>
                             <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
