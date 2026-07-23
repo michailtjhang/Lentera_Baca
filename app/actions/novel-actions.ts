@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { checkAdmin } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { NovelType, Region, Status, FileType, ChapterType } from "@prisma/client";
+import { NovelType, Region, Status, ChapterType } from "@prisma/client";
 import { utapi } from "@/lib/uploadthing";
 import { generateSlug, getChapterSlug } from "@/lib/slug-utils";
 
@@ -18,11 +18,8 @@ export async function createNovel(_: any, formData: FormData) {
         const author = formData.get("author") as string;
         
         let typeValue = formData.get("type") as any;
-        // Map old types if they somehow leak in
-        if (typeValue === "LIGHTNOVEL") typeValue = "LIGHTNOVEL_WEB";
-        if (typeValue === "PDF") typeValue = "LIGHTNOVEL_PDF";
-        // Ensure it's a valid enum or fallback to WEB
-        if (!["WEB", "LIGHTNOVEL_WEB", "LIGHTNOVEL_PDF", "EPUB"].includes(typeValue)) {
+        if (typeValue === "LIGHTNOVEL" || typeValue === "LIGHTNOVEL_PDF" || typeValue === "EPUB" || typeValue === "PDF") typeValue = "LIGHTNOVEL_WEB";
+        if (!["WEB", "LIGHTNOVEL_WEB"].includes(typeValue)) {
             typeValue = "WEB";
         }
         const type = typeValue as NovelType;
@@ -42,7 +39,7 @@ export async function createNovel(_: any, formData: FormData) {
         const tagsInput = formData.get("tags") as string;
         const tags = tagsInput ? tagsInput.split(",").map((tag: string) => tag.trim()).filter(Boolean) : [];
 
-        // Volumes for PDF/EPUB
+        // Volumes for Light Novel grouping
         const volumesRaw = formData.get("volumes") as string;
         const volumesData = volumesRaw ? JSON.parse(volumesRaw) : [];
 
@@ -79,7 +76,6 @@ export async function createNovel(_: any, formData: FormData) {
                         order: v.order || index + 1,
                         fileUrl: v.fileUrl || null,
                         fileKey: v.fileKey || null,
-                        fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
                     })),
                 },
             },
@@ -112,9 +108,8 @@ export async function updateNovel(novelId: string, prevState: any, formData: For
         const coverImageKey = formData.get("coverImageKey") as string;
 
         let typeValue = formData.get("type") as any;
-        if (typeValue === "LIGHTNOVEL") typeValue = "LIGHTNOVEL_WEB";
-        if (typeValue === "PDF") typeValue = "LIGHTNOVEL_PDF";
-        if (!["WEB", "LIGHTNOVEL_WEB", "LIGHTNOVEL_PDF", "EPUB"].includes(typeValue)) {
+        if (typeValue === "LIGHTNOVEL" || typeValue === "LIGHTNOVEL_PDF" || typeValue === "EPUB" || typeValue === "PDF") typeValue = "LIGHTNOVEL_WEB";
+        if (!["WEB", "LIGHTNOVEL_WEB"].includes(typeValue)) {
             typeValue = "WEB";
         }
         const type = typeValue as NovelType;
@@ -205,7 +200,6 @@ export async function updateNovel(novelId: string, prevState: any, formData: For
                             order: v.order,
                             fileUrl: v.fileUrl || null,
                             fileKey: v.fileKey || null,
-                            fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
                         }
                     })),
                     create: volumesToCreate.map((v: any, index: number) => ({
@@ -213,7 +207,6 @@ export async function updateNovel(novelId: string, prevState: any, formData: For
                         order: v.order || (currentVolumes.length + index + 1),
                         fileUrl: v.fileUrl || null,
                         fileKey: v.fileKey || null,
-                        fileType: v.fileType || (type === NovelType.EPUB ? FileType.EPUB : FileType.PDF),
                     })),
                 },
             },

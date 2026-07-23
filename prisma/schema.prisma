@@ -40,8 +40,6 @@ enum Status {
 enum NovelType {
   WEB
   LIGHTNOVEL_WEB
-  LIGHTNOVEL_PDF
-  EPUB
 }
 
 enum Region {

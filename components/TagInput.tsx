@@ -29,8 +29,9 @@ export function TagInput({ suggestions, defaultValue }: TagInputProps) {
 
     useEffect(() => {
         if (inputValue.trim()) {
+            const lowerTags = tags.map(t => t.toLowerCase());
             const filtered = suggestions.filter(
-                s => s.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(s)
+                s => s.toLowerCase().includes(inputValue.toLowerCase()) && !lowerTags.includes(s.toLowerCase())
             );
             setFilteredSuggestions(filtered);
             setShowSuggestions(true);
@@ -42,7 +43,7 @@ export function TagInput({ suggestions, defaultValue }: TagInputProps) {
 
     const addTag = (tag: string) => {
         const cleanTag = tag.trim();
-        if (cleanTag && !tags.includes(cleanTag)) {
+        if (cleanTag && !tags.map(t => t.toLowerCase()).includes(cleanTag.toLowerCase())) {
             setTags([...tags, cleanTag]);
             setInputValue("");
             setShowSuggestions(false);
@@ -69,7 +70,7 @@ export function TagInput({ suggestions, defaultValue }: TagInputProps) {
 
     return (
         <div ref={containerRef} className="space-y-3 relative">
-            <div className="flex flex-wrap gap-2 min-h-[50px] p-2 bg-white/80 border border-black/5 rounded-xl focus-within:ring-2 focus-within:ring-[#3E2723]/20 transition-all">
+            <div className="flex flex-wrap gap-2 min-h-[50px] p-2 bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl focus-within:ring-2 focus-within:ring-[#3E2723]/20 dark:focus-within:ring-white/10 transition-all">
                 {tags.map((tag) => (
                     <span
                         key={tag}
@@ -92,7 +93,7 @@ export function TagInput({ suggestions, defaultValue }: TagInputProps) {
                     onKeyDown={handleKeyDown}
                     onFocus={() => inputValue.trim() && setShowSuggestions(true)}
                     placeholder={tags.length === 0 ? "Ketik tag dan Enter..." : ""}
-                    className="flex-grow bg-transparent border-none focus:outline-none px-2 py-1 text-sm font-medium"
+                    className="flex-grow bg-transparent border-none focus:outline-none px-2 py-1 text-sm font-medium text-[#3E2723] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30"
                 />
             </div>
 
@@ -100,13 +101,13 @@ export function TagInput({ suggestions, defaultValue }: TagInputProps) {
             <input type="hidden" name="tags" value={tags.join(",")} />
 
             {showSuggestions && filteredSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-black/5 rounded-xl shadow-xl max-h-48 overflow-y-auto overflow-x-hidden backdrop-blur-md">
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/10 rounded-xl shadow-xl max-h-48 overflow-y-auto overflow-x-hidden backdrop-blur-md">
                     {filteredSuggestions.map((suggestion) => (
                         <button
                             key={suggestion}
                             type="button"
                             onClick={() => addTag(suggestion)}
-                            className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-[#3E2723]/5 transition-colors flex items-center justify-between"
+                            className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-[#3E2723]/5 dark:hover:bg-white/5 transition-colors flex items-center justify-between text-[#3E2723] dark:text-white"
                         >
                             <span>{suggestion}</span>
                             <Plus size={14} className="opacity-40" />

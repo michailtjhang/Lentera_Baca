@@ -22,8 +22,8 @@ const inputClass = "w-full bg-white dark:bg-white/5 border border-black/8 dark:b
 const labelClass = "block text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 mb-2";
 
 const SectionCard = ({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) => (
-    <div className="bg-white dark:bg-white/4 rounded-2xl border border-black/6 dark:border-white/6 overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-black/5 dark:border-white/5 bg-black/2 dark:bg-white/2">
+    <div className="bg-white dark:bg-white/4 rounded-2xl border border-black/6 dark:border-white/6 overflow-visible">
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-black/5 dark:border-white/5 bg-black/2 dark:bg-white/2 rounded-t-2xl">
             <div className="p-1.5 rounded-lg bg-[#3E2723]/10 dark:bg-white/10">
                 <Icon size={14} className="text-[#3E2723] dark:text-white opacity-70" />
             </div>
@@ -164,10 +164,8 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                                 onChange={(e) => setType(e.target.value)}
                                 className={inputClass}
                             >
-                                <option value="WEB">Web Novel (Chapter)</option>
-                                <option value="LIGHTNOVEL_WEB">Light Novel (Web)</option>
-                                <option value="LIGHTNOVEL_PDF">Light Novel (PDF)</option>
-                                <option value="EPUB">Light Novel (EPUB)</option>
+                                <option value="WEB">Web Novel</option>
+                                <option value="LIGHTNOVEL_WEB">Light Novel</option>
                             </select>
                         </div>
                         <div>
@@ -246,8 +244,8 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                     </div>
                 </SectionCard>
 
-                {/* Files (for Light Novel / EPUB) */}
-                {(type === "LIGHTNOVEL_WEB" || type === "LIGHTNOVEL_PDF" || type === NovelType.EPUB) && (
+                {/* Files (for Light Novel) */}
+                {(type === "LIGHTNOVEL_WEB") && (
                     <SectionCard icon={Layers} title="Files & Volume">
                         <LNUploader
                             onVolumesChanged={setVolumes}

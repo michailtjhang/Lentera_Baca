@@ -12,9 +12,7 @@ interface AdminDashboardProps {
 const TYPE_FILTERS = [
     { label: "Semua", value: "ALL" },
     { label: "Web Novel", value: "WEB" },
-    { label: "LN Web", value: "LIGHTNOVEL_WEB" },
-    { label: "LN PDF", value: "LIGHTNOVEL_PDF" },
-    { label: "EPUB", value: "EPUB" },
+    { label: "Light Novel", value: "LIGHTNOVEL_WEB" },
 ];
 
 export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
@@ -32,8 +30,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
     const stats = {
         total: initialNovels.length,
         web: initialNovels.filter(n => n.type === "WEB").length,
-        lightnovel: initialNovels.filter(n => n.type === "LIGHTNOVEL_WEB" || n.type === "LIGHTNOVEL_PDF").length,
-        epub: initialNovels.filter(n => n.type === "EPUB").length,
+        lightnovel: initialNovels.filter(n => n.type === "LIGHTNOVEL_WEB").length,
         ongoing: initialNovels.filter(n => n.status === "ONGOING").length,
     };
 
@@ -70,11 +67,10 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard icon={BookOpen} label="Total Novel" value={stats.total} color="bg-gradient-to-br from-amber-500 to-amber-700" />
                 <StatCard icon={FileText} label="Web Novel" value={stats.web} color="bg-gradient-to-br from-blue-500 to-blue-700" />
                 <StatCard icon={Layers} label="Light Novel" value={stats.lightnovel} color="bg-gradient-to-br from-purple-500 to-purple-700" />
-                <StatCard icon={Globe} label="EPUB" value={stats.epub} color="bg-gradient-to-br from-green-500 to-green-700" />
                 <StatCard icon={BarChart2} label="Ongoing" value={stats.ongoing} color="bg-gradient-to-br from-rose-500 to-rose-700" />
             </div>
 
@@ -88,7 +84,7 @@ export default function AdminDashboard({ initialNovels }: AdminDashboardProps) {
                         placeholder="Cari judul atau penulis..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus:border-black/10 dark:focus:border-white/10 outline-none transition-all font-medium text-sm placeholder:opacity-30"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus:border-black/10 dark:focus:border-white/10 outline-none transition-all font-medium text-sm text-[#3E2723] dark:text-white placeholder:text-black/30 dark:placeholder:text-white/30"
                     />
                 </div>
 

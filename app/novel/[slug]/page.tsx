@@ -3,18 +3,18 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { ChevronRight, Bookmark, Play, Clock, BookOpen, Hash } from "lucide-react";
+import { Bookmark, BookOpen, Hash } from "lucide-react";
 import ChapterList from "@/components/ChapterList";
 import HistoryDisplay from "@/components/HistoryDisplay";
 import ThemeToggle from "@/components/ThemeToggle";
 import ReadButton from "@/components/ReadButton";
 import VolumeAccordion from "@/components/VolumeAccordion";
-import VolumeList from "@/components/VolumeList";
-import { ChapterType } from "@prisma/client";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
 }
+
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: PageProps) {
     const { slug } = await params;
@@ -72,8 +72,6 @@ export default async function NovelOverviewPage({ params }: PageProps) {
     const typeLabels: Record<string, string> = {
         WEB: "Web Novel",
         LIGHTNOVEL_WEB: "Light Novel",
-        LIGHTNOVEL_PDF: "Light Novel",
-        EPUB: "Light Novel",
     };
 
     return (
@@ -178,24 +176,13 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             
                             {/* Actions */}
                             <div className="md:col-span-3 flex items-stretch gap-4 h-16 md:h-auto">
-                                {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL_WEB') ? (
-                                    novel.chapters.length > 0 && (
-                                        <ReadButton
-                                            novelId={novel.id}
-                                            slug={slug}
-                                            firstChapterOrder={novel.chapters[0].order}
-                                            allChapters={novel.chapters}
-                                        />
-                                    )
-                                ) : (
-                                    novel.volumes.length > 0 && (
-                                        <Link
-                                            href={`/novel/${slug}/volume/${novel.volumes[0].id}`}
-                                            className="flex-1 flex items-center justify-center gap-3 bg-black text-white rounded-[2.5rem] font-black uppercase tracking-widest text-xs hover:opacity-80 active:scale-[0.98] transition-all"
-                                        >
-                                            <Play size={18} /> Mulai Baca
-                                        </Link>
-                                    )
+                                {novel.chapters.length > 0 && (
+                                    <ReadButton
+                                        novelId={novel.id}
+                                        slug={slug}
+                                        firstChapterOrder={novel.chapters[0].order}
+                                        allChapters={novel.chapters}
+                                    />
                                 )}
                                 <button className="aspect-square flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2.5rem] hover:bg-black hover:text-white transition-all active:scale-90">
                                     <Bookmark size={22} />
@@ -231,7 +218,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                         </span>
                     </div>
 
-                    {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL_WEB') ? (
+                    {(novel.type === 'WEB' || novel.type === 'LIGHTNOVEL_WEB') && (
                         <>
                             <HistoryDisplay novelId={novel.id} slug={slug} allChapters={novel.chapters} />
                             {novel.volumes.length > 0 ? (
@@ -246,8 +233,6 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                 <ChapterList chapters={novel.chapters} slug={slug} novelId={novel.id} />
                             )}
                         </>
-                    ) : (
-                        <VolumeList volumes={novel.volumes as any} slug={slug} />
                     )}
                 </div>
             </main>

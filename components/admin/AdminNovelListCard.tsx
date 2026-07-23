@@ -32,16 +32,12 @@ function hasAdultContent(tags?: { name: string }[]): boolean {
 
 const TYPE_LABELS: Record<string, string> = {
     WEB: "Web Novel",
-    LIGHTNOVEL_WEB: "LN Web",
-    LIGHTNOVEL_PDF: "LN PDF",
-    EPUB: "EPUB",
+    LIGHTNOVEL_WEB: "Light Novel",
 };
 
 const TYPE_COLORS: Record<string, string> = {
     WEB: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
     LIGHTNOVEL_WEB: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
-    LIGHTNOVEL_PDF: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
-    EPUB: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
 };
 
 const STATUS_COLORS: Record<string, string> = {

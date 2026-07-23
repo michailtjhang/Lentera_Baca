@@ -89,7 +89,7 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
             <label className="block text-xs font-black uppercase tracking-widest opacity-50">
                 Cover Image <span className="text-black/30 font-bold">(WebP recommended)</span>
             </label>
-            <div className="border-2 border-dashed border-black/10 rounded-[2.5rem] p-2 bg-white/40 group hover:border-black/20 transition-all flex flex-col items-center justify-center text-center min-h-[300px]">
+            <div className="border-2 border-dashed border-black/10 dark:border-white/10 rounded-[2.5rem] p-2 bg-white/40 dark:bg-white/5 group hover:border-black/20 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center min-h-[300px]">
                 {url ? (
                     <div className="relative w-full max-w-[260px] aspect-[2/3] mx-auto group/preview">
                         <img 

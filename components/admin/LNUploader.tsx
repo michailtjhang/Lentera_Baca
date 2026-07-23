@@ -10,7 +10,6 @@ interface Volume {
     title: string;
     fileUrl?: string | null;
     fileKey?: string | null;
-    fileType?: "PDF" | "EPUB";
     order?: number;
 }
 
@@ -123,7 +122,7 @@ export default function LNUploader({
                                         value={vol.title}
                                         onChange={(e) => updateVolumeTitle(idx, e.target.value)}
                                         placeholder="Judul Volume (Klik untuk ubah)..."
-                                        className="flex-1 bg-transparent font-black text-sm outline-none border-b border-dashed border-black/5 focus:border-[#3E2723]/30 pb-1 transition-colors"
+                                        className="flex-1 bg-transparent font-black text-sm outline-none border-b border-dashed border-black/5 dark:border-white/5 focus:border-[#3E2723]/30 dark:focus:border-white/30 pb-1 transition-colors text-[#3E2723] dark:text-white placeholder:text-black/20 dark:placeholder:text-white/20"
                                     />
                                     <Edit2 size={12} className="opacity-0 group-hover/title:opacity-20 transition-opacity" />
                                 </div>
@@ -164,7 +163,7 @@ export default function LNUploader({
 
                     {/* Add Volume Options */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Manual Entry (Title Only) - Hidden for PDF/EPUB */}
+                        {/* Manual Entry (Title Only) */}
                         {novelType === "LIGHTNOVEL_WEB" && (
                             <div className="border border-black/5 bg-white/20 rounded-[1.5rem] p-6 flex flex-col justify-center gap-3">
                                 <label className="text-[0.6rem] font-black uppercase tracking-widest opacity-40 px-1">Tanpa File (Grup Chapter)</label>
@@ -174,7 +173,7 @@ export default function LNUploader({
                                         placeholder="Nama Volume..."
                                         value={manualTitle}
                                         onChange={(e) => setManualTitle(e.target.value)}
-                                        className="flex-1 bg-white/60 border border-black/5 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-1 focus:ring-black/10"
+                                        className="flex-1 bg-white dark:bg-white/10 border border-black/5 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-1 focus:ring-black/10 dark:focus:ring-white/10 text-[#3E2723] dark:text-white placeholder:text-black/20 dark:placeholder:text-white/20"
                                     />
                                     <button
                                         type="button"
@@ -191,38 +190,7 @@ export default function LNUploader({
                             </div>
                         )}
 
-                        {/* File Uploader - Hidden for LIGHTNOVEL if they only want grouping */}
-                        {(novelType === "LIGHTNOVEL_PDF" || novelType === "EPUB") && (
-                            <div className="border-2 border-dashed border-black/5 rounded-[1.5rem] p-6 bg-white/20 flex flex-col items-center justify-center gap-2 col-span-full">
-                                <div className="flex items-center gap-3">
-                                    <FileText size={20} className="opacity-20" />
-                                    <div className="text-left">
-                                        <p className="text-[0.65rem] font-black uppercase tracking-widest text-black/80">Upload File (Versi Ebook)</p>
-                                        <p className="text-[0.5rem] font-bold text-black/30 uppercase tracking-[0.1em]">PDF/EPUB • Maks 16MB</p>
-                                    </div>
-                                </div>
-                                
-                                <label className="relative cursor-pointer w-full">
-                                    <div className="bg-[#3E2723]/5 text-[#3E2723] w-full py-2.5 rounded-xl font-black text-[0.6rem] uppercase tracking-widest hover:bg-[#3E2723]/10 transition-all flex items-center justify-center gap-2">
-                                        {isUploading ? (
-                                            <><Loader2 size={12} className="animate-spin" /> Uploading...</>
-                                        ) : (
-                                            <>
-                                                <Plus size={12} />
-                                                Pilih File
-                                            </>
-                                        )}
-                                    </div>
-                                    <input
-                                        type="file"
-                                        accept=".pdf,.epub"
-                                        className="hidden"
-                                        onChange={handleFileChange}
-                                        disabled={isUploading}
-                                    />
-                                </label>
-                            </div>
-                        )}
+
                     </div>
                 </div>
             </div>

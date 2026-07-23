@@ -34,9 +34,7 @@ export default async function EditNovelPage({ params }: { params: Promise<{ id: 
 
     const updateNovelWithId = updateNovel.bind(null, id);
 
-    const typeLabel = novel.type === "WEB" ? "Web Novel" : 
-                      novel.type === "LIGHTNOVEL_WEB" ? "Light Novel (Web)" :
-                      novel.type === "LIGHTNOVEL_PDF" ? "Light Novel (PDF)" : "EPUB";
+    const typeLabel = novel.type === "WEB" ? "Web Novel" : "Light Novel";
 
     return (
         <div className="min-h-screen">

@@ -62,7 +62,7 @@ export default async function NewNovelPage({
             <div className="p-6 lg:p-10 max-w-7xl mx-auto">
                 <div className="mb-8">
                     <p className="text-[0.65rem] font-black uppercase tracking-[0.3em] opacity-30 mb-1">
-                        {isLightNovel ? "Light Novel / EPUB" : "Web Novel"}
+                        {isLightNovel ? "Light Novel" : "Web Novel"}
                     </p>
                     <h2 className="text-3xl font-black tracking-tighter">
                         {isLightNovel ? "Tambah Light Novel" : "Tambah Web Novel"}

@@ -15,6 +15,8 @@ export const metadata = {
   description: "Temukan berbagai macam genre novel menarik di Lentera Baca. Cari novel favorit Anda sekarang.",
 };
 
+export const revalidate = 60;
+
 // Tags considered 18+ content
 const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
 
@@ -135,13 +137,11 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
   };
 
   const getTypeLabel = (t: string) => {
-    const map: Record<string, string> = {
+    const TYPE_LABELS: Record<string, string> = {
       WEB: "Web Novel",
-      LIGHTNOVEL_WEB: "Light Novel (Web)",
-      LIGHTNOVEL_PDF: "Light Novel (PDF)",
-      EPUB: "EPUB",
+      LIGHTNOVEL_WEB: "Light Novel",
     };
-    return map[t] || t;
+    return TYPE_LABELS[t] || t;
   };
 
   const getStatusLabel = (s: string) => {
@@ -285,9 +285,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                 {[
                   { label: "Semua Tipe", value: "ALL" },
                   { label: "Web Novel", value: "WEB" },
-                  { label: "Light Novel (Web)", value: "LIGHTNOVEL_WEB" },
-                  { label: "Light Novel (PDF)", value: "LIGHTNOVEL_PDF" },
-                  { label: "EPUB", value: "EPUB" },
+                  { label: "Light Novel", value: "LIGHTNOVEL_WEB" },
                 ].map(t => (
                   <Link key={t.value} href={buildUrl({ type: t.value })} className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${(!type && t.value === "ALL") || type === t.value ? "bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black shadow-md" : "hover:bg-black/5 dark:hover:bg-white/5 opacity-60 hover:opacity-100"}`}>
                     {t.label}

@@ -60,6 +60,20 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                try {
+                  const theme = localStorage.getItem('lentera_baca_theme');
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              `,
+            }}
+          />
           {children}
         </body>
       </html>

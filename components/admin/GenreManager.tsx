@@ -97,7 +97,7 @@ export default function GenreManager({ initialGenres }: GenreManagerProps) {
                         value={newGenre}
                         onChange={(e) => setNewGenre(e.target.value)}
                         placeholder="Contoh: Isekai, Thriller, Romance..."
-                        className="flex-1 bg-black/5 dark:bg-white/5 border border-transparent focus:border-amber-500/30 text-[#3E2723] dark:text-white px-4 py-3 rounded-xl focus:outline-none transition-all font-medium text-sm placeholder:opacity-30"
+                        className="flex-1 bg-black/5 dark:bg-white/5 border border-transparent focus:border-amber-500/30 text-[#3E2723] dark:text-white px-4 py-3 rounded-xl focus:outline-none transition-all font-medium text-sm placeholder:text-black/30 dark:placeholder:text-white/30"
                         onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                     />
                     <button
@@ -139,7 +139,7 @@ export default function GenreManager({ initialGenres }: GenreManagerProps) {
                             placeholder="Cari genre..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-amber-500/30 px-10 py-2.5 rounded-xl focus:outline-none transition-all font-medium text-sm placeholder:opacity-30"
+                            className="w-full bg-black/5 dark:bg-white/5 border border-transparent focus:border-amber-500/30 text-[#3E2723] dark:text-white px-10 py-2.5 rounded-xl focus:outline-none transition-all font-medium text-sm placeholder:text-black/30 dark:placeholder:text-white/30"
                         />
                         {searchQuery && (
                             <button onClick={() => setSearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-70 transition-opacity">
@@ -163,7 +163,7 @@ export default function GenreManager({ initialGenres }: GenreManagerProps) {
                                         autoFocus
                                         value={editingName}
                                         onChange={(e) => setEditingName(e.target.value)}
-                                        className="flex-1 bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 px-3 py-2 rounded-lg focus:outline-none font-medium text-sm"
+                                        className="flex-1 bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 text-[#3E2723] dark:text-white px-3 py-2 rounded-lg focus:outline-none font-medium text-sm"
                                         onKeyDown={(e) => e.key === "Enter" && handleUpdate(genre.id)}
                                     />
                                     <button

@@ -11,6 +11,8 @@ export const metadata = {
   description: "Jelajahi koleksi novel terbaru dan terpopuler di Lentera Baca. Terangi imajinasi Anda dengan ribuan cerita menarik.",
 };
 
+export const revalidate = 60;
+
 // Tag yang dianggap konten 18+
 const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
 
@@ -54,9 +56,10 @@ export default async function Home() {
   const latestUpdated = (latestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
   const newestNovels = (newestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
 
-  const getTypeLabel = (type: string) => {
-    if (type === "LIGHTNOVEL_WEB" || type === "LIGHTNOVEL_PDF" || type === "EPUB") return "Light Novel";
-    return "Web Novel";
+  const formatType = (type: string) => {
+    if (type === "WEB") return "Web Novel";
+    if (type === "LIGHTNOVEL_WEB") return "Light Novel";
+    return type;
   };
 
   const getStatusColor = (status: string) => {
