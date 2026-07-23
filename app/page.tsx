@@ -56,7 +56,7 @@ export default async function Home() {
   const latestUpdated = (latestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
   const newestNovels = (newestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
 
-  const formatType = (type: string) => {
+  const getTypeLabel = (type: string) => {
     if (type === "WEB") return "Web Novel";
     if (type === "LIGHTNOVEL_WEB") return "Light Novel";
     return type;
