@@ -30,12 +30,10 @@ export default function LNUploader({
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {
-                const type = file.url.toLowerCase().endsWith(".epub") ? "EPUB" : "PDF";
                 addVolume({
                     title: `Volume ${volumes.length + 1}`,
                     fileUrl: file.url,
                     fileKey: file.key,
-                    fileType: type as any,
                 });
             }
         },
