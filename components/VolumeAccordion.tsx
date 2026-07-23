@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Image as ImageIcon, Book, Sparkles, LogOut, Hash, Layers } from "lucide-react";
 import { ChapterType } from "@prisma/client";
-import { getChapterSlug } from "@/lib/slug-utils";
+import { getChapterSlug, formatChapterTitle } from "@/lib/slug-utils";
 
 interface Chapter {
     id: string;
@@ -76,11 +76,7 @@ export default function VolumeAccordion({ volumes, standaloneChapters, allChapte
                 <div className="flex items-center gap-2">
                     {getChapterIcon(chapter.type)}
                     <h3 className="text-sm font-bold truncate">
-                        {chapter.title || (
-                            chapter.type.toString() === "PROLOGUE" ? "Prolog" :
-                            chapter.type.toString() === "INTERLUDE" ? "Selingan" :
-                            `Chapter ${chapter.order}`
-                        )}
+                        {formatChapterTitle(chapter, allChapters)}
                     </h3>
                 </div>
                 {getChapterBadge(chapter.type) && (

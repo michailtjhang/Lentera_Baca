@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { getChapterSlug } from "@/lib/slug-utils";
+import { getChapterSlug, formatChapterTitle } from "@/lib/slug-utils";
 
 import { ChapterType } from "@prisma/client";
 
@@ -55,7 +55,7 @@ export default function ChapterList({ chapters, slug, novelId }: ChapterListProp
                             </span>
                             <div className="flex-1">
                                 <h3 className="text-sm font-semibold text-[#3E2723] group-hover:text-black transition-colors line-clamp-1">
-                                    {chapter.title}
+                                    {formatChapterTitle(chapter, chapters)}
                                 </h3>
                                 {isLastRead && (
                                     <span className="text-[0.6rem] font-bold uppercase tracking-widest text-[#3E2723] bg-[#3E2723]/10 px-2 py-0.5 rounded mt-1 inline-block">

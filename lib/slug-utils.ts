@@ -83,3 +83,49 @@ export function getChapterBySlug(chapterSlug: string, allChapters: { type: Chapt
     
     return sameTypeChapters[index] || null;
 }
+
+/**
+ * Formats a chapter title gracefully.
+ * Example:
+ * - Title "Aku", Type Prologue -> "Prolog - Aku"
+ * - Title empty, Type Chapter (1st) -> "Chapter 1"
+ * - Title "Chapter 1", Type Chapter -> "Chapter 1" (prevents "Chapter 1 - Chapter 1")
+ */
+export function formatChapterTitle(
+    chapter: { title?: string | null; type: ChapterType; order: number },
+    allChapters: { type: ChapterType; order: number }[]
+): string {
+    const typeStr = chapter.type.toString();
+    let prefix = "";
+
+    if (typeStr === "PROLOGUE") prefix = "Prolog";
+    else if (typeStr === "EPILOGUE") prefix = "Epilog";
+    else if (typeStr === "INTERLUDE") prefix = "Selingan";
+    else if (typeStr === "SIDESTORY") prefix = "Side Story";
+    else if (typeStr === "ILLUSTRATION") prefix = "Ilustrasi";
+    else if (typeStr === "CHAPTER" || typeStr === "STORY") {
+        const sameTypeChapters = allChapters.filter(c => c.type === chapter.type).sort((a, b) => a.order - b.order);
+        const index = sameTypeChapters.findIndex(c => c.order === chapter.order) + 1; // 1-based
+        prefix = `Chapter ${index}`;
+    } else {
+        prefix = `Chapter ${chapter.order}`; // Fallback
+    }
+
+    if (chapter.title && chapter.title.trim() !== "") {
+        const lowerTitle = chapter.title.toLowerCase().trim();
+        // If user already prefixed it manually, just use their title
+        if (
+            lowerTitle.startsWith("chapter") ||
+            lowerTitle.startsWith("prolog") ||
+            lowerTitle.startsWith("epilog") ||
+            lowerTitle.startsWith("selingan") ||
+            lowerTitle.startsWith("side story") ||
+            lowerTitle.startsWith("ilustrasi")
+        ) {
+            return chapter.title;
+        }
+        return `${prefix} - ${chapter.title}`;
+    }
+
+    return prefix;
+}
