@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Edit2, Trash2, Book, Image as ImageIcon, Sparkles, LogOut, Layers, ArrowUp, ArrowDown, Save, X, Loader2 } from "lucide-react";
-import { deleteChapter, swapVolumeOrders, updateVolumeTitle, swapChapterOrders } from "@/app/actions/novel-actions";
+import { deleteChapter, updateVolumeTitle, swapChapterOrders } from "@/app/actions/novel-actions";
+import { formatChapterTitle } from "@/lib/slug-utils";
 
 interface Chapter {
     id: string;
@@ -33,11 +35,22 @@ interface AdminChapterListProps {
 
 export default function AdminChapterList({ novel, chapters, volumes }: AdminChapterListProps) {
     const isWeb = novel.type === "WEB";
+    const router = useRouter();
+
+    const [localChapters, setLocalChapters] = useState<Chapter[]>(chapters);
+    useEffect(() => {
+        setLocalChapters(chapters);
+    }, [chapters]);
+
+    // Accordion state: Default open ONLY the latest/last volume (or standalone if no volume)
     const [openVolumes, setOpenVolumes] = useState<Record<string, boolean>>(() => {
-        const initial: Record<string, boolean> = { "standalone": true };
-        chapters.forEach(c => {
-            if (c.volumeId) initial[c.volumeId] = true;
-        });
+        const initial: Record<string, boolean> = {};
+        if (volumes.length > 0) {
+            const lastVolId = volumes[volumes.length - 1].id;
+            initial[lastVolId] = true;
+        } else {
+            initial["standalone"] = true;
+        }
         return initial;
     });
 
@@ -54,13 +67,15 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
         INTERLUDE: { label: "Selingan", icon: Layers, color: "text-teal-500" },
     };
 
-    // Group chapters by volume ID
-    const chaptersByVolume = chapters.reduce((acc: Record<string, Chapter[]>, chapter) => {
-        const volId = chapter.volumeId || "standalone";
-        if (!acc[volId]) acc[volId] = [];
-        acc[volId].push(chapter);
-        return acc;
-    }, {});
+    // Group chapters by volume ID using localChapters
+    const chaptersByVolume = useMemo(() => {
+        return localChapters.reduce((acc: Record<string, Chapter[]>, chapter) => {
+            const volId = chapter.volumeId || "standalone";
+            if (!acc[volId]) acc[volId] = [];
+            acc[volId].push(chapter);
+            return acc;
+        }, {});
+    }, [localChapters]);
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [editingVolumeId, setEditingVolumeId] = useState<string | null>(null);
@@ -72,6 +87,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
         try {
             await updateVolumeTitle(id, editTitleValue.trim());
             setEditingVolumeId(null);
+            router.refresh();
         } finally {
             setIsProcessing(false);
         }
@@ -80,21 +96,44 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
     const handleSwapChapter = async (id1: string, id2: string) => {
         if (isProcessing) return;
         setIsProcessing(true);
+
+        // Optimistically swap in local state
+        setLocalChapters(prev => {
+            const next = [...prev];
+            const idx1 = next.findIndex(c => c.id === id1);
+            const idx2 = next.findIndex(c => c.id === id2);
+            if (idx1 !== -1 && idx2 !== -1) {
+                const tempOrder = next[idx1].order;
+                next[idx1] = { ...next[idx1], order: next[idx2].order };
+                next[idx2] = { ...next[idx2], order: tempOrder };
+
+                const tempObj = next[idx1];
+                next[idx1] = next[idx2];
+                next[idx2] = tempObj;
+            }
+            return next;
+        });
+
         try {
             await swapChapterOrders(id1, id2);
+            router.refresh();
+        } catch (err) {
+            console.error("Swap Error:", err);
+            setLocalChapters(chapters); // Revert on error
         } finally {
             setIsProcessing(false);
         }
     };
 
-    const renderChapterRow = (chapter: Chapter, index: number, chapters: Chapter[]) => {
+    const renderChapterRow = (chapter: Chapter, index: number, groupChapters: Chapter[]) => {
         const typeInfo = typeLabels[chapter.type] || { label: chapter.type, icon: Book, color: "text-gray-400" };
+        const displayOrder = index + 1;
 
         return (
             <tr key={chapter.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
                 <td className="py-3 px-4">
                     <span className="text-[0.65rem] font-black px-2 py-0.5 bg-black/5 dark:bg-white/10 rounded group-hover:bg-[#3E2723] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-colors">
-                        {chapter.order}
+                        #{displayOrder}
                     </span>
                 </td>
 
@@ -109,11 +148,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
 
                 <td className="py-3 px-4">
                     <p className="text-sm font-bold text-[#3E2723] dark:text-white line-clamp-1">
-                        {chapter.title || (
-                            chapter.type === "PROLOGUE" ? "Prolog" :
-                                chapter.type === "INTERLUDE" ? "Selingan" :
-                                    `Chapter ${chapter.order}`
-                        )}
+                        {formatChapterTitle(chapter as any, groupChapters as any)}
                     </p>
                 </td>
 
@@ -124,17 +159,17 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                 <td className="py-3 px-4 text-right">
                     <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                            onClick={() => handleSwapChapter(chapter.id, chapters[index - 1].id)}
+                            onClick={() => handleSwapChapter(chapter.id, groupChapters[index - 1].id)}
                             disabled={index === 0 || isProcessing}
-                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg disabled:opacity-10 transition-all"
+                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg disabled:opacity-10 transition-all cursor-pointer"
                             title="Pindah ke Atas"
                         >
                             {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <ArrowUp size={12} />}
                         </button>
                         <button
-                            onClick={() => handleSwapChapter(chapter.id, chapters[index + 1].id)}
-                            disabled={index === chapters.length - 1 || isProcessing}
-                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg disabled:opacity-10 transition-all"
+                            onClick={() => handleSwapChapter(chapter.id, groupChapters[index + 1].id)}
+                            disabled={index === groupChapters.length - 1 || isProcessing}
+                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg disabled:opacity-10 transition-all cursor-pointer"
                             title="Pindah ke Bawah"
                         >
                             {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <ArrowDown size={12} />}
@@ -151,9 +186,10 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                             onClick={async () => {
                                 if (confirm("Hapus chapter ini?")) {
                                     await deleteChapter(chapter.id);
+                                    router.refresh();
                                 }
                             }}
-                            className="p-1.5 text-red-400/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all"
+                            className="p-1.5 text-red-400/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all cursor-pointer"
                             title="Hapus"
                         >
                             <Trash2 size={12} />
@@ -179,11 +215,11 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
                     {isWeb ? (
                         // Web Novel: Simple list, no grouping/accordion
-                        chapters.map((c, i) => renderChapterRow(c, i, chapters))
+                        localChapters.map((c, i) => renderChapterRow(c, i, localChapters))
                     ) : (
                         // Light Novel: Accordion-based volume grouping
                         <>
-                            {volumes.map((vol, index) => (
+                            {volumes.map((vol) => (
                                 <React.Fragment key={vol.id}>
                                     <tr className="bg-black/5 dark:bg-white/5 group/vol">
                                         <td colSpan={5} className="py-2 px-6">
@@ -211,8 +247,8 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                                                                 className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#3E2723] dark:text-white outline-none border-none bg-transparent w-48"
                                                                 autoFocus
                                                             />
-                                                            <button onClick={() => handleSaveVolumeTitle(vol.id)} className="text-emerald-500 hover:scale-110 transition-transform"><Save size={14} /></button>
-                                                            <button onClick={() => setEditingVolumeId(null)} className="text-red-500 hover:scale-110 transition-transform"><X size={14} /></button>
+                                                            <button onClick={() => handleSaveVolumeTitle(vol.id)} className="text-emerald-500 hover:scale-110 transition-transform cursor-pointer"><Save size={14} /></button>
+                                                            <button onClick={() => setEditingVolumeId(null)} className="text-red-500 hover:scale-110 transition-transform cursor-pointer"><X size={14} /></button>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-3 group/title">
@@ -222,7 +258,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                                                             <button
                                                                 onClick={() => { setEditingVolumeId(vol.id); setEditTitleValue(vol.title); }}
                                                                 disabled={isProcessing}
-                                                                className="opacity-0 group-hover/vol:opacity-50 hover:!opacity-100 transition-opacity disabled:pointer-events-none"
+                                                                className="opacity-0 group-hover/vol:opacity-50 hover:!opacity-100 transition-opacity disabled:pointer-events-none cursor-pointer"
                                                             >
                                                                 <Edit2 size={12} />
                                                             </button>
@@ -264,7 +300,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                     <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto opacity-40">
                         <Book size={32} />
                     </div>
-                    <p className="text-sm font-bold opacity-30 uppercase tracking-widest">Belum ada chapter</p>
+                    <p className="text-sm font-bold opacity-35 uppercase tracking-widest">Belum ada chapter</p>
                 </div>
             )}
         </div>

@@ -434,9 +434,17 @@ export async function swapChapterOrders(id1: string, id2: string) {
 
     if (!ch1 || !ch2) throw new Error("Chapter not found");
 
+    let newOrder1 = ch2.order;
+    let newOrder2 = ch1.order;
+
+    if (newOrder1 === newOrder2) {
+        newOrder1 = ch1.order;
+        newOrder2 = ch1.order + 1;
+    }
+
     await prisma.$transaction([
-        prisma.chapter.update({ where: { id: id1 }, data: { order: ch2.order } }),
-        prisma.chapter.update({ where: { id: id2 }, data: { order: ch1.order } }),
+        prisma.chapter.update({ where: { id: id1 }, data: { order: newOrder1 } }),
+        prisma.chapter.update({ where: { id: id2 }, data: { order: newOrder2 } }),
     ]);
 
     revalidatePath(`/novel/${ch1.novel.slug}`);
