@@ -187,23 +187,24 @@ export default async function Home() {
 
       <main className="max-w-7xl mx-auto px-6">
         {/* ─── HERO + POPULAR SLIDER ──────────────────────────────── */}
-        <section className="py-8 md:py-12 relative overflow-hidden">
+        <section className="py-4 md:py-6 relative overflow-hidden">
           {/* Unified amber ambient background glow across both slider and text */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[140%] bg-gradient-to-r from-amber-400/25 via-orange-400/25 to-amber-500/20 dark:from-amber-500/15 dark:via-orange-500/20 dark:to-amber-500/15 blur-[100px] opacity-85 rounded-full transform-gpu" />
+          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+            <div className="absolute -top-10 left-0 right-0 h-[140%] bg-gradient-to-br from-amber-200/30 via-orange-100/20 to-transparent dark:from-amber-700/10 dark:via-orange-800/8 dark:to-transparent blur-[80px] transform-gpu" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-50/15 to-transparent dark:via-amber-950/10" />
           </div>
 
           {/* Grid Layout: Slider (70% = 8 cols), Hero Text (30% = 4 cols with min-w-0 to prevent clipping) */}
-          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-w-full">
-            {/* Slider (Desktop Left 8/12 cols ~70%, Mobile order-2) */}
-            <div className="lg:col-span-8 w-full min-w-0 order-2 lg:order-1">
-              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[350px] h-full">
+          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center w-full max-w-full">
+            {/* Slider (Desktop Left 7/12 cols ~60%, Mobile order-2) */}
+            <div className="lg:col-span-7 w-full min-w-0 order-2 lg:order-1">
+              <div className="min-h-[260px] sm:min-h-[300px] md:min-h-[320px] h-full">
                 <PopularSlider novels={newlyAddedNovels as any} />
               </div>
             </div>
 
-            {/* Hero Text & Search (Desktop Right 4/12 cols ~30%, Mobile order-1 on top) */}
-            <div className="lg:col-span-4 w-full min-w-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left overflow-hidden">
+            {/* Hero Text & Search (Desktop Right 5/12 cols ~40%, Mobile order-1 on top) */}
+            <div className="lg:col-span-5 w-full min-w-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left overflow-hidden pl-0 lg:pl-4">
               {/* Welcome back banner for logged-in users */}
               {userId && userName && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0 max-w-full">
