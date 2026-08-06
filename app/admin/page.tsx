@@ -17,7 +17,7 @@ export default async function AdminPage() {
                 select: { name: true }
             }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { updatedAt: 'desc' }
     });
 
     return <AdminDashboard initialNovels={novels} />;

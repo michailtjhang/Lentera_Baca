@@ -189,7 +189,7 @@ export default function Editor({ value, onChange, placeholder }: EditorProps) {
             Underline,
             Image.configure({
                 HTMLAttributes: {
-                    class: "rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto",
+                    class: "w-full h-auto rounded-2xl shadow-xl mx-auto my-8 block max-w-full object-cover",
                 },
             }),
             Link.configure({
@@ -213,6 +213,13 @@ export default function Editor({ value, onChange, placeholder }: EditorProps) {
             <MenuBar editor={editor} />
             <EditorContent editor={editor} />
             <style jsx global>{`
+                .tiptap img {
+                    width: 100%;
+                    height: auto;
+                    border-radius: 1rem;
+                    display: block;
+                    margin: 2rem auto;
+                }
                 .tiptap p.is-editor-empty:first-child::before {
                     content: attr(data-placeholder);
                     float: left;

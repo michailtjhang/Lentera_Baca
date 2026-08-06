@@ -33,28 +33,22 @@ export default async function Home() {
   const adminStatus = await isAdmin();
 
   // Fetch novels for different sections (including tags for 18+ filtering)
-  const [trendingRaw, latestRaw, newestRaw] = await Promise.all([
+  const [trendingRaw, latestRaw] = await Promise.all([
     prisma.novel.findMany({
-      take: 30,
+      take: 20,
       orderBy: { views: "desc" },
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
     prisma.novel.findMany({
-      take: 30,
+      take: 20,
       orderBy: { updatedAt: "desc" },
-      include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
-    }),
-    prisma.novel.findMany({
-      take: 30,
-      orderBy: { createdAt: "desc" },
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
   ]);
 
   // Filter out 18+ content from home page
-  const trendingNovels = (trendingRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
+  const trendingNovels = (trendingRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 4);
   const latestUpdated = (latestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
-  const newestNovels = (newestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
 
   const getTypeLabel = (type: string) => {
     if (type === "WEB") return "Web Novel";
@@ -74,6 +68,89 @@ export default async function Home() {
     if (status === "COMPLETE") return "Selesai";
     if (status === "DROP") return "Drop";
     return "Hiatus";
+  };
+
+  const rankBadges = [
+    { label: "👑 #1", bg: "bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-500/40 border border-amber-300/30" },
+    { label: "🥈 #2", bg: "bg-gradient-to-r from-slate-300 via-slate-400 to-slate-500 text-white shadow-md border border-slate-200/30" },
+    { label: "🥉 #3", bg: "bg-gradient-to-r from-amber-700 via-orange-700 to-amber-800 text-white shadow-md border border-amber-600/30" },
+    { label: "✨ #4", bg: "bg-gradient-to-r from-zinc-700 via-zinc-800 to-zinc-900 text-white shadow-sm border border-zinc-600/30" },
+  ];
+
+  const PopularCard = ({ novel, rank }: { novel: any; rank: number }) => {
+    const badge = rankBadges[rank] || rankBadges[3];
+    return (
+      <Link href={`/novel/${novel.slug}`} className="group relative flex flex-col h-full bg-white/60 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl p-3.5 hover:border-amber-500/40 dark:hover:border-amber-400/40 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 backdrop-blur-md">
+        {/* Cover image container */}
+        <div className="relative aspect-[10/14] overflow-hidden rounded-2xl bg-zinc-200 dark:bg-zinc-800 mb-3.5 shadow-md group-hover:shadow-xl transition-all duration-500">
+          {novel.coverImage ? (
+            <img
+              src={novel.coverImage}
+              alt={novel.title}
+              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-zinc-800 dark:to-zinc-700">
+              <BookOpen size={28} className="opacity-20" />
+              <span className="text-[0.5rem] opacity-20 uppercase font-black tracking-widest">No Cover</span>
+            </div>
+          )}
+
+          {/* Rank Badge */}
+          <div className="absolute top-2.5 left-2.5 z-10">
+            <span className={`px-2.5 py-1 rounded-xl text-[0.65rem] font-black tracking-wider uppercase backdrop-blur-md ${badge.bg}`}>
+              {badge.label}
+            </span>
+          </div>
+
+          {/* Views Counter Badge */}
+          <div className="absolute top-2.5 right-2.5 z-10">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[0.55rem] font-bold bg-black/60 text-white backdrop-blur-md">
+              <TrendingUp size={10} className="text-amber-400" />
+              {(novel.views || 0).toLocaleString('id-ID')}
+            </span>
+          </div>
+
+          {/* Gradient Overlay & Info Pill */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+            <span className="text-[0.55rem] font-black uppercase tracking-wider px-2 py-1 rounded-lg bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur">
+              {getTypeLabel(novel.type)}
+            </span>
+          </div>
+        </div>
+
+        {/* Content details */}
+        <div className="flex flex-col flex-1">
+          {/* Genres pills */}
+          {novel.genres && novel.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {novel.genres.slice(0, 2).map((g: any) => (
+                <span key={g.id || g.name} className="text-[0.55rem] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                  {g.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <h3 className="text-sm font-black line-clamp-2 leading-tight tracking-tight mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+            {novel.title}
+          </h3>
+
+          <p className="text-[0.65rem] opacity-50 font-medium truncate mb-3">
+            {novel.author}
+          </p>
+
+          <div className="mt-auto pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[0.6rem] font-black uppercase tracking-widest opacity-40">
+            <span className={`px-1.5 py-0.5 rounded ${getStatusColor(novel.status)} opacity-100`}>
+              {getStatusLabel(novel.status)}
+            </span>
+            <span>
+              {novel.type === "WEB" ? `${novel._count.chapters} Ch` : `${novel._count.volumes} Vol`}
+            </span>
+          </div>
+        </div>
+      </Link>
+    );
   };
 
   const NovelCard = ({ novel }: { novel: any }) => (
@@ -254,14 +331,14 @@ export default async function Home() {
         <div className="h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent mb-14" />
 
         {/* ─── NOVEL SECTIONS ─────────────────────────────────────── */}
-        <div className="space-y-14 pb-20">
-          {/* Trending */}
+        <div className="space-y-16 pb-20">
+          {/* Trending (Paling Populer Top 4) */}
           <section>
             <SectionHeader title="Paling Populer" icon={TrendingUp} href="/browse?sort=popular" color="bg-gradient-to-br from-amber-500 to-orange-600" />
             {trendingNovels.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {trendingNovels.map((novel) => (
-                  <NovelCard key={novel.id} novel={novel} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {trendingNovels.map((novel, idx) => (
+                  <PopularCard key={novel.id} novel={novel} rank={idx} />
                 ))}
               </div>
             ) : (
@@ -278,23 +355,6 @@ export default async function Home() {
             {latestUpdated.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {latestUpdated.map((novel) => (
-                  <NovelCard key={novel.id} novel={novel} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-16 text-center opacity-20">
-                <BookOpen size={40} className="mx-auto mb-3" strokeWidth={1} />
-                <p className="text-sm font-bold uppercase tracking-widest">Belum ada novel</p>
-              </div>
-            )}
-          </section>
-
-          {/* Newest */}
-          <section>
-            <SectionHeader title="Novel Terbaru" icon={Star} href="/browse?sort=newest" color="bg-gradient-to-br from-purple-500 to-pink-600" />
-            {newestNovels.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {newestNovels.map((novel) => (
                   <NovelCard key={novel.id} novel={novel} />
                 ))}
               </div>

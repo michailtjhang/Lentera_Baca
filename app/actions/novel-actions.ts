@@ -301,6 +301,11 @@ export async function createChapter(novelId: string, prevState: any, formData: F
             include: { novel: true }
         }) as any;
 
+        await prisma.novel.update({
+            where: { id: novelId },
+            data: { updatedAt: new Date() }
+        });
+
         novelSlug = chapter.novel.slug;
         revalidatePath(`/novel/${novelSlug}`);
         revalidatePath("/admin");
@@ -340,6 +345,11 @@ export async function updateChapter(chapterId: string, prevState: any, formData:
             include: { novel: true }
         }) as any;
 
+        await prisma.novel.update({
+            where: { id: chapter.novelId },
+            data: { updatedAt: new Date() }
+        });
+
         novelSlug = chapter.novel.slug;
         revalidatePath(`/novel/${novelSlug}`);
         revalidatePath("/admin");
@@ -363,6 +373,13 @@ export async function deleteChapter(chapterId: string) {
         where: { id: chapterId },
         include: { novel: true }
     });
+
+    if (chapter.novelId) {
+        await prisma.novel.update({
+            where: { id: chapter.novelId },
+            data: { updatedAt: new Date() }
+        }).catch(() => {});
+    }
 
     // Cleanup illustrations if type is ILLUSTRATION
     if (chapter.type === ("ILLUSTRATION" as any)) {
@@ -409,6 +426,7 @@ export async function swapVolumeOrders(volId1: string, volId2: string) {
     await prisma.$transaction([
         prisma.volume.update({ where: { id: volId1 }, data: { order: vol2.order } }),
         prisma.volume.update({ where: { id: volId2 }, data: { order: vol1.order } }),
+        prisma.novel.update({ where: { id: vol1.novelId }, data: { updatedAt: new Date() } }),
     ]);
 
     revalidatePath("/admin");
@@ -422,6 +440,13 @@ export async function updateVolumeTitle(volumeId: string, title: string) {
         where: { id: volumeId },
         data: { title }
     });
+
+    if (vol.novelId) {
+        await prisma.novel.update({
+            where: { id: vol.novelId },
+            data: { updatedAt: new Date() }
+        });
+    }
 
     revalidatePath("/admin");
     return { success: true };
@@ -445,6 +470,7 @@ export async function swapChapterOrders(id1: string, id2: string) {
     await prisma.$transaction([
         prisma.chapter.update({ where: { id: id1 }, data: { order: newOrder1 } }),
         prisma.chapter.update({ where: { id: id2 }, data: { order: newOrder2 } }),
+        prisma.novel.update({ where: { id: ch1.novelId }, data: { updatedAt: new Date() } }),
     ]);
 
     revalidatePath(`/novel/${ch1.novel.slug}`);

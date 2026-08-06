@@ -42,6 +42,23 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
         setLocalChapters(chapters);
     }, [chapters]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
+
+    const totalPages = isWeb ? Math.ceil(localChapters.length / itemsPerPage) : 1;
+
+    useEffect(() => {
+        if (isWeb && currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [localChapters.length, totalPages, isWeb, currentPage]);
+
+    const displayedWebChapters = useMemo(() => {
+        if (!isWeb) return localChapters;
+        const start = (currentPage - 1) * itemsPerPage;
+        return localChapters.slice(start, start + itemsPerPage);
+    }, [localChapters, isWeb, currentPage, itemsPerPage]);
+
     // Accordion state: Default open ONLY the latest/last volume (or standalone if no volume)
     const [openVolumes, setOpenVolumes] = useState<Record<string, boolean>>(() => {
         const initial: Record<string, boolean> = {};
@@ -214,8 +231,11 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
                     {isWeb ? (
-                        // Web Novel: Simple list, no grouping/accordion
-                        localChapters.map((c, i) => renderChapterRow(c, i, localChapters))
+                        // Web Novel: Paginated list
+                        displayedWebChapters.map((c) => {
+                            const globalIdx = localChapters.findIndex(item => item.id === c.id);
+                            return renderChapterRow(c, globalIdx, localChapters);
+                        })
                     ) : (
                         // Light Novel: Accordion-based volume grouping
                         <>
@@ -294,6 +314,48 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                     )}
                 </tbody>
             </table>
+
+            {isWeb && totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-black/5 dark:border-white/5 bg-black/2 dark:bg-white/2">
+                    <div className="text-xs font-bold opacity-50">
+                        Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, localChapters.length)} dari {localChapters.length} Chapter
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1.5 rounded-xl border border-black/10 dark:border-white/10 text-xs font-bold hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                        >
+                            Sebelumnya
+                        </button>
+
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`w-8 h-8 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                                        currentPage === page
+                                            ? "bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black shadow-sm"
+                                            : "hover:bg-black/5 dark:hover:bg-white/5 opacity-60 hover:opacity-100"
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1.5 rounded-xl border border-black/10 dark:border-white/10 text-xs font-bold hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                        >
+                            Selanjutnya
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {chapters.length === 0 && (
                 <div className="p-20 text-center space-y-4">
