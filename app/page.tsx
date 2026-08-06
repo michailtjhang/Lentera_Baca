@@ -187,86 +187,70 @@ export default async function Home() {
 
       <main className="max-w-7xl mx-auto px-6">
         {/* ─── HERO + POPULAR SLIDER ──────────────────────────────── */}
-        <section className="py-10 md:py-16 relative overflow-hidden">
-          {/* Background decoration */}
+        <section className="py-8 md:py-12 relative overflow-hidden">
+          {/* Background decoration with adjusted golden glow */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/10 dark:bg-amber-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-300/10 dark:bg-orange-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+            <div className="absolute top-1/4 left-0 w-80 h-80 bg-gradient-to-tr from-amber-400/20 to-orange-400/10 dark:from-amber-500/10 dark:to-orange-500/5 rounded-full blur-3xl -translate-y-1/3 -translate-x-1/4" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/15 dark:bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-orange-300/10 dark:bg-orange-500/5 rounded-full blur-3xl translate-y-1/2" />
           </div>
 
-          <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-            {/* Left: Newly Added Slider */}
-            <div className="relative">
-              {/* Section label */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
-                    <Sparkles size={12} className="text-white" />
-                  </div>
-                  <span className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-60">Novel Baru Ditambahkan</span>
-                </div>
-                <Link
-                  href="/browse?sort=newest"
-                  className="group flex items-center gap-1.5 text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all"
-                >
-                  Lihat Semua
-                  <ArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Slider container */}
-              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[350px]">
+          {/* 70% Slider (Left) and 30% Text (Right) Flex/Grid Layout */}
+          <div className="relative flex flex-col lg:flex-row gap-6 lg:gap-8 items-center">
+            {/* Left: Slider (70% Width, Full without header/footer text) */}
+            <div className="w-full lg:w-[70%] shrink-0">
+              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[350px] h-full">
                 <PopularSlider novels={newlyAddedNovels as any} />
               </div>
             </div>
 
-            {/* Right: Hero text */}
-            <div>
+            {/* Right: Hero Text & Search (30% Width) */}
+            <div className="w-full lg:w-[30%] shrink-0 flex flex-col justify-center">
               {/* Welcome back banner for logged-in users */}
               {userId && userName && (
-                <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
-                  <Sparkles size={13} className="text-amber-600 dark:text-amber-400" />
-                  <span className="text-xs font-bold text-amber-700 dark:text-amber-300">
-                    Selamat datang kembali, <strong>{userName}</strong>!
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 max-w-full">
+                  <Sparkles size={12} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span className="text-[0.7rem] font-bold text-amber-700 dark:text-amber-300 truncate">
+                    Halo, <strong>{userName}</strong>! Siap membaca?
                   </span>
                 </div>
               )}
 
               {!userId && (
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3E2723]/5 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3E2723]/5 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-4">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Terangi Imajinasi Anda</span>
+                  <span className="text-[0.58rem] font-black uppercase tracking-widest opacity-60">Terangi Imajinasi Anda</span>
                 </div>
               )}
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[0.9] mb-5">
-                Eksplorasi Dunia{" "}
+              <h1 className="text-2xl sm:text-3xl lg:text-3xl font-black tracking-tighter leading-tight mb-3">
+                Terangi Harimu Dengan{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400">
-                  Tanpa Batas.
+                  Kisah Terbaik.
                 </span>
               </h1>
 
-              <p className="text-sm md:text-base opacity-50 max-w-lg mb-8 leading-relaxed font-medium">
-                Ribuan cerita menanti. Dari light novel Jepang hingga web novel lokal — semua ada di sini.
+              <p className="text-xs sm:text-sm opacity-60 mb-5 leading-relaxed font-medium">
+                Temukan ribuan Light Novel & Web Novel pilihan dengan update bab terbaru setiap hari.
               </p>
 
-              {/* Search bar */}
-              <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
-                <form action="/browse" method="GET" className="relative flex-1 group">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-70 transition-opacity" />
+              {/* Search bar & CTA */}
+              <div className="flex flex-col gap-2.5 w-full">
+                <form action="/browse" method="GET" className="relative w-full group">
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-70 transition-opacity" />
                   <input
                     type="text"
                     name="q"
-                    placeholder="Cari judul, penulis, genre..."
-                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-400/50 dark:focus:border-amber-400/30 text-sm font-medium outline-none transition-all placeholder:opacity-40 shadow-sm focus:shadow-md"
+                    placeholder="Cari judul, genre, penulis..."
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-400/50 text-xs font-medium outline-none transition-all placeholder:opacity-40 shadow-sm"
                   />
                 </form>
                 <Link
                   href="/browse"
-                  className="flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-2xl font-black uppercase tracking-[0.1em] text-[0.7rem] hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-amber-600/20"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-black uppercase tracking-wider text-[0.65rem] hover:shadow-lg transition-all active:scale-95 shadow-md shadow-amber-600/20"
                 >
-                  Jelajahi
-                  <Zap size={14} className="fill-current" />
+                  Mulai Membaca Sekarang
+                  <Zap size={13} className="fill-current" />
                 </Link>
               </div>
             </div>
