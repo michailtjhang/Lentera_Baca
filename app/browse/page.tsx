@@ -111,7 +111,6 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
 
   // Separate adult tags from regular tags
   const regularTags = allTags.filter((t: any) => !isAdultTag(t.name));
-  const adultTagsList = allTags.filter((t: any) => isAdultTag(t.name));
 
   const hasActiveFilters = !!(q || genre || tag || (type && type !== "ALL") || (region && region !== "ALL") || (status && status !== "ALL"));
 
@@ -232,7 +231,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
               </Link>
             )}
             {tag && (
-              <Link href={buildUrl({ tag: undefined })} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.65rem] font-bold border transition-colors ${isAdultFilterActive ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-700/50 hover:bg-red-200 dark:hover:bg-red-900/50" : "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-700/50 hover:bg-purple-200 dark:hover:bg-purple-900/50"}`}>
+              <Link href={buildUrl({ tag: undefined })} className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-[0.65rem] font-bold border border-purple-200 dark:border-purple-700/50 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
                 #{tag} <X size={10} />
               </Link>
             )}
