@@ -245,7 +245,7 @@ export default function PopularSlider({ novels }: { novels: Novel[] }) {
                 </Link>
 
                 {/* Info Section */}
-                <div className="flex flex-col justify-between flex-1 min-w-0 w-full text-center sm:text-left py-1">
+                <div className="flex flex-col justify-between flex-1 min-w-0 w-full text-center sm:text-left py-2 pr-3 sm:pr-5">
                   <div>
                     {/* Badges & Status */}
                     <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5 flex-wrap">
