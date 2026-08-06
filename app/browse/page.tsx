@@ -15,7 +15,8 @@ export const metadata = {
   description: "Temukan berbagai macam genre novel menarik di Lentera Baca. Cari novel favorit Anda sekarang.",
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Tags considered 18+ content
 const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
@@ -24,10 +25,6 @@ function isAdultTag(tagName: string): boolean {
   return ADULT_TAGS.some(a => tagName.toLowerCase().includes(a.toLowerCase()));
 }
 
-function isExplicitAdultFilter(tag?: string): boolean {
-  if (!tag) return false;
-  return isAdultTag(tag);
-}
 
 export default async function BrowsePage({ searchParams }: BrowseProps) {
   const { userId } = await auth();
@@ -37,7 +34,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
   const params = await searchParams;
   const { q, genre, tag, sort, type, region, status } = params;
 
-  const isAdultFilterActive = isExplicitAdultFilter(tag);
+  const isNameSearch = !!q;
 
   const where: any = {};
 
@@ -76,8 +73,11 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
     where.status = status;
   }
 
-  // If no adult filter is active, exclude 18+ content by default
-  if (!isAdultFilterActive) {
+
+  // 18+ content: ONLY shown when user explicitly searches by name (q)
+  // Tag filter or other filters will NEVER show 18+ content
+  if (!isNameSearch) {
+    // No name search → always exclude 18+ content
     where.NOT = {
       tags: {
         some: {
@@ -86,6 +86,8 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
       },
     };
   }
+  // If there IS a name search, 18+ novels can appear if their title/tag matches the query
+
 
   let orderBy: any = { createdAt: "desc" };
   if (sort === "updated") orderBy = { updatedAt: "desc" };
@@ -368,22 +370,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
               </div>
             )}
 
-            {/* 18+ Tags (separated with warning) */}
-            {adultTagsList.length > 0 && (
-              <div className="border border-red-200 dark:border-red-900/40 rounded-2xl p-4 bg-red-50/50 dark:bg-red-950/20">
-                <p className="text-[0.6rem] font-black uppercase tracking-widest text-red-500/70 mb-3 flex items-center gap-2">
-                  🔞 Konten Dewasa
-                </p>
-                <p className="text-[0.6rem] opacity-50 mb-3 leading-relaxed">Konten ini tersembunyi secara default. Pilih filter untuk melihat.</p>
-                <div className="flex flex-wrap gap-2">
-                  {adultTagsList.map((t: any) => (
-                    <Link key={t.id} href={buildUrl({ tag: t.name })} className={`px-3 py-1.5 rounded-full text-[0.65rem] font-bold transition-all ${tag === t.name ? "bg-red-500 text-white shadow-md" : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50"}`}>
-                      #{t.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </aside>
 
           {/* ─── RESULTS ─────────────────────────────────────────── */}
@@ -394,7 +381,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                 <span className="text-xl font-black tracking-tight">{novels.length}</span>
                 <span className="text-sm opacity-40 font-semibold">
                   novel ditemukan
-                  {isAdultFilterActive && (
+                  {isNameSearch && novels.some((n: any) => n.tags?.some((t: any) => isAdultTag(t.name))) && (
                     <span className="ml-2 text-red-500 font-bold text-[0.65rem] uppercase tracking-wider">(termasuk konten 18+)</span>
                   )}
                 </span>

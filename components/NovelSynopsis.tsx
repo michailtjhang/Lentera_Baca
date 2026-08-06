@@ -36,7 +36,7 @@ export default function NovelSynopsis({ description }: NovelSynopsisProps) {
                 />
 
                 {!expanded && (
-                    <div className="absolute bottom-0 inset-x-0 h-14 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-black/60 dark:via-black/20 dark:to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white/80 to-transparent dark:from-zinc-900/80 dark:to-transparent pointer-events-none rounded-b-[2.5rem]" />
                 )}
             </div>
 
