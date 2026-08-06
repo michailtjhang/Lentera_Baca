@@ -34,10 +34,10 @@ export default async function Home() {
   const adminStatus = await isAdmin();
 
   // Fetch novels for different sections (including tags for 18+ filtering)
-  const [trendingRaw, latestRaw] = await Promise.all([
+  const [newlyAddedRaw, latestRaw] = await Promise.all([
     prisma.novel.findMany({
       take: 20,
-      orderBy: { views: "desc" },
+      orderBy: { createdAt: "desc" },
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
     prisma.novel.findMany({
@@ -47,8 +47,8 @@ export default async function Home() {
     }),
   ]);
 
-  // Filter out 18+ content from home page
-  const trendingNovels = (trendingRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 4);
+  // Filter out 18+ content from home page (Limit slider to 5 novels)
+  const newlyAddedNovels = (newlyAddedRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 5);
   const latestUpdated = (latestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
 
   const getTypeLabel = (type: string) => {
@@ -195,7 +195,32 @@ export default async function Home() {
           </div>
 
           <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-            {/* Left: Hero text */}
+            {/* Left: Newly Added Slider */}
+            <div className="relative">
+              {/* Section label */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
+                    <Sparkles size={12} className="text-white" />
+                  </div>
+                  <span className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-60">Novel Baru Ditambahkan</span>
+                </div>
+                <Link
+                  href="/browse?sort=newest"
+                  className="group flex items-center gap-1.5 text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all"
+                >
+                  Lihat Semua
+                  <ArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Slider container */}
+              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[350px]">
+                <PopularSlider novels={newlyAddedNovels as any} />
+              </div>
+            </div>
+
+            {/* Right: Hero text */}
             <div>
               {/* Welcome back banner for logged-in users */}
               {userId && userName && (
@@ -243,31 +268,6 @@ export default async function Home() {
                   Jelajahi
                   <Zap size={14} className="fill-current" />
                 </Link>
-              </div>
-            </div>
-
-            {/* Right: Popular Slider */}
-            <div className="relative">
-              {/* Section label */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
-                    <TrendingUp size={12} className="text-white" />
-                  </div>
-                  <span className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50">Paling Populer</span>
-                </div>
-                <Link
-                  href="/browse?sort=popular"
-                  className="group flex items-center gap-1.5 text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all"
-                >
-                  Lihat Semua
-                  <ArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Slider container */}
-              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[350px]">
-                <PopularSlider novels={trendingNovels as any} />
               </div>
             </div>
           </div>
