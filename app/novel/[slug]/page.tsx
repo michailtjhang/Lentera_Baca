@@ -9,6 +9,7 @@ import HistoryDisplay from "@/components/HistoryDisplay";
 import ThemeToggle from "@/components/ThemeToggle";
 import ReadButton from "@/components/ReadButton";
 import VolumeAccordion from "@/components/VolumeAccordion";
+import NovelSynopsis from "@/components/NovelSynopsis";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -190,19 +191,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <div className="bg-white/40 dark:bg-white/5 p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5">
-                            <h3 className="text-[0.65rem] font-black uppercase tracking-[0.3em] opacity-30 mb-6 flex items-center gap-2">
-                                <Hash size={14} /> Sinopsis
-                            </h3>
-                            {novel.description ? (
-                                <div
-                                    className="text-lg leading-[1.8] font-medium opacity-80 prose prose-lg dark:prose-invert max-w-none prose-p:font-serif"
-                                    dangerouslySetInnerHTML={{ __html: novel.description }}
-                                />
-                            ) : (
-                                <p className="text-lg opacity-40 font-serif italic">Tidak ada deskripsi tersedia.</p>
-                            )}
-                        </div>
+                        <NovelSynopsis description={novel.description} />
                     </div>
                 </div>
 

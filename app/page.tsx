@@ -188,70 +188,67 @@ export default async function Home() {
       <main className="max-w-7xl mx-auto px-6">
         {/* ─── HERO + POPULAR SLIDER ──────────────────────────────── */}
         <section className="py-8 md:py-12 relative overflow-hidden">
-          {/* Background decoration with golden glows on BOTH slider (left) and text (right) */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Vibrant golden glow behind slider (Left) */}
-            <div className="absolute top-1/2 left-0 w-[450px] h-[450px] bg-gradient-to-br from-amber-400/30 via-orange-400/20 to-transparent dark:from-amber-500/20 dark:via-orange-500/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/4" />
-            {/* Golden glow behind text (Right) */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/25 dark:bg-amber-500/15 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" />
+          {/* Unified amber ambient background glow across both slider and text */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[140%] bg-gradient-to-r from-amber-400/25 via-orange-400/25 to-amber-500/20 dark:from-amber-500/15 dark:via-orange-500/20 dark:to-amber-500/15 blur-[100px] opacity-85 rounded-full transform-gpu" />
           </div>
 
-          {/* Hero Flex Layout: Mobile = Text on Top (order-1), Slider Below (order-2); Desktop = Slider Left (lg:order-1), Text Right (lg:order-2) */}
-          <div className="relative flex flex-col lg:flex-row gap-8 lg:gap-10 items-center">
-            {/* Slider (Desktop Left 62% width, Mobile order-2) */}
-            <div className="w-full lg:w-[62%] shrink-0 order-2 lg:order-1">
+          {/* Grid Layout: Slider (70% = 8 cols), Hero Text (30% = 4 cols with min-w-0 to prevent clipping) */}
+          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-w-full">
+            {/* Slider (Desktop Left 8/12 cols ~70%, Mobile order-2) */}
+            <div className="lg:col-span-8 w-full min-w-0 order-2 lg:order-1">
               <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[350px] h-full">
                 <PopularSlider novels={newlyAddedNovels as any} />
               </div>
             </div>
 
-            {/* Hero Text & Search (Desktop Right 38% width, Mobile order-1 on top) */}
-            <div className="w-full lg:w-[38%] shrink-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left">
+            {/* Hero Text & Search (Desktop Right 4/12 cols ~30%, Mobile order-1 on top) */}
+            <div className="lg:col-span-4 w-full min-w-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left overflow-hidden">
               {/* Welcome back banner for logged-in users */}
               {userId && userName && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0 max-w-full">
-                  <Sparkles size={13} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                  <span className="text-xs font-bold text-amber-700 dark:text-amber-300 truncate">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0 max-w-full">
+                  <Sparkles size={12} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span className="text-[0.7rem] font-bold text-amber-700 dark:text-amber-300 truncate">
                     Halo, <strong>{userName}</strong>! Siap membaca?
                   </span>
                 </div>
               )}
 
               {!userId && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#3E2723]/5 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-4 mx-auto lg:mx-0">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3E2723]/5 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-4 mx-auto lg:mx-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-[0.6rem] font-black uppercase tracking-widest opacity-60">Terangi Imajinasi Anda</span>
+                  <span className="text-[0.58rem] font-black uppercase tracking-widest opacity-60">Terangi Imajinasi Anda</span>
                 </div>
               )}
 
-              <h1 className="text-3xl sm:text-4xl lg:text-3xl xl:text-4xl font-black tracking-tighter leading-tight mb-3">
+              <h1 className="text-2xl sm:text-3xl lg:text-2xl xl:text-3xl font-black tracking-tighter leading-tight mb-2.5">
                 Terangi Harimu Dengan{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400">
                   Kisah Terbaik.
                 </span>
               </h1>
 
-              <p className="text-xs sm:text-sm opacity-70 mb-6 leading-relaxed font-medium max-w-md mx-auto lg:mx-0">
+              <p className="text-xs sm:text-sm opacity-70 mb-5 leading-relaxed font-medium">
                 Temukan ribuan Light Novel & Web Novel pilihan dengan update bab terbaru setiap hari.
               </p>
 
               {/* Search bar & CTA */}
-              <div className="flex flex-col gap-3 w-full max-w-md mx-auto lg:mx-0">
+              <div className="flex flex-col gap-2.5 w-full">
                 <form action="/browse" method="GET" className="relative w-full group">
-                  <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-80 transition-opacity" />
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-80 transition-opacity" />
                   <input
                     type="text"
                     name="q"
                     placeholder="Cari judul, genre, penulis..."
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-400/60 text-xs font-medium outline-none transition-all placeholder:opacity-40 shadow-sm"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-400/60 text-xs font-medium outline-none transition-all placeholder:opacity-40 shadow-sm"
                   />
                 </form>
                 <Link
                   href="/browse"
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-black uppercase tracking-wider text-[0.7rem] hover:shadow-lg transition-all active:scale-95 shadow-md shadow-amber-600/20"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-black uppercase tracking-wider text-[0.65rem] hover:shadow-lg transition-all active:scale-95 shadow-md shadow-amber-600/20"
                 >
                   Mulai Membaca Sekarang
-                  <Zap size={14} className="fill-current" />
+                  <Zap size={13} className="fill-current" />
                 </Link>
               </div>
             </div>

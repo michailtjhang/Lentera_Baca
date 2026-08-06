@@ -72,8 +72,8 @@ export default function VolumeAccordion({ volumes, standaloneChapters, allChapte
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 group-hover:bg-black group-hover:text-white transition-colors">
                 <span className="text-xs font-black">{chapter.order}</span>
             </div>
-            <div className="flex-1">
-                <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                     {getChapterIcon(chapter.type)}
                     <h3 className="text-sm font-bold truncate">
                         {formatChapterTitle(chapter, allChapters)}

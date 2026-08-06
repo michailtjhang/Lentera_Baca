@@ -53,8 +53,8 @@ export default function ChapterList({ chapters, slug, novelId }: ChapterListProp
                             <span className="text-lg font-black min-w-[2.5rem] text-[#3E2723] opacity-80">
                                 #{chapter.order}
                             </span>
-                            <div className="flex-1">
-                                <h3 className="text-sm font-semibold text-[#3E2723] group-hover:text-black transition-colors line-clamp-1">
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-semibold text-[#3E2723] group-hover:text-amber-600 transition-colors truncate">
                                     {formatChapterTitle(chapter, chapters)}
                                 </h3>
                                 {isLastRead && (
