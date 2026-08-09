@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getChapterSlug } from "@/lib/slug-utils";
+import { getChapterSlug, formatChapterTitle } from "@/lib/slug-utils";
 
 interface HistoryData {
     chapterId: string;
@@ -43,7 +43,7 @@ export default function HistoryDisplay({ novelId, slug, allChapters }: HistoryDi
                 <div className="text-center sm:text-left">
                     <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">Terakhir Dibaca</p>
                     <h3 className="text-lg font-bold line-clamp-1">
-                        Bab {history.chapterOrder}: {history.chapterTitle}
+                        {targetChapter ? formatChapterTitle(targetChapter, allChapters) : history.chapterTitle}
                     </h3>
                 </div>
                 <Link

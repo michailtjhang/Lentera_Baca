@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { BookOpen, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Sparkles, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { calculateRating } from "@/components/StarRating";
 
 interface Novel {
   id: string;
@@ -233,6 +234,12 @@ export default function PopularSlider({ novels }: { novels: Novel[] }) {
                         </span>
                       </div>
                     )}
+
+                    {/* Rating Badge (top right) */}
+                    <div className="absolute top-2 right-2 z-10 opacity-90 group-hover:opacity-100 transition-opacity bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-lg shadow-md flex items-center gap-1 border border-white/10">
+                      <Star size={10} className="text-amber-400 fill-amber-400" />
+                      <span className="text-[0.6rem] font-black text-amber-300">{calculateRating(novel.views).toFixed(1)}</span>
+                    </div>
 
                     {/* BARU Badge */}
                     <div className="absolute top-0 left-0 z-10">

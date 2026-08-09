@@ -3,9 +3,10 @@ import Link from "next/link";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/admin";
-import { Search, Zap, Clock, BookOpen, Shield, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import { Search, Zap, Clock, BookOpen, Shield, TrendingUp, Sparkles, ArrowRight, Star } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import PopularSlider from "@/components/PopularSlider";
+import { calculateRating } from "@/components/StarRating";
 
 export const metadata = {
   title: "Beranda | Lentera Baca",
@@ -88,6 +89,11 @@ export default async function Home() {
         )}
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Rating Badge on hover (top right) */}
+        <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-lg shadow-lg flex items-center gap-1 border border-white/10">
+          <Star size={10} className="text-amber-400 fill-amber-400" />
+          <span className="text-[0.6rem] font-black text-amber-300">{calculateRating(novel.views).toFixed(1)}</span>
+        </div>
         {/* Badges on hover */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
           <span className="text-[0.5rem] font-black uppercase tracking-wider px-2 py-1 rounded-lg bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur">
