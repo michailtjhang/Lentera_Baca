@@ -33,7 +33,7 @@ export default function ReadButton({ novelId, slug, firstChapterOrder, allChapte
     return (
         <Link
             href={`/novel/${slug}/${chapterSlug}`}
-            className="flex-1 flex items-center justify-center gap-3 bg-[#3E2723] dark:bg-white text-[#F5F5DC] dark:text-black rounded-[2rem] font-black uppercase tracking-widest text-[0.7rem] hover:shadow-2xl transition-all active:scale-95 group"
+            className="flex items-center justify-center gap-2.5 px-6 py-3 bg-[#3E2723] dark:bg-white text-[#F5F5DC] dark:text-black rounded-2xl font-black uppercase tracking-widest text-[0.65rem] hover:shadow-2xl transition-all active:scale-95 group"
         >
             <Play size={16} className="fill-current group-hover:scale-110 transition-transform" />
             {label}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Bookmark, BookOpen, Hash } from "lucide-react";
+import StarRating from "@/components/StarRating";
 import ChapterList from "@/components/ChapterList";
 import HistoryDisplay from "@/components/HistoryDisplay";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -130,6 +131,12 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                                 </span>
                             </div>
                             <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6">{novel.title}</h1>
+                            
+                            {/* Star Rating */}
+                            <div className="mb-6">
+                                <StarRating views={novel.views} />
+                            </div>
+
                             <div className="flex flex-wrap gap-x-12 gap-y-6 bg-black text-white p-8 rounded-[2rem] w-fit mb-8 shadow-xl shadow-stone-900/10">
                                 <div className="space-y-1">
                                     <p className="text-[0.6rem] font-black uppercase tracking-widest opacity-40">Penulis</p>
@@ -162,33 +169,31 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="p-8 bg-white/40 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/5 flex flex-col md:block items-center text-center md:text-left">
-                                <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest mb-2">
-                                    {(novel.type === 'WEB') ? 'Total Chapter' : 'Total Volume'}
-                                </p>
-                                <div className="flex items-end gap-2">
-                                    <span className="text-4xl font-black">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="px-5 py-3 bg-white/40 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 flex items-center gap-3">
+                                <BookOpen size={16} className="opacity-30" />
+                                <div>
+                                    <p className="text-[0.5rem] opacity-30 font-black uppercase tracking-widest leading-none mb-0.5">
+                                        {(novel.type === 'WEB') ? 'Total Chapter' : 'Total Volume'}
+                                    </p>
+                                    <span className="text-lg font-black leading-none">
                                         {(novel.type === 'WEB') ? novel.chapters.length : novel.volumes.length}
                                     </span>
-                                    <BookOpen size={20} className="mb-1.5 opacity-20" />
                                 </div>
                             </div>
                             
                             {/* Actions */}
-                            <div className="md:col-span-3 flex items-stretch gap-4 h-16 md:h-auto">
-                                {novel.chapters.length > 0 && (
-                                    <ReadButton
-                                        novelId={novel.id}
-                                        slug={slug}
-                                        firstChapterOrder={novel.chapters[0].order}
-                                        allChapters={novel.chapters}
-                                    />
-                                )}
-                                <button className="aspect-square flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[2.5rem] hover:bg-black hover:text-white transition-all active:scale-90">
-                                    <Bookmark size={22} />
-                                </button>
-                            </div>
+                            {novel.chapters.length > 0 && (
+                                <ReadButton
+                                    novelId={novel.id}
+                                    slug={slug}
+                                    firstChapterOrder={novel.chapters[0].order}
+                                    allChapters={novel.chapters}
+                                />
+                            )}
+                            <button className="w-11 h-11 flex items-center justify-center bg-white/40 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-2xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all active:scale-90">
+                                <Bookmark size={18} />
+                            </button>
                         </div>
 
                         <NovelSynopsis description={novel.description} />

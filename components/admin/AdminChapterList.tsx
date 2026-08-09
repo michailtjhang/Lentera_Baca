@@ -43,7 +43,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
     }, [chapters]);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 15;
+    const itemsPerPage = 20;
 
     const totalPages = isWeb ? Math.ceil(localChapters.length / itemsPerPage) : 1;
 
