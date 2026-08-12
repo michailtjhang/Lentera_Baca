@@ -7,21 +7,21 @@ interface StarRatingProps {
 }
 
 /**
- * Calculates a rating score from 1.0–10.0 based on view count and project max views.
+ * Calculates a rating score from 0.0–5.0 based on view count and project max views.
  */
 function calculateRating(views: number, maxViews: number = 10000): number {
-    if (views <= 0) return 1.0;
+    if (views <= 0) return 0.0;
     const targetMax = Math.max(maxViews, 10);
     const logViews = Math.log10(views + 1);
     const logMax = Math.log10(targetMax + 1);
-    const rating = 1 + (logViews / logMax) * 9;
-    return Math.min(10, Math.max(1, Math.round(rating * 10) / 10));
+    const rating = (logViews / logMax) * 5;
+    return Math.min(5, Math.max(0, Math.round(rating * 10) / 10));
 }
 
 export default function StarRating({ views, maxViews = 10000, className = "" }: StarRatingProps) {
     const score = calculateRating(views, maxViews);
-    // Convert 1-10 score to 0-5 star fill
-    const starFill = ((score - 1) / 9) * 5; // 1→0 stars, 10→5 stars
+    // Score is 0.0–5.0 directly mapping to 5 stars fill
+    const starFill = score;
 
     return (
         <div className={`flex items-center gap-2.5 ${className}`}>
@@ -57,7 +57,7 @@ export default function StarRating({ views, maxViews = 10000, className = "" }: 
                 {score.toFixed(1)}
             </span>
             <span className="text-[0.55rem] font-bold opacity-30 uppercase tracking-wider">
-                / 10
+                / 5
             </span>
         </div>
     );

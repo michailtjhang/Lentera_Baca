@@ -307,6 +307,7 @@ export async function createChapter(novelId: string, prevState: any, formData: F
         });
 
         novelSlug = chapter.novel.slug;
+        revalidatePath("/");
         revalidatePath(`/novel/${novelSlug}`);
         revalidatePath("/admin");
         
@@ -351,6 +352,7 @@ export async function updateChapter(chapterId: string, prevState: any, formData:
         });
 
         novelSlug = chapter.novel.slug;
+        revalidatePath("/");
         revalidatePath(`/novel/${novelSlug}`);
         revalidatePath("/admin");
         revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
@@ -397,6 +399,7 @@ export async function deleteChapter(chapterId: string) {
         }
     }
 
+    revalidatePath("/");
     revalidatePath(`/novel/${chapter.novel.slug}`);
     revalidatePath("/admin");
     revalidatePath(`/admin/novel/${chapter.novelId}/chapter`);
