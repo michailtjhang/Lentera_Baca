@@ -2,31 +2,24 @@ import { Star } from "lucide-react";
 
 interface StarRatingProps {
     views: number;
+    maxViews?: number;
     className?: string;
 }
 
 /**
- * Calculates a rating score from 1.0–10.0 based on view count.
- * Uses a logarithmic scale so early views matter more.
- * Thresholds:
- *   0 views     → 1.0
- *   10 views    → ~3.0
- *   100 views   → ~5.0
- *   1000 views  → ~7.0
- *   10000 views → ~9.0
- *   50000+ views → 10.0
+ * Calculates a rating score from 1.0–10.0 based on view count and project max views.
  */
-function calculateRating(views: number): number {
+function calculateRating(views: number, maxViews: number = 10000): number {
     if (views <= 0) return 1.0;
-    // log10 scale: 1 → 0, 10 → 1, 100 → 2, 1000 → 3, 10000 → 4, 100000 → 5
-    const log = Math.log10(views);
-    // Map log range [0, ~4.7 (50000)] to rating [1, 10]
-    const rating = 1 + (log / Math.log10(50000)) * 9;
-    return Math.min(10, Math.round(rating * 10) / 10);
+    const targetMax = Math.max(maxViews, 10);
+    const logViews = Math.log10(views + 1);
+    const logMax = Math.log10(targetMax + 1);
+    const rating = 1 + (logViews / logMax) * 9;
+    return Math.min(10, Math.max(1, Math.round(rating * 10) / 10));
 }
 
-export default function StarRating({ views, className = "" }: StarRatingProps) {
-    const score = calculateRating(views);
+export default function StarRating({ views, maxViews = 10000, className = "" }: StarRatingProps) {
+    const score = calculateRating(views, maxViews);
     // Convert 1-10 score to 0-5 star fill
     const starFill = ((score - 1) / 9) * 5; // 1→0 stars, 10→5 stars
 

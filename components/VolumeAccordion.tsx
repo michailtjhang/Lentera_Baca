@@ -63,14 +63,14 @@ export default function VolumeAccordion({ volumes, standaloneChapters, allChapte
         }
     };
 
-    const renderChapterLink = (chapter: Chapter) => (
+    const renderChapterLink = (chapter: Chapter, volIndex?: number) => (
         <Link
             key={chapter.id}
             href={`/novel/${slug}/${getChapterSlug(chapter, allChapters)}`}
             className="flex items-center gap-4 p-4 hover:bg-white/60 dark:hover:bg-white/5 transition-all group border-b border-black/5 dark:border-white/5 last:border-0"
         >
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 group-hover:bg-black group-hover:text-white transition-colors">
-                <span className="text-xs font-black">{chapter.order}</span>
+                <span className="text-xs font-black">{volIndex !== undefined ? volIndex + 1 : chapter.order}</span>
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
@@ -130,7 +130,7 @@ export default function VolumeAccordion({ volumes, standaloneChapters, allChapte
                         <div className="px-4 pb-4">
                             <div className="bg-white/60 dark:bg-black/20 rounded-[1.5rem] border border-black/5 dark:border-white/5 overflow-hidden">
                                 {vol.chapters.length > 0 ? (
-                                    vol.chapters.map(renderChapterLink)
+                                    vol.chapters.map((c, i) => renderChapterLink(c, i))
                                 ) : (
                                     <div className="p-8 text-center opacity-40 italic text-sm">Belum ada chapter di volume ini.</div>
                                 )}

@@ -482,34 +482,24 @@ export async function swapChapterOrders(id1: string, id2: string) {
 export async function incrementView(id: string, type: 'NOVEL' | 'CHAPTER' | 'VOLUME') {
     try {
         if (type === 'NOVEL') {
-            await prisma.novel.update({
-                where: { id },
-                data: { views: { increment: 1 } }
-            });
+            await prisma.$executeRaw`UPDATE "Novel" SET "views" = "views" + 1 WHERE "id" = ${id}`;
         } else if (type === 'CHAPTER') {
             const chapter = await prisma.chapter.update({
                 where: { id },
                 data: { views: { increment: 1 } },
-                include: { novel: true }
+                select: { novelId: true }
             });
-            // Also increment total novel views when a chapter is read
-            if (chapter.novelId) {
-                await prisma.novel.update({
-                    where: { id: chapter.novelId },
-                    data: { views: { increment: 1 } }
-                });
+            if (chapter?.novelId) {
+                await prisma.$executeRaw`UPDATE "Novel" SET "views" = "views" + 1 WHERE "id" = ${chapter.novelId}`;
             }
         } else if (type === 'VOLUME') {
             const volume = await prisma.volume.update({
                 where: { id },
                 data: { views: { increment: 1 } },
-                include: { novel: true }
+                select: { novelId: true }
             });
-            if (volume.novelId) {
-                await prisma.novel.update({
-                    where: { id: volume.novelId },
-                    data: { views: { increment: 1 } }
-                });
+            if (volume?.novelId) {
+                await prisma.$executeRaw`UPDATE "Novel" SET "views" = "views" + 1 WHERE "id" = ${volume.novelId}`;
             }
         }
         return { success: true };

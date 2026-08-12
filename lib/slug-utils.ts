@@ -113,17 +113,19 @@ export function formatChapterTitle(
 
     if (chapter.title && chapter.title.trim() !== "") {
         const lowerTitle = chapter.title.toLowerCase().trim();
-        // If user already prefixed it manually, just use their title
-        if (
-            lowerTitle.startsWith("chapter") ||
-            lowerTitle.startsWith("prolog") ||
-            lowerTitle.startsWith("epilog") ||
-            lowerTitle.startsWith("selingan") ||
-            lowerTitle.startsWith("side story") ||
-            lowerTitle.startsWith("ilustrasi")
-        ) {
+        const keywords = [
+            "chapter", "bab", "prolog", "prologue", "epilog", "epilogue", 
+            "afterword", "selingan", "interlude", "side story", "sidestory", 
+            "spin-off", "spinoff", "extra", "bonus", "ilustrasi", "illustration"
+        ];
+        
+        const hasKeyword = keywords.some(kw => lowerTitle.startsWith(kw));
+
+        // If title already starts with a keyword or if it's a special type with a custom title
+        if (hasKeyword || (typeStr !== "STORY" && typeStr !== "CHAPTER")) {
             return chapter.title;
         }
+
         return `${prefix} - ${chapter.title}`;
     }
 

@@ -42,7 +42,7 @@ export default async function Home() {
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
     prisma.novel.findMany({
-      take: 20,
+      take: 30,
       orderBy: { updatedAt: "desc" },
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
