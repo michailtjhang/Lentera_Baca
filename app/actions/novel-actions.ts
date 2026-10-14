@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { NovelType, Region, Status, ChapterType } from "@prisma/client";
 import { utapi } from "@/lib/uploadthing";
+import { deleteFromSwiftGram, extractFileIdentifier } from "@/lib/swiftgram";
 import { generateSlug, getChapterSlug } from "@/lib/slug-utils";
 
 export async function createNovel(_: any, formData: FormData) {
@@ -134,9 +135,9 @@ export async function updateNovel(novelId: string, prevState: any, formData: For
 
         if (!currentNovel) throw new Error("Novel tidak ditemukan");
 
-        // Handle File Deletion from UploadThing if changed or removed
+        // Handle File Deletion if changed or removed
         if (currentNovel.coverImageKey && currentNovel.coverImageKey !== coverImageKey) {
-            await utapi.deleteFiles(currentNovel.coverImageKey);
+            await deleteFiles(currentNovel.coverImageKey);
         }
 
         // Volume matching and cleanup
@@ -146,7 +147,7 @@ export async function updateNovel(novelId: string, prevState: any, formData: For
         const keysToDelete = volumesToDelete.map(v => v.fileKey).filter((key): key is string => !!key);
 
         if (keysToDelete.length > 0) {
-            await utapi.deleteFiles(keysToDelete);
+            await deleteFiles(keysToDelete);
         }
 
         const isBadSlug = currentNovel.slug.length > 50 || currentNovel.slug.includes("bti0sbt");
@@ -235,7 +236,7 @@ export async function deleteNovel(novelId: string) {
 
     if (!novel) return;
 
-    // Cleanup UploadThing files
+    // Cleanup files (SwiftGram & legacy UploadThing)
     const keys: string[] = [];
     if (novel.coverImageKey) keys.push(novel.coverImageKey);
     novel.volumes.forEach(v => {
@@ -252,14 +253,17 @@ export async function deleteNovel(novelId: string) {
         let match;
         while ((match = regex.exec(chapter.content || "")) !== null) {
             const url = match[1];
-            if (url.includes("utfs.io/f/")) {
+            if (url.includes("/api/gateway/")) {
+                const id = url.split("/api/gateway/").pop()?.split("?")[0] || "";
+                if (id) keys.push(id);
+            } else if (url.includes("utfs.io/f/")) {
                 keys.push(url.split("/f/").pop() || "");
             }
         }
     });
 
     if (keys.length > 0) {
-        await utapi.deleteFiles(keys);
+        await deleteFiles(keys);
     }
 
     await prisma.novel.delete({ where: { id: novelId } });
@@ -390,12 +394,15 @@ export async function deleteChapter(chapterId: string) {
         let match;
         while ((match = regex.exec(chapter.content || "")) !== null) {
             const url = match[1];
-            if (url.includes("utfs.io/f/")) {
+            if (url.includes("/api/gateway/")) {
+                const id = url.split("/api/gateway/").pop()?.split("?")[0] || "";
+                if (id) keys.push(id);
+            } else if (url.includes("utfs.io/f/")) {
                 keys.push(url.split("/f/").pop() || "");
             }
         }
         if (keys.length > 0) {
-            await utapi.deleteFiles(keys);
+            await deleteFiles(keys);
         }
     }
 
@@ -411,10 +418,38 @@ export async function deleteFiles(keys: string | string[]) {
     try {
         const keyArray = Array.isArray(keys) ? keys : [keys];
         if (keyArray.length === 0) return { success: true };
-        await utapi.deleteFiles(keyArray);
+
+        const swiftgramIds: string[] = [];
+        const utKeys: string[] = [];
+
+        for (const item of keyArray) {
+            if (!item) continue;
+            const { type, idOrKey } = extractFileIdentifier(item);
+            if (!idOrKey) continue;
+            if (type === "swiftgram") {
+                swiftgramIds.push(idOrKey);
+            } else if (type === "uploadthing") {
+                utKeys.push(idOrKey);
+            }
+        }
+
+        // Delete from SwiftGram
+        for (const id of swiftgramIds) {
+            await deleteFromSwiftGram(id);
+        }
+
+        // Delete from legacy UploadThing if configured
+        if (utKeys.length > 0 && process.env.UPLOADTHING_TOKEN) {
+            try {
+                await utapi.deleteFiles(utKeys);
+            } catch (utErr) {
+                console.warn("UploadThing deleteFiles warning:", utErr);
+            }
+        }
+
         return { success: true };
     } catch (error) {
-        console.error("UT Delete Error:", error);
+        console.error("deleteFiles Error:", error);
         return { success: false, error: (error as any).message };
     }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useUploadThing } from "@/lib/uploadthing-client";
+import { useSwiftGramUpload } from "@/lib/swiftgram-client";
 import { Image, X, Loader2 } from "lucide-react";
 import { deleteFiles } from "@/app/actions/novel-actions";
 
@@ -14,7 +14,7 @@ interface CoverUploaderProps {
 export default function CoverUploader({ onUploaded, currentUrl, currentKey }: CoverUploaderProps) {
     const [url, setUrl] = useState(currentUrl || "");
     const [key, setKey] = useState(currentKey || "");
-    const { startUpload, isUploading } = useUploadThing("coverUploader", {
+    const { startUpload, isUploading } = useSwiftGramUpload({
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {

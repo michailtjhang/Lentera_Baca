@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
-import { useUploadThing } from "@/lib/uploadthing-client";
+import { useSwiftGramUpload } from "@/lib/swiftgram-client";
 import { convertToWebP } from "@/lib/image-utils";
 import { deleteFiles } from "@/app/actions/novel-actions";
 import { 
@@ -31,7 +31,7 @@ interface EditorProps {
 }
 
 const MenuBar = ({ editor }: { editor: any }) => {
-    const { startUpload, isUploading } = useUploadThing("illustrationUploader", {
+    const { startUpload, isUploading } = useSwiftGramUpload({
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file && editor) {
@@ -66,7 +66,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         if (attrs.src) {
             if (confirm("Hapus gambar ini dari server?")) {
                 const url = attrs.src;
-                if (url.includes("utfs.io/f/")) {
+                if (url.includes("/api/gateway/")) {
+                    const key = url.split("/api/gateway/").pop()?.split("?")[0];
+                    if (key) await deleteFiles(key);
+                } else if (url.includes("utfs.io/f/")) {
                     const key = url.split("/f/").pop();
                     if (key) await deleteFiles(key);
                 }

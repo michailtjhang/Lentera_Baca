@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useUploadThing } from "@/lib/uploadthing-client";
+import { useSwiftGramUpload } from "@/lib/swiftgram-client";
 import { FileText, X, Plus, Trash2, Loader2, ArrowUp, ArrowDown, Edit2 } from "lucide-react";
 import { deleteFiles } from "@/app/actions/novel-actions";
 
@@ -26,7 +26,7 @@ export default function LNUploader({
 }: LNUploaderProps) {
     const [volumes, setVolumes] = useState<Volume[]>(currentVolumes);
     const [manualTitle, setManualTitle] = useState("");
-    const { startUpload, isUploading } = useUploadThing("lightNovelUploader", {
+    const { startUpload, isUploading } = useSwiftGramUpload({
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {

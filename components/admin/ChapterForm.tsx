@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useFormStatus, useFormState } from "react-dom";
 import Editor from "@/components/Editor";
-import { useUploadThing } from "@/lib/uploadthing-client";
+import { useSwiftGramUpload } from "@/lib/swiftgram-client";
 import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { convertToWebP } from "@/lib/image-utils";
 import { deleteFiles } from "@/app/actions/novel-actions";
@@ -50,7 +50,12 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
             let match;
             while ((match = regex.exec(chapter.content || "")) !== null) {
                 const url = match[1];
-                const key = url.includes("utfs.io/f/") ? url.split("/f/").pop() : undefined;
+                let key: string | undefined = undefined;
+                if (url.includes("/api/gateway/")) {
+                    key = url.split("/api/gateway/").pop()?.split("?")[0];
+                } else if (url.includes("utfs.io/f/")) {
+                    key = url.split("/f/").pop();
+                }
                 urls.push({ url, key });
             }
             return urls;
@@ -111,7 +116,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         setContent(html);
     };
     
-    const { startUpload, isUploading } = useUploadThing("illustrationUploader", {
+    const { startUpload, isUploading } = useSwiftGramUpload({
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {
