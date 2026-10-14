@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSwiftGramUpload } from "@/lib/swiftgram-client";
 import { Image, X, Loader2 } from "lucide-react";
 import { deleteFiles } from "@/app/actions/novel-actions";
+import { convertToWebP } from "@/lib/image-utils";
 
 interface CoverUploaderProps {
     onUploaded: (url: string, key: string) => void;
@@ -15,6 +16,9 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
     const [url, setUrl] = useState(currentUrl || "");
     const [key, setKey] = useState(currentKey || "");
     const { startUpload, isUploading } = useSwiftGramUpload({
+        maxWidth: 1200,
+        maxHeight: 1800,
+        quality: 0.85,
         onClientUploadComplete: (res) => {
             const file = res[0];
             if (file) {
@@ -28,66 +32,24 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
         },
     });
 
-    const convertToWebP = (file: File): Promise<File> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new window.Image();
-                img.src = event.target?.result as string;
-                img.onload = () => {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext("2d");
-                    ctx?.drawImage(img, 0, 0);
-                    canvas.toBlob(
-                        (blob) => {
-                            if (blob) {
-                                const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-                                const webpFile = new File([blob], `${uniqueId}.webp`, {
-                                    type: "image/webp",
-                                });
-                                resolve(webpFile);
-                            } else {
-                                reject(new Error("Canvas toBlob failed"));
-                            }
-                        },
-                        "image/webp",
-                        0.8 // Quality
-                    );
-                };
-            };
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         
         try {
-            const processedFile = file.type === "image/webp" ? file : await convertToWebP(file);
-            
-            // Ensure unique name even if already webp
-            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-            const extension = processedFile.name.split('.').pop();
-            const renamedFile = new File([processedFile], `${uniqueId}.${extension}`, { type: processedFile.type });
-            
-            await startUpload([renamedFile]);
-        } catch (error) {
+            // Konversi dan optimasi ke WebP
+            const webpFile = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1800, quality: 0.85 });
+            await startUpload([webpFile]);
+        } catch (error: any) {
             console.error("Image processing error:", error);
-            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-            const extension = file.name.split('.').pop();
-            const renamedFile = new File([file], `${uniqueId}.${extension}`, { type: file.type });
-            await startUpload([renamedFile]);
+            alert(`Gagal memproses gambar: ${error.message}`);
         }
     };
 
     return (
         <div className="space-y-3">
             <label className="block text-xs font-black uppercase tracking-widest opacity-50">
-                Cover Image <span className="text-black/30 font-bold">(WebP recommended)</span>
+                Cover Image <span className="text-black/30 font-bold">(Otomatis dikonversi ke WebP)</span>
             </label>
             <div className="border-2 border-dashed border-black/10 dark:border-white/10 rounded-[2.5rem] p-2 bg-white/40 dark:bg-white/5 group hover:border-black/20 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center min-h-[300px]">
                 {url ? (
@@ -119,7 +81,7 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
                         <label className="relative cursor-pointer">
                             <div className="bg-[#3E2723] text-[#F5F5DC] px-8 py-3 rounded-xl font-black text-[0.65rem] uppercase tracking-widest hover:opacity-80 transition-all flex items-center gap-2 shadow-xl">
                                 {isUploading ? (
-                                    <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+                                    <><Loader2 size={14} className="animate-spin" /> Mengunggah WebP...</>
                                 ) : (
                                     "Pilih Cover"
                                 )}
@@ -132,7 +94,7 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
                                 disabled={isUploading}
                             />
                         </label>
-                        <p className="mt-4 text-[0.6rem] font-bold text-black/20 uppercase tracking-widest">Max 4MB • Image Only</p>
+                        <p className="mt-4 text-[0.6rem] font-bold text-black/20 uppercase tracking-widest">Auto WebP • Max 1200x1800</p>
                     </>
                 )}
             </div>

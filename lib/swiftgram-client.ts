@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { convertToWebP } from "@/lib/image-utils";
 
 export interface SwiftGramUploadedFile {
     url: string;
@@ -12,13 +13,16 @@ export interface SwiftGramUploadedFile {
 export interface UseSwiftGramUploadOptions {
     onClientUploadComplete?: (res: SwiftGramUploadedFile[]) => void;
     onUploadError?: (error: Error) => void;
+    autoConvertToWebP?: boolean;
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
 }
 
 /**
  * React hook to upload files through the local SwiftGram API route (/api/upload).
- * Supports both signatures:
- *   useSwiftGramUpload("coverUploader", options)
- *   useSwiftGramUpload(options)
+ * Secara otomatis mengonversi & mengompresi gambar ke format WebP sebelum diupload
+ * untuk memastikan payload ringan, cepat, dan kompatibel dengan Telegram storage.
  */
 export function useSwiftGramUpload(
     endpointOrOptions?: string | UseSwiftGramUploadOptions,
@@ -34,7 +38,21 @@ export function useSwiftGramUpload(
         try {
             const results: SwiftGramUploadedFile[] = [];
 
-            for (const file of files) {
+            for (let file of files) {
+                // Konversi gambar apa pun secara otomatis ke WebP sebelum di-upload
+                if (options.autoConvertToWebP !== false && file.type.startsWith("image/")) {
+                    try {
+                        file = await convertToWebP(file, {
+                            maxWidth: options.maxWidth || 1920,
+                            maxHeight: options.maxHeight || 1920,
+                            quality: options.quality || 0.82,
+                        });
+                    } catch (convErr: any) {
+                        console.error("Gagal mengonversi gambar ke WebP:", convErr);
+                        throw new Error(`Gagal mengonversi gambar ke WebP: ${convErr.message}`);
+                    }
+                }
+
                 const formData = new FormData();
                 formData.append("file", file, file.name);
 

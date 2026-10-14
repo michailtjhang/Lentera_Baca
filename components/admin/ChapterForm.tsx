@@ -135,12 +135,10 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         if (!file) return;
 
         try {
-            const webpFile = await convertToWebP(file);
-            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-            const renamedFile = new File([webpFile], `${uniqueId}.webp`, { type: "image/webp" });
-            await startUpload([renamedFile]);
-        } catch (err) {
-            alert("Gagal memproses gambar: " + (err as any).message);
+            const webpFile = await convertToWebP(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+            await startUpload([webpFile]);
+        } catch (err: any) {
+            alert("Gagal memproses gambar: " + err.message);
         }
     };
 

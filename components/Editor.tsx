@@ -51,13 +51,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
         try {
             const webpFile = await convertToWebP(file);
-            const uniqueId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-            const renamedFile = new File([webpFile], `${uniqueId}.webp`, { type: "image/webp" });
-            await startUpload([renamedFile]);
-        } catch (error) {
+            await startUpload([webpFile]);
+        } catch (error: any) {
             console.error("WebP conversion failed:", error);
-            // Fallback to original
-            await startUpload([file]);
+            alert(`Gagal memproses gambar: ${error.message}`);
         }
     };
 
