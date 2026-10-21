@@ -96,6 +96,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
     }, [localChapters]);
 
     const [isProcessing, setIsProcessing] = useState(false);
+    const [swappingId, setSwappingId] = useState<string | null>(null);
     const [editingVolumeId, setEditingVolumeId] = useState<string | null>(null);
     const [editTitleValue, setEditTitleValue] = useState("");
 
@@ -112,8 +113,9 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
     };
 
     const handleSwapChapter = async (id1: string, id2: string) => {
-        if (isProcessing) return;
+        if (!id1 || !id2 || isProcessing) return;
         setIsProcessing(true);
+        setSwappingId(id1);
 
         // Optimistically swap in local state
         setLocalChapters(prev => {
@@ -122,84 +124,112 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
             const idx2 = next.findIndex(c => c.id === id2);
             if (idx1 !== -1 && idx2 !== -1) {
                 const tempOrder = next[idx1].order;
-                next[idx1] = { ...next[idx1], order: next[idx2].order };
-                next[idx2] = { ...next[idx2], order: tempOrder };
-
-                const tempObj = next[idx1];
-                next[idx1] = next[idx2];
-                next[idx2] = tempObj;
+                const ch1 = { ...next[idx1], order: next[idx2].order };
+                const ch2 = { ...next[idx2], order: tempOrder };
+                next[idx1] = ch2;
+                next[idx2] = ch1;
             }
             return next;
         });
 
         try {
-            await swapChapterOrders(id1, id2);
-            router.refresh();
+            const res = await swapChapterOrders(id1, id2);
+            if (!res?.success) {
+                setLocalChapters(chapters); // Revert on failure
+            } else {
+                router.refresh();
+            }
         } catch (err) {
             console.error("Swap Error:", err);
             setLocalChapters(chapters); // Revert on error
         } finally {
             setIsProcessing(false);
+            setSwappingId(null);
         }
     };
 
     const renderChapterRow = (chapter: Chapter, index: number, groupChapters: Chapter[]) => {
         const typeInfo = typeLabels[chapter.type] || { label: chapter.type, icon: Book, color: "text-gray-400" };
         const displayOrder = index + 1;
+        const prevChapter = index > 0 ? groupChapters[index - 1] : null;
+        const nextChapter = index < groupChapters.length - 1 ? groupChapters[index + 1] : null;
+        const isThisRowSwapping = swappingId === chapter.id;
 
         return (
-            <tr key={chapter.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
-                <td className="py-3 px-4">
-                    <span className="text-[0.65rem] font-black px-2 py-0.5 bg-black/5 dark:bg-white/10 rounded group-hover:bg-[#3E2723] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-colors">
+            <tr key={chapter.id} className="hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group">
+                <td className="py-3.5 px-4">
+                    <span className="text-[0.65rem] font-black px-2 py-1 bg-black/5 dark:bg-white/10 rounded-lg group-hover:bg-[#3E2723] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-colors font-mono">
                         #{displayOrder}
                     </span>
                 </td>
 
                 {!isWeb && (
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                         <div className={`flex items-center gap-2 text-[0.65rem] font-bold ${typeInfo.color}`}>
-                            <typeInfo.icon size={12} />
-                            {typeInfo.label}
+                            <typeInfo.icon size={13} />
+                            <span>{typeInfo.label}</span>
                         </div>
                     </td>
                 )}
 
-                <td className="py-3 px-4">
-                    <p className="text-sm font-bold text-[#3E2723] dark:text-white line-clamp-1">
+                <td className="py-3.5 px-4">
+                    <p className="text-sm font-bold text-[#3E2723] dark:text-white line-clamp-1" title={chapter.title || undefined}>
                         {formatChapterTitle(chapter as any, groupChapters as any)}
                     </p>
                 </td>
 
-                <td className="py-3 px-4 text-[10px] font-bold uppercase tracking-widest opacity-30">
+                <td className="py-3.5 px-4 text-[10px] font-bold uppercase tracking-widest opacity-40">
                     {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}
                 </td>
 
-                <td className="py-3 px-4 text-right">
-                    <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                <td className="py-3.5 px-4 text-right min-w-[200px]">
+                    <div className="flex items-center gap-1.5 justify-end">
+                        {/* Move Up Button */}
                         <button
-                            onClick={() => handleSwapChapter(chapter.id, groupChapters[index - 1].id)}
-                            disabled={index === 0 || isProcessing}
-                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg disabled:opacity-10 transition-all cursor-pointer"
-                            title="Pindah ke Atas"
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (prevChapter && !isProcessing) {
+                                    handleSwapChapter(chapter.id, prevChapter.id);
+                                }
+                            }}
+                            disabled={!prevChapter || isProcessing}
+                            className="p-1.5 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 hover:border-amber-500 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 text-neutral-600 dark:text-neutral-300 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-neutral-400 disabled:hover:border-black/10 transition-all cursor-pointer active:scale-90"
+                            title={prevChapter ? "Pindah ke Atas" : "Sudah di posisi teratas"}
+                            aria-label="Pindah ke Atas"
                         >
-                            {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <ArrowUp size={12} />}
+                            {isThisRowSwapping ? <Loader2 className="animate-spin" size={13} /> : <ArrowUp size={13} />}
                         </button>
+
+                        {/* Move Down Button */}
                         <button
-                            onClick={() => handleSwapChapter(chapter.id, groupChapters[index + 1].id)}
-                            disabled={index === groupChapters.length - 1 || isProcessing}
-                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg disabled:opacity-10 transition-all cursor-pointer"
-                            title="Pindah ke Bawah"
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (nextChapter && !isProcessing) {
+                                    handleSwapChapter(chapter.id, nextChapter.id);
+                                }
+                            }}
+                            disabled={!nextChapter || isProcessing}
+                            className="p-1.5 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 hover:border-amber-500 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 text-neutral-600 dark:text-neutral-300 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-neutral-400 disabled:hover:border-black/10 transition-all cursor-pointer active:scale-90"
+                            title={nextChapter ? "Pindah ke Bawah" : "Sudah di posisi terbawah"}
+                            aria-label="Pindah ke Bawah"
                         >
-                            {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <ArrowDown size={12} />}
+                            {isThisRowSwapping ? <Loader2 className="animate-spin" size={13} /> : <ArrowDown size={13} />}
                         </button>
-                        <div className="w-px h-4 bg-black/10 dark:bg-white/10 mx-1" />
+
+                        <div className="w-px h-4 bg-black/10 dark:bg-white/15 mx-1" />
+
+                        {/* Edit Button */}
                         <Link
                             href={`/admin/novel/${novel.id}/chapter/${chapter.id}/edit`}
-                            className="p-1.5 text-black/30 dark:text-white/30 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-all"
-                            title="Edit"
+                            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-all"
+                            title="Edit Chapter"
                         >
-                            <Edit2 size={12} />
+                            <Edit2 size={13} />
                         </Link>
+
+                        {/* Delete Button */}
                         <DeleteButton
                             id={chapter.id}
                             itemName={`Bab #${chapter.order}${chapter.title ? ` - ${chapter.title}` : ""}`}
@@ -222,7 +252,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                         {!isWeb && <th className="w-32 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Tipe</th>}
                         <th className="py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Judul Chapter</th>
                         <th className="w-32 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Update</th>
-                        <th className="w-24 py-4 px-4 text-right font-black uppercase text-[0.6rem] tracking-widest opacity-40">Aksi</th>
+                        <th className="w-48 py-4 px-4 text-right font-black uppercase text-[0.6rem] tracking-widest opacity-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">

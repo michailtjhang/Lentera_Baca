@@ -62,9 +62,9 @@ export default async function Home() {
 
   // Filter out adult content from home page (both tags and genres)
   const safeTopGenres = (topGenres as any[]).filter((g: any) => !isAdultText(g.name)).slice(0, 10);
-  const newlyAddedNovels = (newlyAddedRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 5);
+  const newlyAddedNovels = (newlyAddedRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 6);
   const latestUpdated = (latestRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 10);
-  const popularNovels = (popularRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 5);
+  const popularNovels = (popularRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 6);
 
   const getTypeLabel = (type: string) => {
     if (type === "WEB") return "Web Novel";
@@ -292,7 +292,7 @@ export default async function Home() {
               href="/browse?sort=newest"
               badge="Fresh"
             />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
               {newlyAddedNovels.map((novel) => (
                 <NovelCard key={novel.id} novel={novel} />
               ))}
@@ -309,7 +309,7 @@ export default async function Home() {
               href="/browse?sort=popular"
               badge="Top Rated"
             />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
               {popularNovels.map((novel, index) => (
                 <NovelCard key={novel.id} novel={novel} rank={index + 1} />
               ))}

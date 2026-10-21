@@ -492,29 +492,34 @@ export async function updateVolumeTitle(volumeId: string, title: string) {
 
 export async function swapChapterOrders(id1: string, id2: string) {
     await checkAdmin();
-    const ch1 = await prisma.chapter.findUnique({ where: { id: id1 }, include: { novel: true } });
-    const ch2 = await prisma.chapter.findUnique({ where: { id: id2 } });
+    try {
+        const ch1 = await prisma.chapter.findUnique({ where: { id: id1 }, include: { novel: true } });
+        const ch2 = await prisma.chapter.findUnique({ where: { id: id2 } });
 
-    if (!ch1 || !ch2) throw new Error("Chapter not found");
+        if (!ch1 || !ch2) return { success: false, error: "Chapter not found" };
 
-    let newOrder1 = ch2.order;
-    let newOrder2 = ch1.order;
+        let newOrder1 = ch2.order;
+        let newOrder2 = ch1.order;
 
-    if (newOrder1 === newOrder2) {
-        newOrder1 = ch1.order;
-        newOrder2 = ch1.order + 1;
+        if (newOrder1 === newOrder2) {
+            newOrder1 = ch2.order + 1;
+            newOrder2 = ch1.order;
+        }
+
+        await prisma.$transaction([
+            prisma.chapter.update({ where: { id: id1 }, data: { order: newOrder1 } }),
+            prisma.chapter.update({ where: { id: id2 }, data: { order: newOrder2 } }),
+            prisma.novel.update({ where: { id: ch1.novelId }, data: { updatedAt: new Date() } }),
+        ]);
+
+        revalidatePath(`/novel/${ch1.novel.slug}`);
+        revalidatePath("/admin");
+        revalidatePath(`/admin/novel/${ch1.novelId}/chapter`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("swapChapterOrders error:", error);
+        return { success: false, error: error?.message || "Gagal mengubah urutan chapter" };
     }
-
-    await prisma.$transaction([
-        prisma.chapter.update({ where: { id: id1 }, data: { order: newOrder1 } }),
-        prisma.chapter.update({ where: { id: id2 }, data: { order: newOrder2 } }),
-        prisma.novel.update({ where: { id: ch1.novelId }, data: { updatedAt: new Date() } }),
-    ]);
-
-    revalidatePath(`/novel/${ch1.novel.slug}`);
-    revalidatePath("/admin");
-    revalidatePath(`/admin/novel/${ch1.novelId}/chapter`);
-    return { success: true };
 }
 
 export async function incrementView(id: string, type: 'NOVEL' | 'CHAPTER' | 'VOLUME') {
