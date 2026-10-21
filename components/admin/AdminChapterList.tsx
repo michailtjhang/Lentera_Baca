@@ -157,10 +157,51 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
 
         return (
             <tr key={chapter.id} className="hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors group">
-                <td className="py-3.5 px-4">
-                    <span className="text-[0.65rem] font-black px-2 py-1 bg-black/5 dark:bg-white/10 rounded-lg group-hover:bg-[#3E2723] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-colors font-mono">
-                        #{displayOrder}
-                    </span>
+                <td className="py-3.5 px-4 w-28">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[0.7rem] font-black px-2.5 py-1.5 bg-black/5 dark:bg-white/10 rounded-xl group-hover:bg-[#3E2723] dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-colors font-mono min-w-[34px] text-center">
+                            #{displayOrder}
+                        </span>
+                        {/* Compact Stepper in Order Column */}
+                        <div className="flex flex-col gap-0.5">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (prevChapter && !isProcessing && !isThisRowSwapping) {
+                                        handleSwapChapter(chapter.id, prevChapter.id);
+                                    }
+                                }}
+                                disabled={!prevChapter || isProcessing}
+                                className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                    !prevChapter || isProcessing
+                                        ? "opacity-20 cursor-not-allowed text-neutral-400"
+                                        : "cursor-pointer text-neutral-600 dark:text-neutral-300 hover:bg-amber-600 hover:text-white active:scale-90"
+                                }`}
+                                title={prevChapter ? `Naikkan ke #${displayOrder - 1}` : "Sudah di posisi teratas"}
+                            >
+                                <ArrowUp size={11} strokeWidth={2.5} className="pointer-events-none" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (nextChapter && !isProcessing && !isThisRowSwapping) {
+                                        handleSwapChapter(chapter.id, nextChapter.id);
+                                    }
+                                }}
+                                disabled={!nextChapter || isProcessing}
+                                className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                    !nextChapter || isProcessing
+                                        ? "opacity-20 cursor-not-allowed text-neutral-400"
+                                        : "cursor-pointer text-neutral-600 dark:text-neutral-300 hover:bg-amber-600 hover:text-white active:scale-90"
+                                }`}
+                                title={nextChapter ? `Turunkan ke #${displayOrder + 1}` : "Sudah di posisi terbawah"}
+                            >
+                                <ArrowDown size={11} strokeWidth={2.5} className="pointer-events-none" />
+                            </button>
+                        </div>
+                    </div>
                 </td>
 
                 {!isWeb && (
@@ -182,23 +223,32 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                     {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}
                 </td>
 
-                <td className="py-3.5 px-4 text-right min-w-[200px]">
+                <td className="py-3.5 px-4 text-right min-w-[240px]">
                     <div className="flex items-center gap-1.5 justify-end">
                         {/* Move Up Button */}
                         <button
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (prevChapter && !isProcessing) {
+                                if (prevChapter && !isProcessing && !isThisRowSwapping) {
                                     handleSwapChapter(chapter.id, prevChapter.id);
                                 }
                             }}
                             disabled={!prevChapter || isProcessing}
-                            className="p-1.5 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 hover:border-amber-500 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 text-neutral-600 dark:text-neutral-300 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-neutral-400 disabled:hover:border-black/10 transition-all cursor-pointer active:scale-90"
-                            title={prevChapter ? "Pindah ke Atas" : "Sudah di posisi teratas"}
+                            className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm active:scale-95 select-none ${
+                                !prevChapter || isProcessing
+                                    ? "opacity-25 bg-neutral-100 dark:bg-white/5 border-neutral-200 dark:border-white/5 text-neutral-400 cursor-not-allowed"
+                                    : "cursor-pointer bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 dark:hover:bg-amber-600 dark:hover:text-white shadow-sm"
+                            }`}
+                            title={prevChapter ? `Pindahkan Bab #${displayOrder} ke Atas` : "Sudah di posisi teratas"}
                             aria-label="Pindah ke Atas"
                         >
-                            {isThisRowSwapping ? <Loader2 className="animate-spin" size={13} /> : <ArrowUp size={13} />}
+                            {isThisRowSwapping ? (
+                                <Loader2 className="animate-spin text-amber-500" size={14} />
+                            ) : (
+                                <ArrowUp size={14} strokeWidth={2.5} className="pointer-events-none" />
+                            )}
+                            <span className="text-[10px] uppercase font-black tracking-wider pointer-events-none">Up</span>
                         </button>
 
                         {/* Move Down Button */}
@@ -206,27 +256,36 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (nextChapter && !isProcessing) {
+                                if (nextChapter && !isProcessing && !isThisRowSwapping) {
                                     handleSwapChapter(chapter.id, nextChapter.id);
                                 }
                             }}
                             disabled={!nextChapter || isProcessing}
-                            className="p-1.5 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 hover:border-amber-500 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 text-neutral-600 dark:text-neutral-300 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-neutral-400 disabled:hover:border-black/10 transition-all cursor-pointer active:scale-90"
-                            title={nextChapter ? "Pindah ke Bawah" : "Sudah di posisi terbawah"}
+                            className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm active:scale-95 select-none ${
+                                !nextChapter || isProcessing
+                                    ? "opacity-25 bg-neutral-100 dark:bg-white/5 border-neutral-200 dark:border-white/5 text-neutral-400 cursor-not-allowed"
+                                    : "cursor-pointer bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 dark:hover:bg-amber-600 dark:hover:text-white shadow-sm"
+                            }`}
+                            title={nextChapter ? `Pindahkan Bab #${displayOrder} ke Bawah` : "Sudah di posisi terbawah"}
                             aria-label="Pindah ke Bawah"
                         >
-                            {isThisRowSwapping ? <Loader2 className="animate-spin" size={13} /> : <ArrowDown size={13} />}
+                            {isThisRowSwapping ? (
+                                <Loader2 className="animate-spin text-amber-500" size={14} />
+                            ) : (
+                                <ArrowDown size={14} strokeWidth={2.5} className="pointer-events-none" />
+                            )}
+                            <span className="text-[10px] uppercase font-black tracking-wider pointer-events-none">Down</span>
                         </button>
 
-                        <div className="w-px h-4 bg-black/10 dark:bg-white/15 mx-1" />
+                        <div className="w-px h-5 bg-black/10 dark:bg-white/15 mx-0.5" />
 
                         {/* Edit Button */}
                         <Link
                             href={`/admin/novel/${novel.id}/chapter/${chapter.id}/edit`}
-                            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#3E2723] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-all"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-neutral-600 dark:text-neutral-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:border-amber-500/40 transition-all cursor-pointer shadow-sm active:scale-95"
                             title="Edit Chapter"
                         >
-                            <Edit2 size={13} />
+                            <Edit2 size={13} className="pointer-events-none" />
                         </Link>
 
                         {/* Delete Button */}
@@ -248,11 +307,11 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
             <table className="w-full text-left table-fixed">
                 <thead>
                     <tr className="border-b border-black/5 dark:border-white/5 bg-black/2 dark:bg-white/2">
-                        <th className="w-20 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Order</th>
+                        <th className="w-28 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Order</th>
                         {!isWeb && <th className="w-32 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Tipe</th>}
                         <th className="py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Judul Chapter</th>
-                        <th className="w-32 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Update</th>
-                        <th className="w-48 py-4 px-4 text-right font-black uppercase text-[0.6rem] tracking-widest opacity-40">Aksi</th>
+                        <th className="w-28 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Update</th>
+                        <th className="w-64 py-4 px-4 text-right font-black uppercase text-[0.6rem] tracking-widest opacity-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -267,20 +326,20 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                         <>
                             {volumes.map((vol) => (
                                 <React.Fragment key={vol.id}>
-                                    <tr className="bg-black/5 dark:bg-white/5 group/vol">
+                                    <tr 
+                                        className="bg-black/5 dark:bg-white/5 group/vol cursor-pointer hover:bg-black/8 dark:hover:bg-white/8 transition-colors select-none"
+                                        onClick={() => toggleVolume(vol.id)}
+                                    >
                                         <td colSpan={5} className="py-2 px-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-4 flex-1">
-                                                    <div
-                                                        className="flex items-center gap-3 cursor-pointer py-2 hover:opacity-70 transition-opacity"
-                                                        onClick={() => toggleVolume(vol.id)}
-                                                    >
+                                                    <div className="flex items-center gap-3 py-2">
                                                         <div className="w-8 h-8 rounded-lg bg-[#3E2723] dark:bg-white text-[#F5F5DC] dark:text-[#111] flex items-center justify-center font-black text-xs shadow-sm">
                                                             {vol.order}
                                                         </div>
                                                         <ChevronDown
                                                             size={16}
-                                                            className={`transition-transform duration-300 opacity-30 ${openVolumes[vol.id] ? 'rotate-180' : ''}`}
+                                                            className={`transition-transform duration-300 opacity-50 ${openVolumes[vol.id] ? 'rotate-180' : ''}`}
                                                         />
                                                     </div>
 
