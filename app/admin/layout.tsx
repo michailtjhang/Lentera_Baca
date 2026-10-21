@@ -1,4 +1,4 @@
-import AdminLayoutClient from "@/components/admin/AdminLayoutClient";
+import Sidebar from "@/components/admin/Sidebar";
 
 export default function AdminLayout({
     children,
@@ -6,8 +6,16 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <AdminLayoutClient>
-            {children}
-        </AdminLayoutClient>
+        <div className="min-h-screen bg-[#F7F3EC] dark:bg-[#0f0f0f] text-[#3E2723] dark:text-[#e8e8e8] flex">
+            {/* Permanent Desktop Sidebar */}
+            <Sidebar />
+
+            {/* Main Desktop Content Area */}
+            <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+                <main className="flex-1 w-full">
+                    {children}
+                </main>
+            </div>
+        </div>
     );
 }

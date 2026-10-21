@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Logo from "@/components/Logo";
-import PopularSlider from "@/components/PopularSlider";
+import NewSlider from "@/components/NewSlider";
 import { calculateRating } from "@/components/StarRating";
 
 export const metadata = {
@@ -207,18 +207,13 @@ export default async function Home() {
       <Navbar currentTheme={theme} isAdmin={adminStatus} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* ─── HERO + POPULAR SLIDER ──────────────────────────────── */}
-        <section className="py-6 sm:py-8 relative overflow-hidden">
-          {/* Ambient amber glow */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-            <div className="absolute -top-10 left-0 right-0 h-[140%] bg-gradient-to-br from-amber-300/25 via-orange-200/15 to-transparent dark:from-amber-600/10 dark:via-orange-700/8 dark:to-transparent blur-[90px] transform-gpu" />
-          </div>
-
-          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-w-full">
-            {/* Slider */}
+        {/* ─── HERO + NEW SLIDER ──────────────────────────────────── */}
+        <section className="py-6 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-w-full">
+            {/* New Releases Slider */}
             <div className="lg:col-span-7 w-full min-w-0 order-2 lg:order-1">
               <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[340px] h-full">
-                <PopularSlider novels={newlyAddedNovels as any} />
+                <NewSlider novels={newlyAddedNovels as any} />
               </div>
             </div>
 

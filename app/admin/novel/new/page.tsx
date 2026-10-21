@@ -25,34 +25,47 @@ export default async function NewNovelPage({
 
     return (
         <div className="min-h-screen">
-            {/* Page Header */}
-            <div className="sticky top-0 z-10 bg-[#F7F3EC]/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5 px-6 lg:px-10 py-4">
+            {/* Desktop Page Sticky Header */}
+            <div className="sticky top-0 z-20 bg-[#F7F3EC]/90 dark:bg-[#0f0f0f]/90 backdrop-blur-xl border-b border-black/8 dark:border-white/8 px-6 lg:px-10 py-4">
                 <div className="flex items-center justify-between max-w-7xl mx-auto">
                     <div className="flex items-center gap-4">
-                        <Link href="/admin" className="group flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">
-                            <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                        <Link 
+                            href="/admin" 
+                            className="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider opacity-50 hover:opacity-100 transition-opacity"
+                        >
+                            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                             Dashboard
                         </Link>
                         <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
                         <div className="flex items-center gap-2">
-                            <PlusCircle size={14} className="opacity-40" />
+                            <PlusCircle size={15} className="text-amber-600 dark:text-amber-400" />
                             <h1 className="text-sm font-black tracking-tight">Tambah Novel Baru</h1>
                         </div>
                     </div>
 
-                    {/* Type switcher */}
+                    {/* Format Type switcher */}
                     <div className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
                         <Link
                             href="/admin/novel/new"
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[0.65rem] font-black uppercase tracking-wider transition-all ${!isLightNovel ? "bg-white dark:bg-white/15 shadow-md" : "opacity-40 hover:opacity-70"}`}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                                !isLightNovel 
+                                    ? "bg-amber-600 text-white shadow-sm" 
+                                    : "opacity-50 hover:opacity-100 text-[#3E2723] dark:text-white"
+                            }`}
                         >
-                            <BookOpen size={12} /> Web Novel
+                            <BookOpen size={13} />
+                            <span>Web Novel</span>
                         </Link>
                         <Link
                             href="/admin/novel/new?type=lightnovel"
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[0.65rem] font-black uppercase tracking-wider transition-all ${isLightNovel ? "bg-white dark:bg-white/15 shadow-md" : "opacity-40 hover:opacity-70"}`}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                                isLightNovel 
+                                    ? "bg-amber-600 text-white shadow-sm" 
+                                    : "opacity-50 hover:opacity-100 text-[#3E2723] dark:text-white"
+                            }`}
                         >
-                            <Layers size={12} /> Light Novel
+                            <Layers size={13} />
+                            <span>Light Novel</span>
                         </Link>
                     </div>
                 </div>
@@ -61,14 +74,14 @@ export default async function NewNovelPage({
             {/* Form Content */}
             <div className="p-6 lg:p-10 max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <p className="text-[0.65rem] font-black uppercase tracking-[0.3em] opacity-30 mb-1">
-                        {isLightNovel ? "Light Novel" : "Web Novel"}
+                    <p className="text-[0.65rem] font-black uppercase tracking-[0.25em] opacity-40 mb-1">
+                        {isLightNovel ? "Format: Light Novel" : "Format: Web Novel"}
                     </p>
-                    <h2 className="text-3xl font-black tracking-tighter">
-                        {isLightNovel ? "Tambah Light Novel" : "Tambah Web Novel"}
+                    <h2 className="text-3xl font-black tracking-tight text-[#2B1810] dark:text-white">
+                        {isLightNovel ? "Terbitkan Light Novel Baru" : "Terbitkan Web Novel Baru"}
                     </h2>
-                    <p className="text-sm opacity-40 mt-2 font-medium">
-                        Lengkapi semua informasi yang diperlukan untuk menerbitkan novel baru.
+                    <p className="text-sm opacity-50 mt-1 font-medium">
+                        Lengkapi informasi cerita, penulis, volume, genre, dan sampul novel di bawah ini.
                     </p>
                 </div>
 
