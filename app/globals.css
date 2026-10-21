@@ -36,3 +36,16 @@ body {
 .prose h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
 .prose blockquote { border-left: 4px solid #3E2723; padding-left: 1rem; font-style: italic; opacity: 0.8; margin-bottom: 1.5rem; }
 .dark .prose blockquote { border-left-color: #fff; }
+
+/* Native select & option fallback styling */
+select {
+  color-scheme: light dark;
+}
+select option {
+  background-color: #ffffff;
+  color: #171717;
+}
+.dark select option {
+  background-color: #1a1a1a;
+  color: #d1d1d1;
+}

@@ -8,6 +8,7 @@ import LNUploader from "@/components/admin/LNUploader";
 import CoverUploader from "@/components/admin/CoverUploader";
 import { NovelType, Region, Status } from "@prisma/client";
 import { Save, Loader2, ArrowLeft, User, BookOpen, Globe, Tag, FileText, Layers, Image, AlertCircle, CheckCircle2 } from "lucide-react";
+import CustomSelect from "@/components/CustomSelect";
 
 interface NovelFormProps {
     novel?: any;
@@ -157,44 +158,44 @@ export default function AdminNovelForm({ novel, tagSuggestions, action, predefin
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label htmlFor="type" className={labelClass}>Tipe Novel</label>
-                            <select
+                            <CustomSelect
                                 name="type"
                                 id="type"
                                 value={type}
-                                onChange={(e) => setType(e.target.value)}
-                                className={inputClass}
-                            >
-                                <option value="WEB">Web Novel</option>
-                                <option value="LIGHTNOVEL_WEB">Light Novel</option>
-                            </select>
+                                onChange={(val) => setType(val)}
+                                options={[
+                                    { value: "WEB", label: "Web Novel", icon: "🌐" },
+                                    { value: "LIGHTNOVEL_WEB", label: "Light Novel", icon: "📖" },
+                                ]}
+                            />
                         </div>
                         <div>
                             <label htmlFor="region" className={labelClass}>Regional</label>
-                            <select
+                            <CustomSelect
                                 name="region"
                                 id="region"
                                 defaultValue={novel?.region || Region.OTHER}
-                                className={inputClass}
-                            >
-                                <option value={Region.OTHER}>🌐 Lainnya / Universal</option>
-                                <option value={Region.JAPAN}>🇯🇵 Jepang (Light Novel)</option>
-                                <option value={Region.KOREA}>🇰🇷 Korea</option>
-                                <option value={Region.CHINA}>🇨🇳 China</option>
-                            </select>
+                                options={[
+                                    { value: Region.OTHER, label: "Lainnya / Universal", icon: "🌐" },
+                                    { value: Region.JAPAN, label: "Jepang (Light Novel)", icon: "🇯🇵" },
+                                    { value: Region.KOREA, label: "Korea", icon: "🇰🇷" },
+                                    { value: Region.CHINA, label: "China", icon: "🇨🇳" },
+                                ]}
+                            />
                         </div>
                         <div>
                             <label htmlFor="status" className={labelClass}>Status</label>
-                            <select
+                            <CustomSelect
                                 name="status"
                                 id="status"
                                 defaultValue={novel?.status || Status.ONGOING}
-                                className={inputClass}
-                            >
-                                <option value={Status.ONGOING}>🟢 On-going</option>
-                                <option value={Status.COMPLETE}>✅ Complete</option>
-                                <option value={Status.DROP}>❌ Drop</option>
-                                <option value={Status.HIATUS}>⏸️ Hiatus</option>
-                            </select>
+                                options={[
+                                    { value: Status.ONGOING, label: "On-going", icon: "🟢" },
+                                    { value: Status.COMPLETE, label: "Complete", icon: "✅" },
+                                    { value: Status.DROP, label: "Drop", icon: "❌" },
+                                    { value: Status.HIATUS, label: "Hiatus", icon: "⏸️" },
+                                ]}
+                            />
                         </div>
                     </div>
                 </SectionCard>

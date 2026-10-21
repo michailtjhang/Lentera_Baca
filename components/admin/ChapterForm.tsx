@@ -7,6 +7,7 @@ import { useSwiftGramUpload } from "@/lib/swiftgram-client";
 import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { convertToWebP } from "@/lib/image-utils";
 import { deleteFiles } from "@/app/actions/novel-actions";
+import CustomSelect from "@/components/CustomSelect";
 
 interface ChapterFormProps {
     chapter?: any;
@@ -223,23 +224,22 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 {!isWeb && (
                     <div className="space-y-2">
                         <label htmlFor="volumeId" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 block">Pilih Volume (Utama)</label>
-                        <select
+                        <CustomSelect
                             name="volumeId"
                             id="volumeId"
                             defaultValue={chapter?.volumeId || ""}
-                            className={`${inputClasses} appearance-none`}
-                        >
-                            {volumes.length > 0 ? (
-                                <>
-                                    <option value="">Tanpa Volume</option>
-                                    {volumes.map((vol) => (
-                                        <option key={vol.id} value={vol.id}>{vol.title}</option>
-                                    ))}
-                                </>
-                            ) : (
-                                <option value="">Tidak ada volume tersedia</option>
-                            )}
-                        </select>
+                            options={volumes.length > 0 ? [
+                                { value: "", label: "Tanpa Volume", icon: "📁" },
+                                ...volumes.map((vol) => ({
+                                    value: vol.id,
+                                    label: vol.title,
+                                    icon: "📚"
+                                }))
+                            ] : [
+                                { value: "", label: "Tidak ada volume tersedia", icon: "📁" }
+                            ]}
+                            placeholder="Pilih volume..."
+                        />
                     </div>
                 )}
 
@@ -248,20 +248,21 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                     {!isWeb ? (
                         <div className="space-y-2">
                             <label htmlFor="type" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 block">Tipe Konten</label>
-                            <select
+                            <CustomSelect
                                 name="type"
                                 id="type"
                                 value={type}
-                                onChange={(e) => setType(e.target.value)}
-                                className={`${inputClasses} appearance-none`}
-                            >
-                                <option value="PROLOGUE">🎬 Prolog</option>
-                                <option value="STORY">📖 Cerita Utama</option>
-                                <option value="ILLUSTRATION">🎨 Ilustrasi</option>
-                                <option value="EPILOGUE">🔚 Epilog / Afterword</option>
-                                <option value="SIDESTORY">🌟 Side Story / Spin-off</option>
-                                <option value="INTERLUDE">↔️ Selingan / Interlude</option>
-                            </select>
+                                onChange={(val) => setType(val)}
+                                options={[
+                                    { value: "STORY", label: "Cerita Utama", icon: "📖" },
+                                    { value: "PROLOGUE", label: "Prolog", icon: "🎬" },
+                                    { value: "ILLUSTRATION", label: "Ilustrasi", icon: "🎨" },
+                                    { value: "EPILOGUE", label: "Epilog / Afterword", icon: "🔚" },
+                                    { value: "SIDESTORY", label: "Side Story / Spin-off", icon: "🌟" },
+                                    { value: "INTERLUDE", label: "Selingan / Interlude", icon: "↔️" },
+                                ]}
+                                placeholder="Pilih tipe konten..."
+                            />
                         </div>
                     ) : (
                         <input type="hidden" name="type" value="STORY" />
