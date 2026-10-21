@@ -103,17 +103,17 @@ export default function Logo({
   const current = sizeMap[size];
 
   const content = (
-    <div className={`flex items-center gap-2.5 group select-none ${className}`}>
+    <div className={`flex items-center gap-2 sm:gap-2.5 group select-none ${className}`}>
       <div className="shrink-0 group-hover:scale-105 group-hover:rotate-1 transition-transform duration-300 drop-shadow-md">
-        <LogoIcon size={current.icon} />
+        <LogoIcon size={current.icon} className="w-7 h-7 sm:w-[34px] sm:h-[34px]" />
       </div>
 
       {variant === "full" && (
         <div className="flex flex-col leading-none">
-          <span className={`${current.text} font-black tracking-tight text-[#2B1810] dark:text-white transition-colors group-hover:text-amber-700 dark:group-hover:text-amber-400`}>
+          <span className="text-sm sm:text-lg font-black tracking-tight text-[#2B1810] dark:text-white transition-colors group-hover:text-amber-700 dark:group-hover:text-amber-400 whitespace-nowrap">
             Lentera Baca
           </span>
-          <span className={`${current.sub} font-bold uppercase tracking-[0.22em] text-amber-700/60 dark:text-amber-400/60 mt-0.5`}>
+          <span className="text-[0.55rem] sm:text-[0.6rem] font-bold uppercase tracking-[0.22em] text-amber-700/60 dark:text-amber-400/60 mt-0.5 hidden sm:block whitespace-nowrap">
             Terangi Ceritamu
           </span>
         </div>

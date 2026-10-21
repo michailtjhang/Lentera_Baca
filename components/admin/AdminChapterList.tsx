@@ -223,7 +223,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                     {new Date(chapter.updatedAt).toLocaleDateString('id-ID')}
                 </td>
 
-                <td className="py-3.5 px-4 text-right min-w-[240px]">
+                <td className="py-3.5 px-4 text-right min-w-[190px]">
                     <div className="flex items-center gap-1.5 justify-end">
                         {/* Move Up Button */}
                         <button
@@ -235,7 +235,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                                 }
                             }}
                             disabled={!prevChapter || isProcessing}
-                            className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm active:scale-95 select-none ${
+                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all shadow-sm active:scale-95 select-none ${
                                 !prevChapter || isProcessing
                                     ? "opacity-25 bg-neutral-100 dark:bg-white/5 border-neutral-200 dark:border-white/5 text-neutral-400 cursor-not-allowed"
                                     : "cursor-pointer bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 dark:hover:bg-amber-600 dark:hover:text-white shadow-sm"
@@ -246,9 +246,8 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                             {isThisRowSwapping ? (
                                 <Loader2 className="animate-spin text-amber-500" size={14} />
                             ) : (
-                                <ArrowUp size={14} strokeWidth={2.5} className="pointer-events-none" />
+                                <ArrowUp size={15} strokeWidth={2.5} className="pointer-events-none" />
                             )}
-                            <span className="text-[10px] uppercase font-black tracking-wider pointer-events-none">Up</span>
                         </button>
 
                         {/* Move Down Button */}
@@ -261,7 +260,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                                 }
                             }}
                             disabled={!nextChapter || isProcessing}
-                            className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm active:scale-95 select-none ${
+                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all shadow-sm active:scale-95 select-none ${
                                 !nextChapter || isProcessing
                                     ? "opacity-25 bg-neutral-100 dark:bg-white/5 border-neutral-200 dark:border-white/5 text-neutral-400 cursor-not-allowed"
                                     : "cursor-pointer bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 dark:hover:bg-amber-600 dark:hover:text-white shadow-sm"
@@ -272,9 +271,8 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                             {isThisRowSwapping ? (
                                 <Loader2 className="animate-spin text-amber-500" size={14} />
                             ) : (
-                                <ArrowDown size={14} strokeWidth={2.5} className="pointer-events-none" />
+                                <ArrowDown size={15} strokeWidth={2.5} className="pointer-events-none" />
                             )}
-                            <span className="text-[10px] uppercase font-black tracking-wider pointer-events-none">Down</span>
                         </button>
 
                         <div className="w-px h-5 bg-black/10 dark:bg-white/15 mx-0.5" />
@@ -311,7 +309,7 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                         {!isWeb && <th className="w-32 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Tipe</th>}
                         <th className="py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Judul Chapter</th>
                         <th className="w-28 py-4 px-4 font-black uppercase text-[0.6rem] tracking-widest opacity-40">Update</th>
-                        <th className="w-64 py-4 px-4 text-right font-black uppercase text-[0.6rem] tracking-widest opacity-40">Aksi</th>
+                        <th className="w-48 py-4 px-4 text-right font-black uppercase text-[0.6rem] tracking-widest opacity-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">

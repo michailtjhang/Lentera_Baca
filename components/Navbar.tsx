@@ -68,14 +68,14 @@ export default function Navbar({ currentTheme = "light", isAdmin = false }: Navb
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        className={`sticky top-0 z-40 w-full max-w-full overflow-x-clip transition-all duration-300 ${
           isScrolled
             ? "bg-[#FDFBF7]/90 dark:bg-[#121212]/90 backdrop-blur-xl border-b border-black/8 dark:border-white/10 shadow-sm shadow-black/5"
             : "bg-[#FDFBF7]/75 dark:bg-[#121212]/75 backdrop-blur-md border-b border-black/5 dark:border-white/5"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16 sm:h-18 gap-3 sm:gap-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6">
+          <div className="flex items-center justify-between h-15 sm:h-18 gap-2 sm:gap-6">
             {/* Brand Logo */}
             <div className="shrink-0">
               <Logo variant="full" size="md" />
@@ -130,15 +130,15 @@ export default function Navbar({ currentTheme = "light", isAdmin = false }: Navb
             </nav>
 
             {/* Right Actions: Theme Toggle, User, Mobile Buttons */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
               {/* Mobile Search Trigger Button */}
               <button
                 type="button"
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="md:hidden p-2 rounded-xl text-[#3E2723]/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                className="md:hidden p-1.5 rounded-lg text-[#3E2723]/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                 aria-label="Cari novel"
               >
-                <Search size={19} />
+                <Search size={18} />
               </button>
 
               {/* Theme Toggle */}
@@ -149,28 +149,28 @@ export default function Navbar({ currentTheme = "light", isAdmin = false }: Navb
               <div className="h-4 w-px bg-black/10 dark:bg-white/10 hidden sm:block" />
 
               {/* Auth Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center">
                 <SignedIn>
                   <UserButton />
                 </SignedIn>
                 <SignedOut>
                   <Link
                     href="/sign-in"
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-amber-600/20 active:scale-95 transition-all"
+                    className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-[11px] sm:text-xs font-black uppercase tracking-wider shadow-sm shadow-amber-600/20 active:scale-95 transition-all whitespace-nowrap"
                   >
                     Masuk
                   </Link>
                 </SignedOut>
               </div>
 
-              {/* Mobile Hamburger Toggle */}
+              {/* Mobile Hamburger Toggle (Always visible on mobile right next to Login) */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl text-[#3E2723] dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ml-1"
+                className="lg:hidden p-1.5 rounded-xl text-[#3E2723] dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                 aria-label="Buka menu navigasi"
               >
-                <Menu size={22} />
+                <Menu size={20} />
               </button>
             </div>
           </div>
@@ -193,40 +193,6 @@ export default function Navbar({ currentTheme = "light", isAdmin = false }: Navb
               </form>
             </div>
           )}
-        </div>
-
-        {/* Mobile Horizontal Scrollable Quick Nav Strip (Swipe / Geser ke kanan) */}
-        <div className="lg:hidden w-full border-t border-black/5 dark:border-white/5 bg-[#FDFBF7]/90 dark:bg-[#121212]/90 backdrop-blur-md overflow-x-auto scrollbar-none touch-pan-x">
-          <div className="flex items-center gap-1.5 px-4 py-2 min-w-max">
-            {navLinks.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                    isActive
-                      ? "bg-amber-600 text-white shadow-sm shadow-amber-600/30"
-                      : "bg-black/5 dark:bg-white/5 text-[#3E2723]/80 dark:text-white/80 hover:bg-black/10 dark:hover:bg-white/10"
-                  }`}
-                >
-                  <Icon size={12} className={isActive ? "text-white" : "text-amber-600 dark:text-amber-400"} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 whitespace-nowrap"
-              >
-                <Shield size={12} />
-                <span>Admin</span>
-              </Link>
-            )}
-          </div>
         </div>
       </header>
 
