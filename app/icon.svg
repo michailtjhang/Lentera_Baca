@@ -1,0 +1,38 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lanternGlow" x1="24" y1="4" x2="24" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#F59E0B" />
+      <stop offset="50%" stopColor="#D97706" />
+      <stop offset="100%" stopColor="#92400E" />
+    </linearGradient>
+    <linearGradient id="flameGlow" x1="24" y1="16" x2="24" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#FEF08A" />
+      <stop offset="60%" stopColor="#F59E0B" />
+      <stop offset="100%" stopColor="#EA580C" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Rounded Squircle -->
+  <rect width="48" height="48" rx="14" fill="url(#lanternGlow)" />
+  <rect x="1" y="1" width="46" height="46" rx="13" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+
+  <!-- Top Lantern Ring -->
+  <circle cx="24" cy="10" r="3" stroke="#FFF7ED" stroke-width="1.5" fill="none" />
+
+  <!-- Lantern Roof / Cap -->
+  <path d="M16 14.5C16 13.5 19 12.5 24 12.5C29 12.5 32 13.5 32 14.5L34 17H14L16 14.5Z" fill="#FFF7ED" />
+
+  <!-- Lantern Glass Body Frame -->
+  <path d="M15 17L17.5 29H30.5L33 17H15Z" fill="rgba(0,0,0,0.18)" stroke="#FFF7ED" stroke-width="1.5" stroke-linejoin="round" />
+
+  <!-- Central Flame / Lantern Light -->
+  <path d="M24 18C21.5 21 21.5 24 22.5 25.5C23.2 26.5 24.8 26.5 25.5 25.5C26.5 24 26.5 21 24 18Z" fill="url(#flameGlow)" />
+  <circle cx="24" cy="24" r="1.5" fill="#FFFFFF" />
+
+  <!-- Base of Lantern -->
+  <path d="M17 29H31L32 31H16L17 29Z" fill="#FFF7ED" />
+
+  <!-- Open Book Base (Symbol of Reading / Baca) -->
+  <path d="M12 37C17 35 21 36 24 38C27 36 31 35 36 37L35 34C30.5 32 26.5 33 24 35C21.5 33 17.5 32 13 34L12 37Z" fill="#FFF7ED" />
+  <line x1="24" y1="35" x2="24" y2="38.5" stroke="#92400E" stroke-width="1" />
+</svg>

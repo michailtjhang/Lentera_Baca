@@ -22,6 +22,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import VolumeAccordion from "@/components/VolumeAccordion";
 import NovelSynopsis from "@/components/NovelSynopsis";
 import NovelHeroActions from "@/components/NovelHeroActions";
+import Navbar from "@/components/Navbar";
+import { isAdmin } from "@/lib/admin";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -54,6 +56,7 @@ export default async function NovelOverviewPage({ params }: PageProps) {
     const { slug } = await params;
     const user = await currentUser();
     const theme = (user?.publicMetadata?.theme as string) || "light";
+    const adminStatus = await isAdmin();
 
     const novelResult = await prisma.novel.findUnique({
         where: { slug },
@@ -116,35 +119,8 @@ export default async function NovelOverviewPage({ params }: PageProps) {
                 </div>
             )}
 
-            {/* Navigation Header */}
-            <nav className="border-b border-black/5 dark:border-white/5 px-4 sm:px-6 py-3.5 backdrop-blur-xl sticky top-0 bg-white/80 dark:bg-black/80 z-50">
-                <div className="max-w-6xl mx-auto flex justify-between items-center gap-4">
-                    <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-                        <Link 
-                            href="/" 
-                            className="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider opacity-60 hover:opacity-100 transition-opacity shrink-0"
-                        >
-                            <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                            <span className="hidden sm:inline">Beranda</span>
-                        </Link>
-                        <div className="h-4 w-px bg-black/10 dark:bg-white/10 shrink-0" />
-                        <Link href="/" className="text-lg sm:text-xl font-black tracking-tight truncate">
-                            Lentera Baca
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                        <Link 
-                            href="/browse" 
-                            className="hidden sm:block text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-3 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5"
-                        >
-                            Jelajah
-                        </Link>
-                        <ThemeToggle currentTheme={theme} variant="minimal" />
-                        <SignedIn><UserButton /></SignedIn>
-                    </div>
-                </div>
-            </nav>
+            {/* ─── UNIFIED RESPONSIVE NAVBAR ───────────────────────────── */}
+            <Navbar currentTheme={theme} isAdmin={adminStatus} />
 
             <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
                 {/* Breadcrumb */}

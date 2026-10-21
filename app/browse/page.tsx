@@ -5,6 +5,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/admin";
 import { Search, ChevronLeft, SlidersHorizontal, Hash, BookOpen, Shield, X, Filter, ChevronDown, Star } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import Navbar from "@/components/Navbar";
 import { calculateRating } from "@/components/StarRating";
 
 interface BrowseProps {
@@ -165,36 +166,8 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
 
   return (
     <div className="min-h-screen bg-[#FDFCF0] text-[#3E2723] dark:bg-[#0f0f0f] dark:text-[#e8e8e8] transition-colors duration-500">
-      {/* ─── NAVBAR ─────────────────────────────────────────────── */}
-      <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-[#FDFCF0]/80 dark:bg-[#0f0f0f]/80 z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-5">
-            <Link href="/" className="group flex items-center gap-2 text-[0.65rem] font-black uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity">
-              <ChevronLeft size={15} className="group-hover:-translate-x-1 transition-transform" />
-              Beranda
-            </Link>
-            <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
-            <div className="flex items-center gap-2">
-              <Filter size={14} className="opacity-40" />
-              <h1 className="text-sm font-black tracking-tight">Jelajah</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle currentTheme={theme} variant="minimal" />
-            <SignedIn><UserButton /></SignedIn>
-            <SignedOut>
-              <Link href="/sign-in" className="text-[0.65rem] font-black uppercase tracking-[0.15em] px-4 py-2 bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black rounded-xl hover:shadow-lg transition-all active:scale-95">
-                Masuk
-              </Link>
-            </SignedOut>
-            {adminStatus && (
-              <Link href="/admin" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 hover:opacity-100 flex items-center gap-1.5 transition-opacity">
-                <Shield size={13} /> Admin
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      {/* ─── UNIFIED RESPONSIVE NAVBAR ───────────────────────────── */}
+      <Navbar currentTheme={theme} isAdmin={adminStatus} />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* ─── SEARCH BAR TOP ──────────────────────────────────────── */}

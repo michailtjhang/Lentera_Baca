@@ -45,6 +45,14 @@ export const metadata: Metadata = {
   verification: {
     google: "we9mD5OQZFEOt9ESLYdSrtXXh9LF-PkrZi23rlnJRx0",
   },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 

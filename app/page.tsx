@@ -1,16 +1,30 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/admin";
-import { Search, Zap, Clock, BookOpen, Shield, TrendingUp, Sparkles, ArrowRight, Star } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
+import { 
+  Search, 
+  Zap, 
+  Clock, 
+  BookOpen, 
+  Flame, 
+  Sparkles, 
+  ArrowRight, 
+  Star, 
+  Trophy, 
+  Compass, 
+  CheckCircle2, 
+  Moon, 
+  Smartphone 
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Logo from "@/components/Logo";
 import PopularSlider from "@/components/PopularSlider";
 import { calculateRating } from "@/components/StarRating";
 
 export const metadata = {
-  title: "Beranda | Lentera Baca",
-  description: "Jelajahi koleksi novel terbaru dan terpopuler di Lentera Baca. Terangi imajinasi Anda dengan ribuan cerita menarik.",
+  title: "Lentera Baca - Baca Novel Online Versi Premium",
+  description: "Jelajahi koleksi novel terbaru dan terpopuler di Lentera Baca. Terangi imajinasi Anda dengan ribuan cerita menarik dalam antarmuka modern dan nyaman.",
 };
 
 export const revalidate = 60;
@@ -21,7 +35,7 @@ const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
 function isAdultContent(tags: any[]): boolean {
   if (!tags || tags.length === 0) return false;
   return tags.some((tag: any) =>
-    ADULT_TAGS.some(adult =>
+    ADULT_TAGS.some((adult) =>
       tag.name.toLowerCase().includes(adult.toLowerCase())
     )
   );
@@ -34,8 +48,8 @@ export default async function Home() {
   const userName = user?.firstName || user?.username || null;
   const adminStatus = await isAdmin();
 
-  // Fetch novels for different sections (including tags for 18+ filtering)
-  const [newlyAddedRaw, latestRaw] = await Promise.all([
+  // Fetch novels and genres for homepage sections
+  const [newlyAddedRaw, latestRaw, popularRaw, topGenres] = await Promise.all([
     prisma.novel.findMany({
       take: 20,
       orderBy: { createdAt: "desc" },
@@ -46,11 +60,22 @@ export default async function Home() {
       orderBy: { updatedAt: "desc" },
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
+    prisma.novel.findMany({
+      take: 15,
+      orderBy: { views: "desc" },
+      include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
+    }),
+    (prisma as any).genre.findMany({
+      take: 8,
+      orderBy: { novels: { _count: "desc" } },
+      include: { _count: { select: { novels: true } } },
+    }),
   ]);
 
-  // Filter out 18+ content from home page (Limit slider to 5 novels)
-  const newlyAddedNovels = (newlyAddedRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 5);
-  const latestUpdated = (latestRaw as any[]).filter(n => !isAdultContent(n.tags)).slice(0, 10);
+  // Filter out 18+ content from home page
+  const newlyAddedNovels = (newlyAddedRaw as any[]).filter((n) => !isAdultContent(n.tags)).slice(0, 5);
+  const latestUpdated = (latestRaw as any[]).filter((n) => !isAdultContent(n.tags)).slice(0, 10);
+  const popularNovels = (popularRaw as any[]).filter((n) => !isAdultContent(n.tags)).slice(0, 5);
 
   const getTypeLabel = (type: string) => {
     if (type === "WEB") return "Web Novel";
@@ -59,10 +84,10 @@ export default async function Home() {
   };
 
   const getStatusColor = (status: string) => {
-    if (status === "ONGOING") return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
-    if (status === "COMPLETE") return "bg-blue-500/15 text-blue-600 dark:text-blue-400";
-    if (status === "DROP") return "bg-red-500/15 text-red-500";
-    return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
+    if (status === "ONGOING") return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300";
+    if (status === "COMPLETE") return "bg-blue-500/15 text-blue-700 dark:text-blue-300";
+    if (status === "DROP") return "bg-red-500/15 text-red-600 dark:text-red-400";
+    return "bg-amber-500/15 text-amber-700 dark:text-amber-300";
   };
 
   const getStatusLabel = (status: string) => {
@@ -72,241 +97,308 @@ export default async function Home() {
     return "Hiatus";
   };
 
-  const NovelCard = ({ novel }: { novel: any }) => (
-    <Link href={`/novel/${novel.slug}`} className="group flex flex-col">
-      <div className="relative aspect-[10/14] overflow-hidden rounded-2xl bg-zinc-200 dark:bg-zinc-800 mb-3 shadow-md group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+  const NovelCard = ({ novel, rank }: { novel: any; rank?: number }) => (
+    <Link href={`/novel/${novel.slug}`} className="group flex flex-col h-full">
+      <div className="relative aspect-[10/14] overflow-hidden rounded-2xl bg-zinc-200 dark:bg-zinc-800 mb-3 shadow-md group-hover:shadow-2xl group-hover:-translate-y-1.5 transition-all duration-300 border border-black/5 dark:border-white/10">
         {novel.coverImage ? (
           <img
             src={novel.coverImage}
             alt={novel.title}
-            className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-zinc-800 dark:to-zinc-700">
             <BookOpen size={28} className="opacity-20" />
-            <span className="text-[0.5rem] opacity-20 uppercase font-black tracking-widest">No Cover</span>
+            <span className="text-[0.55rem] opacity-30 uppercase font-black tracking-widest">No Cover</span>
           </div>
         )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Rank Badge if specified */}
+        {rank !== undefined && (
+          <div
+            className={`absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-black shadow-lg backdrop-blur-md ${
+              rank === 1
+                ? "bg-amber-500 text-white shadow-amber-500/40"
+                : rank === 2
+                ? "bg-slate-300 text-slate-900 dark:bg-slate-600 dark:text-white"
+                : rank === 3
+                ? "bg-amber-700 text-white"
+                : "bg-black/75 text-white"
+            }`}
+          >
+            <span>#{rank}</span>
+          </div>
+        )}
+
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
         {/* Rating Badge on hover (top right) */}
         <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-lg shadow-lg flex items-center gap-1 border border-white/10">
           <Star size={10} className="text-amber-400 fill-amber-400" />
-          <span className="text-[0.6rem] font-black text-amber-300">{calculateRating(novel.views).toFixed(1)}</span>
+          <span className="text-[0.65rem] font-black text-amber-300">{calculateRating(novel.views).toFixed(1)}</span>
         </div>
+
         {/* Badges on hover */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-          <span className="text-[0.5rem] font-black uppercase tracking-wider px-2 py-1 rounded-lg bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur">
+          <span className="text-[0.55rem] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/95 dark:bg-black/95 text-black dark:text-white backdrop-blur">
             {getTypeLabel(novel.type)}
           </span>
-          <span className={`text-[0.5rem] font-black uppercase tracking-wider px-2 py-1 rounded-lg backdrop-blur ${getStatusColor(novel.status)} bg-white/90 dark:bg-black/90`}>
+          <span className={`text-[0.55rem] font-black uppercase tracking-wider px-2 py-0.5 rounded-md backdrop-blur ${getStatusColor(novel.status)} bg-white/95 dark:bg-black/95`}>
             {getStatusLabel(novel.status)}
           </span>
         </div>
       </div>
-      <h3 className="text-[0.8rem] font-bold line-clamp-2 leading-snug tracking-tight mb-1.5 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+
+      <h3 className="text-xs sm:text-sm font-bold line-clamp-2 leading-snug tracking-tight mb-1 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors text-[#2B1810] dark:text-[#f0f0f0]">
         {novel.title}
       </h3>
-      <div className="flex justify-between items-center mt-auto">
-        <span className="text-[0.6rem] opacity-40 font-semibold truncate max-w-[65%]">{novel.author}</span>
-        <span className="text-[0.55rem] opacity-30 font-black uppercase tracking-widest">
-          {novel.type === "WEB" ? `${novel._count.chapters} Ch` : `${novel._count.volumes} Vol`}
+
+      <div className="flex justify-between items-center mt-auto pt-1">
+        <span className="text-[0.65rem] opacity-50 font-medium truncate max-w-[65%]">{novel.author}</span>
+        <span className="text-[0.6rem] opacity-40 font-black uppercase tracking-wider">
+          {novel.type === "WEB" ? `${novel._count.chapters} Bab` : `${novel._count.volumes} Vol`}
         </span>
       </div>
     </Link>
   );
 
-  const SectionHeader = ({ title, icon: Icon, href, color }: { title: string; icon: any; href: string; color: string }) => (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-xl ${color}`}>
-          <Icon size={16} className="text-white" />
+  const SectionHeader = ({
+    title,
+    icon: Icon,
+    href,
+    badge,
+  }: {
+    title: string;
+    icon: any;
+    href: string;
+    badge?: string;
+  }) => (
+    <div className="flex items-center justify-between mb-6 pb-2 border-b border-black/5 dark:border-white/10">
+      <div className="flex items-center gap-2.5">
+        <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400">
+          <Icon size={18} />
         </div>
-        <h2 className="text-lg font-black uppercase tracking-tight">{title}</h2>
+        <div>
+          <h2 className="text-lg sm:text-xl font-black tracking-tight text-[#2B1810] dark:text-white flex items-center gap-2">
+            <span>{title}</span>
+            {badge && (
+              <span className="text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300">
+                {badge}
+              </span>
+            )}
+          </h2>
+        </div>
       </div>
+
       <Link
         href={href}
-        className="group flex items-center gap-1.5 text-[0.6rem] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all"
+        className="group flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition-colors"
       >
-        Lihat Semua
-        <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+        <span>Lihat Semua</span>
+        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
       </Link>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFCF0] text-[#3E2723] dark:bg-[#0f0f0f] dark:text-[#e8e8e8] transition-colors duration-500">
-      {/* ─── NAVBAR ─────────────────────────────────────────────── */}
-      <nav className="border-b border-black/5 dark:border-white/5 px-6 py-4 backdrop-blur-xl sticky top-0 bg-[#FDFCF0]/80 dark:bg-[#0f0f0f]/80 z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center gap-8">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg">
-              <BookOpen size={14} className="text-white" />
-            </div>
-            <span className="text-lg font-black tracking-tighter">Lentera Baca</span>
-          </Link>
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2B1810] dark:bg-[#0f0f0f] dark:text-[#e8e8e8] transition-colors duration-500 font-sans">
+      {/* ─── UNIFIED RESPONSIVE NAVBAR ───────────────────────────── */}
+      <Navbar currentTheme={theme} isAdmin={adminStatus} />
 
-          <div className="hidden md:flex flex-1 max-w-sm mx-8">
-            <form action="/browse" method="GET" className="relative w-full group">
-              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-60 transition-opacity" />
-              <input
-                type="text"
-                name="q"
-                placeholder="Cari novel, penulis, tag..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus:border-black/10 dark:focus:border-white/10 focus:bg-white dark:focus:bg-white/10 text-sm font-medium outline-none transition-all placeholder:opacity-40"
-              />
-            </form>
-          </div>
-
-          <div className="flex items-center gap-5">
-            <div className="hidden md:flex items-center gap-5">
-              <Link href="/browse" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 hover:opacity-100 transition-opacity">
-                Jelajah
-              </Link>
-              {adminStatus && (
-                <Link href="/admin" className="text-[0.65rem] font-black uppercase tracking-[0.15em] opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1.5">
-                  <Shield size={12} />
-                  Admin
-                </Link>
-              )}
-            </div>
-
-            <div className="h-4 w-px bg-black/10 dark:bg-white/10 hidden md:block" />
-
-            <div className="flex items-center gap-3">
-              <ThemeToggle currentTheme={theme} variant="minimal" />
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-              <SignedOut>
-                <Link
-                  href="/sign-in"
-                  className="text-[0.65rem] font-black uppercase tracking-[0.15em] px-4 py-2 bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
-                >
-                  Masuk
-                </Link>
-              </SignedOut>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* ─── HERO + POPULAR SLIDER ──────────────────────────────── */}
-        <section className="py-4 md:py-6 relative overflow-hidden">
-          {/* Unified amber ambient background glow across both slider and text */}
+        <section className="py-6 sm:py-8 relative overflow-hidden">
+          {/* Ambient amber glow */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-            <div className="absolute -top-10 left-0 right-0 h-[140%] bg-gradient-to-br from-amber-200/30 via-orange-100/20 to-transparent dark:from-amber-700/10 dark:via-orange-800/8 dark:to-transparent blur-[80px] transform-gpu" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-50/15 to-transparent dark:via-amber-950/10" />
+            <div className="absolute -top-10 left-0 right-0 h-[140%] bg-gradient-to-br from-amber-300/25 via-orange-200/15 to-transparent dark:from-amber-600/10 dark:via-orange-700/8 dark:to-transparent blur-[90px] transform-gpu" />
           </div>
 
-          {/* Grid Layout: Slider (70% = 8 cols), Hero Text (30% = 4 cols with min-w-0 to prevent clipping) */}
-          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center w-full max-w-full">
-            {/* Slider (Desktop Left 7/12 cols ~60%, Mobile order-2) */}
+          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-w-full">
+            {/* Slider */}
             <div className="lg:col-span-7 w-full min-w-0 order-2 lg:order-1">
-              <div className="min-h-[260px] sm:min-h-[300px] md:min-h-[320px] h-full">
+              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[340px] h-full">
                 <PopularSlider novels={newlyAddedNovels as any} />
               </div>
             </div>
 
-            {/* Hero Text & Search (Desktop Right 5/12 cols ~40%, Mobile order-1 on top) */}
-            <div className="lg:col-span-5 w-full min-w-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left overflow-hidden pl-0 lg:pl-4">
-              {/* Welcome back banner for logged-in users */}
-              {userId && userName && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0 max-w-full">
-                  <Sparkles size={12} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                  <span className="text-[0.7rem] font-bold text-amber-700 dark:text-amber-300 truncate">
-                    Halo, <strong>{userName}</strong>! Siap membaca?
+            {/* Hero Text & Search CTA */}
+            <div className="lg:col-span-5 w-full min-w-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left pl-0 lg:pl-2">
+              {userId && userName ? (
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0 max-w-full">
+                  <Sparkles size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span className="text-xs font-bold text-amber-800 dark:text-amber-300 truncate">
+                    Selamat datang kembali, <strong>{userName}</strong>!
+                  </span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="text-[0.65rem] font-black uppercase tracking-widest text-amber-800 dark:text-amber-300">
+                    Platform Baca Novel Modern
                   </span>
                 </div>
               )}
 
-              {!userId && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3E2723]/5 dark:bg-white/5 border border-black/5 dark:border-white/5 mb-4 mx-auto lg:mx-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-[0.58rem] font-black uppercase tracking-widest opacity-60">Terangi Imajinasi Anda</span>
-                </div>
-              )}
-
-              <h1 className="text-2xl sm:text-3xl lg:text-2xl xl:text-3xl font-black tracking-tighter leading-tight mb-2.5">
+              <h1 className="text-2xl sm:text-4xl lg:text-3xl xl:text-4xl font-black tracking-tight leading-tight mb-3">
                 Terangi Harimu Dengan{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400">
                   Kisah Terbaik.
                 </span>
               </h1>
 
-              <p className="text-xs sm:text-sm opacity-70 mb-5 leading-relaxed font-medium">
-                Temukan ribuan Light Novel & Web Novel pilihan dengan update bab terbaru setiap hari.
+              <p className="text-xs sm:text-sm opacity-70 mb-6 leading-relaxed font-medium">
+                Jelajahi koleksi Light Novel & Web Novel terpopuler dengan bab cerita terupdate setiap hari dan antarmuka yang nyaman di mata.
               </p>
 
               {/* Search bar & CTA */}
-              <div className="flex flex-col gap-2.5 w-full">
+              <div className="flex flex-col gap-3 w-full">
                 <form action="/browse" method="GET" className="relative w-full group">
-                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-80 transition-opacity" />
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-80 transition-opacity" />
                   <input
                     type="text"
                     name="q"
                     placeholder="Cari judul, genre, penulis..."
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-400/60 text-xs font-medium outline-none transition-all placeholder:opacity-40 shadow-sm"
+                    className="w-full pl-9 pr-4 py-3 rounded-2xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20 text-xs font-medium outline-none transition-all placeholder:opacity-40 shadow-sm"
                   />
                 </form>
-                <Link
-                  href="/browse"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-black uppercase tracking-wider text-[0.65rem] hover:shadow-lg transition-all active:scale-95 shadow-md shadow-amber-600/20"
-                >
-                  Mulai Membaca Sekarang
-                  <Zap size={13} className="fill-current" />
-                </Link>
+
+                <div className="flex gap-2.5">
+                  <Link
+                    href="/browse"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-2xl font-black uppercase tracking-wider text-xs hover:shadow-xl hover:shadow-amber-600/25 transition-all active:scale-[0.98] shadow-md shadow-amber-600/20"
+                  >
+                    <span>Mulai Membaca</span>
+                    <Zap size={14} className="fill-current" />
+                  </Link>
+                  <Link
+                    href="/browse?sort=popular"
+                    className="flex items-center justify-center gap-1.5 px-4 py-3 bg-white/70 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl text-xs font-bold hover:bg-black/5 dark:hover:bg-white/10 transition-all shrink-0"
+                  >
+                    <Flame size={14} className="text-amber-600 dark:text-amber-400" />
+                    <span className="hidden sm:inline">Paling Populer</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ─── DIVIDER ────────────────────────────────────────────── */}
-        <div className="h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent mb-14" />
-
-        {/* ─── NOVEL SECTIONS ─────────────────────────────────────── */}
-        <div className="space-y-16 pb-20">
-
-          {/* Latest Updated */}
-          <section>
-            <SectionHeader title="Update Terkini" icon={Clock} href="/browse?sort=updated" color="bg-gradient-to-br from-blue-500 to-indigo-600" />
-            {latestUpdated.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {latestUpdated.map((novel) => (
-                  <NovelCard key={novel.id} novel={novel} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-16 text-center opacity-20">
-                <BookOpen size={40} className="mx-auto mb-3" strokeWidth={1} />
-                <p className="text-sm font-bold uppercase tracking-widest">Belum ada novel</p>
-              </div>
-            )}
+        {/* ─── GENRE QUICK ACCESS PILLS ───────────────────────────── */}
+        {topGenres.length > 0 && (
+          <section className="py-4 mb-8">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              <span className="text-[0.65rem] font-black uppercase tracking-wider opacity-40 shrink-0 mr-1 flex items-center gap-1">
+                <Compass size={12} /> Kategori:
+              </span>
+              {topGenres.map((g: any) => (
+                <Link
+                  key={g.id}
+                  href={`/browse?genre=${g.name}`}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 dark:bg-white/5 hover:bg-amber-500/10 dark:hover:bg-amber-500/15 border border-black/5 dark:border-white/10 text-xs font-bold transition-all hover:border-amber-500/30"
+                >
+                  <span>{g.name}</span>
+                  <span className="text-[0.6rem] opacity-40">({g._count.novels})</span>
+                </Link>
+              ))}
+            </div>
           </section>
-        </div>
+        )}
+
+        {/* ─── POPULAR / TRENDING SECTION ─────────────────────────── */}
+        {popularNovels.length > 0 && (
+          <section className="py-6">
+            <SectionHeader
+              title="Paling Populer"
+              icon={Trophy}
+              href="/browse?sort=popular"
+              badge="Top Rated"
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+              {popularNovels.map((novel, index) => (
+                <NovelCard key={novel.id} novel={novel} rank={index + 1} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ─── LATEST UPDATES SECTION ─────────────────────────────── */}
+        <section className="py-8">
+          <SectionHeader
+            title="Update Bab Terkini"
+            icon={Clock}
+            href="/browse?sort=updated"
+            badge="Terbaru"
+          />
+          {latestUpdated.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+              {latestUpdated.map((novel) => (
+                <NovelCard key={novel.id} novel={novel} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-16 text-center opacity-30">
+              <BookOpen size={40} className="mx-auto mb-3" strokeWidth={1} />
+              <p className="text-sm font-bold uppercase tracking-widest">Belum ada novel tersedia</p>
+            </div>
+          )}
+        </section>
+
+        {/* ─── VALUE PROPOSITION / FEATURES HIGHLIGHT ─────────────── */}
+        <section className="py-12 my-8 border-y border-black/5 dark:border-white/10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-start gap-4 p-5 rounded-3xl bg-white/60 dark:bg-white/5 border border-black/5 dark:border-white/10">
+              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 shrink-0">
+                <Moon size={22} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black tracking-tight mb-1">Soft Dark Mode</h3>
+                <p className="text-xs opacity-60 leading-relaxed font-medium">
+                  Dirancang khusus agar mata tidak cepat lelah saat membaca berjam-jam di malam hari.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-5 rounded-3xl bg-white/60 dark:bg-white/5 border border-black/5 dark:border-white/10">
+              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 shrink-0">
+                <CheckCircle2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black tracking-tight mb-1">Riwayat Otomatis</h3>
+                <p className="text-xs opacity-60 leading-relaxed font-medium">
+                  Bab terakhir yang Anda baca tersimpan otomatis di perangkat tanpa perlu menandai manual.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-5 rounded-3xl bg-white/60 dark:bg-white/5 border border-black/5 dark:border-white/10">
+              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 shrink-0">
+                <Smartphone size={22} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black tracking-tight mb-1">Responsif di Semua Layar</h3>
+                <p className="text-xs opacity-60 leading-relaxed font-medium">
+                  Pengalaman membaca yang mulus baik melalui smartphone, tablet, maupun desktop browser.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* ─── FOOTER ─────────────────────────────────────────────── */}
-      <footer className="border-t border-black/5 dark:border-white/5 py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow">
-              <BookOpen size={11} className="text-white" />
-            </div>
-            <span className="text-sm font-black tracking-tighter opacity-60">Lentera Baca</span>
-          </div>
-          <p className="text-[0.6rem] font-bold uppercase tracking-[0.25em] opacity-25">
-            © 2026 Lentera Baca. Terangi segalanya.
+      <footer className="border-t border-black/5 dark:border-white/5 py-12 mt-12 bg-white/40 dark:bg-black/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <Logo variant="full" size="sm" />
+
+          <p className="text-[0.65rem] font-bold uppercase tracking-[0.25em] opacity-30 text-center">
+            © 2026 Lentera Baca. Terangi imajinasi di setiap bab cerita.
           </p>
-          <div className="flex items-center gap-4 text-[0.6rem] font-black uppercase tracking-widest opacity-30">
+
+          <div className="flex items-center gap-5 text-xs font-bold opacity-60">
             <Link href="/browse" className="hover:opacity-100 transition-opacity">Jelajah</Link>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-            <SignedOut>
-              <Link href="/sign-in" className="hover:opacity-100 transition-opacity">Masuk</Link>
-            </SignedOut>
+            <Link href="/browse?sort=popular" className="hover:opacity-100 transition-opacity">Populer</Link>
+            <Link href="/browse?sort=updated" className="hover:opacity-100 transition-opacity">Terbaru</Link>
           </div>
         </div>
       </footer>
