@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Edit2, Trash2, Book, Image as ImageIcon, Sparkles, LogOut, Layers, ArrowUp, ArrowDown, Save, X, Loader2 } from "lucide-react";
 import { deleteChapter, updateVolumeTitle, swapChapterOrders } from "@/app/actions/novel-actions";
 import { formatChapterTitle } from "@/lib/slug-utils";
+import DeleteButton from "./DeleteButton";
 
 interface Chapter {
     id: string;
@@ -199,18 +200,13 @@ export default function AdminChapterList({ novel, chapters, volumes }: AdminChap
                         >
                             <Edit2 size={12} />
                         </Link>
-                        <button
-                            onClick={async () => {
-                                if (confirm("Hapus chapter ini?")) {
-                                    await deleteChapter(chapter.id);
-                                    router.refresh();
-                                }
-                            }}
-                            className="p-1.5 text-red-400/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all cursor-pointer"
-                            title="Hapus"
-                        >
-                            <Trash2 size={12} />
-                        </button>
+                        <DeleteButton
+                            id={chapter.id}
+                            itemName={`Bab #${chapter.order}${chapter.title ? ` - ${chapter.title}` : ""}`}
+                            deleteAction={deleteChapter}
+                            variant="icon"
+                            onSuccess={() => router.refresh()}
+                        />
                     </div>
                 </td>
             </tr>

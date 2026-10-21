@@ -20,12 +20,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Tags considered 18+ content
-const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
-
-function isAdultTag(tagName: string): boolean {
-  return ADULT_TAGS.some(a => tagName.toLowerCase().includes(a.toLowerCase()));
-}
+import { ADULT_KEYWORDS, isAdultText } from "@/lib/content-filter";
 
 
 export default async function BrowsePage({ searchParams }: BrowseProps) {
@@ -76,19 +71,23 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
   }
 
 
-  // 18+ content: ONLY shown when user explicitly searches by name (q)
-  // Tag filter or other filters will NEVER show 18+ content
-  if (!isNameSearch) {
-    // No name search → always exclude 18+ content
-    where.NOT = {
+  // Always exclude adult/mature content (both tags and genres)
+  where.NOT = [
+    {
       tags: {
         some: {
-          OR: ADULT_TAGS.map(a => ({ name: { contains: a, mode: "insensitive" } })),
+          OR: ADULT_KEYWORDS.map(a => ({ name: { contains: a, mode: "insensitive" } })),
         },
       },
-    };
-  }
-  // If there IS a name search, 18+ novels can appear if their title/tag matches the query
+    },
+    {
+      genres: {
+        some: {
+          OR: ADULT_KEYWORDS.map(a => ({ name: { contains: a, mode: "insensitive" } })),
+        },
+      },
+    },
+  ];
 
 
   let orderBy: any = { createdAt: "desc" };
@@ -111,8 +110,9 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
 
   const novels = novelsResult as any[];
 
-  // Separate adult tags from regular tags
-  const regularTags = allTags.filter((t: any) => !isAdultTag(t.name));
+  // Filter out adult genres and adult tags so they never appear in category filters
+  const safeGenres = (allGenres as any[]).filter((g: any) => !isAdultText(g.name));
+  const regularTags = (allTags as any[]).filter((t: any) => !isAdultText(t.name));
 
   const hasActiveFilters = !!(q || genre || tag || (type && type !== "ALL") || (region && region !== "ALL") || (status && status !== "ALL"));
 
@@ -306,7 +306,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
             </div>
 
             {/* Genres */}
-            {allGenres.length > 0 && (
+            {safeGenres.length > 0 && (
               <div>
                 <p className="text-[0.6rem] font-black uppercase tracking-widest opacity-30 mb-3 flex items-center gap-2">
                   <SlidersHorizontal size={11} /> Genre
@@ -315,7 +315,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                   <Link href={buildUrl({ genre: undefined })} className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${!genre ? "bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black shadow-md" : "hover:bg-black/5 dark:hover:bg-white/5 opacity-60 hover:opacity-100"}`}>
                     Semua Genre
                   </Link>
-                  {allGenres.map((g: any) => (
+                  {safeGenres.map((g: any) => (
                     <Link key={g.id} href={buildUrl({ genre: g.name })} className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${genre === g.name ? "bg-[#3E2723] text-[#F5F5DC] dark:bg-white dark:text-black shadow-md" : "hover:bg-black/5 dark:hover:bg-white/5 opacity-60 hover:opacity-100"}`}>
                       {g.name}
                     </Link>
@@ -354,9 +354,6 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                 <span className="text-xl font-black tracking-tight">{novels.length}</span>
                 <span className="text-sm opacity-40 font-semibold">
                   novel ditemukan
-                  {isNameSearch && novels.some((n: any) => n.tags?.some((t: any) => isAdultTag(t.name))) && (
-                    <span className="ml-2 text-red-500 font-bold text-[0.65rem] uppercase tracking-wider">(termasuk konten 18+)</span>
-                  )}
                 </span>
               </div>
             </div>
@@ -373,7 +370,6 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
                 {novels.map((novel) => {
-                  const hasAdultTag = novel.tags?.some((t: any) => isAdultTag(t.name));
                   return (
                     <Link key={novel.id} href={`/novel/${novel.slug}`} className="group flex flex-col">
                       <div className="relative aspect-[10/14] overflow-hidden rounded-2xl bg-zinc-200 dark:bg-zinc-800 mb-3 shadow-md group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
@@ -391,12 +387,6 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                           <Star size={10} className="text-amber-400 fill-amber-400" />
                           <span className="text-[0.6rem] font-black text-amber-300">{calculateRating(novel.views).toFixed(1)}</span>
                         </div>
-                        {/* 18+ badge */}
-                        {hasAdultTag && (
-                          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[0.5rem] font-black uppercase tracking-widest shadow-lg">
-                            18+
-                          </div>
-                        )}
                         {/* Type/status badges */}
                         <div className="absolute bottom-3 left-2 right-2 flex justify-between items-end translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                           <span className="text-[0.45rem] font-black uppercase tracking-wider px-2 py-1 rounded-lg bg-white/90 dark:bg-black/90 text-black dark:text-white backdrop-blur">

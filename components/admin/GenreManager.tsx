@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Plus, Edit2, Trash2, Check, X, Loader2, Search, Tag, Hash, BookOpen } from "lucide-react";
 import { createGenre, updateGenre, deleteGenre } from "@/app/actions/genre-actions";
+import DeleteButton from "./DeleteButton";
 
 interface Genre {
     id: string;
@@ -53,19 +54,6 @@ export default function GenreManager({ initialGenres }: GenreManagerProps) {
                 setEditingId(null);
             } catch (err: any) {
                 setError(err.message || "Gagal mengubah genre.");
-            }
-        });
-    };
-
-    const handleDelete = (id: string) => {
-        if (!confirm("Yakin ingin menghapus genre ini?")) return;
-        setError(null);
-        startTransition(async () => {
-            try {
-                await deleteGenre(id);
-                setGenres(prev => prev.filter(g => g.id !== id));
-            } catch (err: any) {
-                setError(err.message || "Gagal menghapus genre.");
             }
         });
     };
@@ -202,13 +190,13 @@ export default function GenreManager({ initialGenres }: GenreManagerProps) {
                                         >
                                             <Edit2 size={13} />
                                         </button>
-                                        <button
-                                            onClick={() => handleDelete(genre.id)}
-                                            className="p-1.5 text-red-400/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all"
-                                            title="Hapus"
-                                        >
-                                            <Trash2 size={13} />
-                                        </button>
+                                        <DeleteButton
+                                            id={genre.id}
+                                            itemName={`Genre "${genre.name}"`}
+                                            deleteAction={deleteGenre}
+                                            variant="icon"
+                                            onSuccess={() => setGenres(prev => prev.filter(g => g.id !== genre.id))}
+                                        />
                                     </div>
                                 </>
                             )}

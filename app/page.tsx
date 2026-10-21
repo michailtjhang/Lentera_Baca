@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Logo from "@/components/Logo";
-import NewSlider from "@/components/NewSlider";
 import { calculateRating } from "@/components/StarRating";
+import { isAdultText, isAdultItem } from "@/lib/content-filter";
 
 export const metadata = {
   title: "Lentera Baca - Baca Novel Online Versi Premium",
@@ -28,18 +28,6 @@ export const metadata = {
 };
 
 export const revalidate = 60;
-
-// Tag yang dianggap konten 18+
-const ADULT_TAGS = ["18+", "adult", "mature", "r18", "smut", "ecchi"];
-
-function isAdultContent(tags: any[]): boolean {
-  if (!tags || tags.length === 0) return false;
-  return tags.some((tag: any) =>
-    ADULT_TAGS.some((adult) =>
-      tag.name.toLowerCase().includes(adult.toLowerCase())
-    )
-  );
-}
 
 export default async function Home() {
   const { userId } = await auth();
@@ -66,16 +54,17 @@ export default async function Home() {
       include: { _count: { select: { chapters: true, volumes: true } }, genres: true, tags: true } as any,
     }),
     (prisma as any).genre.findMany({
-      take: 8,
+      take: 20,
       orderBy: { novels: { _count: "desc" } },
       include: { _count: { select: { novels: true } } },
     }),
   ]);
 
-  // Filter out 18+ content from home page
-  const newlyAddedNovels = (newlyAddedRaw as any[]).filter((n) => !isAdultContent(n.tags)).slice(0, 5);
-  const latestUpdated = (latestRaw as any[]).filter((n) => !isAdultContent(n.tags)).slice(0, 10);
-  const popularNovels = (popularRaw as any[]).filter((n) => !isAdultContent(n.tags)).slice(0, 5);
+  // Filter out adult content from home page (both tags and genres)
+  const safeTopGenres = (topGenres as any[]).filter((g: any) => !isAdultText(g.name)).slice(0, 10);
+  const newlyAddedNovels = (newlyAddedRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 5);
+  const latestUpdated = (latestRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 10);
+  const popularNovels = (popularRaw as any[]).filter((n) => !isAdultItem(n)).slice(0, 5);
 
   const getTypeLabel = (type: string) => {
     if (type === "WEB") return "Web Novel";
@@ -207,86 +196,80 @@ export default async function Home() {
       <Navbar currentTheme={theme} isAdmin={adminStatus} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* ─── HERO + NEW SLIDER ──────────────────────────────────── */}
-        <section className="py-6 sm:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-w-full">
-            {/* New Releases Slider */}
-            <div className="lg:col-span-7 w-full min-w-0 order-2 lg:order-1">
-              <div className="min-h-[280px] sm:min-h-[320px] md:min-h-[340px] h-full">
-                <NewSlider novels={newlyAddedNovels as any} />
-              </div>
+        {/* ─── CLEAN CENTERED HERO SECTION (NO SLIDER) ─────────────── */}
+        <section className="py-12 sm:py-16 text-center max-w-4xl mx-auto">
+          {userId && userName ? (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-5 shadow-sm">
+              <Sparkles size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                Selamat datang kembali, <strong>{userName}</strong>!
+              </span>
             </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[0.7rem] font-black uppercase tracking-widest text-amber-800 dark:text-amber-300">
+                Platform Baca Novel Modern Bebas Gangguan
+              </span>
+            </div>
+          )}
 
-            {/* Hero Text & Search CTA */}
-            <div className="lg:col-span-5 w-full min-w-0 flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left pl-0 lg:pl-2">
-              {userId && userName ? (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0 max-w-full">
-                  <Sparkles size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                  <span className="text-xs font-bold text-amber-800 dark:text-amber-300 truncate">
-                    Selamat datang kembali, <strong>{userName}</strong>!
-                  </span>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4 mx-auto lg:mx-0">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-[0.65rem] font-black uppercase tracking-widest text-amber-800 dark:text-amber-300">
-                    Platform Baca Novel Modern
-                  </span>
-                </div>
-              )}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] mb-5">
+            Terangi Harimu Dengan{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 dark:from-amber-400 dark:via-orange-400 dark:to-amber-300">
+              Kisah Terbaik.
+            </span>
+          </h1>
 
-              <h1 className="text-2xl sm:text-4xl lg:text-3xl xl:text-4xl font-black tracking-tight leading-tight mb-3">
-                Terangi Harimu Dengan{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400">
-                  Kisah Terbaik.
-                </span>
-              </h1>
+          <p className="text-sm sm:text-base opacity-70 mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
+            Jelajahi ribuan bab cerita Light Novel & Web Novel terpopuler dalam antarmuka yang bersih, cepat, dan nyaman di mata baik siang maupun malam.
+          </p>
 
-              <p className="text-xs sm:text-sm opacity-70 mb-6 leading-relaxed font-medium">
-                Jelajahi koleksi Light Novel & Web Novel terpopuler dengan bab cerita terupdate setiap hari dan antarmuka yang nyaman di mata.
-              </p>
+          {/* Search bar & quick action */}
+          <div className="max-w-xl mx-auto mb-8">
+            <form action="/browse" method="GET" className="relative group shadow-lg shadow-black/5 dark:shadow-none rounded-2xl">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-80 transition-opacity" />
+              <input
+                type="text"
+                name="q"
+                placeholder="Cari judul novel, nama penulis, atau topik cerita..."
+                className="w-full pl-11 pr-28 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/15 text-xs sm:text-sm font-medium outline-none transition-all placeholder:opacity-40"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 sm:py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95"
+              >
+                Cari
+              </button>
+            </form>
 
-              {/* Search bar & CTA */}
-              <div className="flex flex-col gap-3 w-full">
-                <form action="/browse" method="GET" className="relative w-full group">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-80 transition-opacity" />
-                  <input
-                    type="text"
-                    name="q"
-                    placeholder="Cari judul, genre, penulis..."
-                    className="w-full pl-9 pr-4 py-3 rounded-2xl bg-white dark:bg-white/10 border border-black/10 dark:border-white/10 focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20 text-xs font-medium outline-none transition-all placeholder:opacity-40 shadow-sm"
-                  />
-                </form>
-
-                <div className="flex gap-2.5">
-                  <Link
-                    href="/browse"
-                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-2xl font-black uppercase tracking-wider text-xs hover:shadow-xl hover:shadow-amber-600/25 transition-all active:scale-[0.98] shadow-md shadow-amber-600/20"
-                  >
-                    <span>Mulai Membaca</span>
-                    <Zap size={14} className="fill-current" />
-                  </Link>
-                  <Link
-                    href="/browse?sort=popular"
-                    className="flex items-center justify-center gap-1.5 px-4 py-3 bg-white/70 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl text-xs font-bold hover:bg-black/5 dark:hover:bg-white/10 transition-all shrink-0"
-                  >
-                    <Flame size={14} className="text-amber-600 dark:text-amber-400" />
-                    <span className="hidden sm:inline">Paling Populer</span>
-                  </Link>
-                </div>
-              </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+              <Link
+                href="/browse"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-black uppercase tracking-wider text-xs shadow-md shadow-amber-600/20 transition-all active:scale-98"
+              >
+                <Zap size={14} className="fill-current" />
+                <span>Mulai Membaca</span>
+              </Link>
+              <Link
+                href="/browse?sort=popular"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl text-xs font-bold hover:bg-black/5 dark:hover:bg-white/10 transition-all shadow-sm"
+              >
+                <Flame size={14} className="text-amber-600 dark:text-amber-400" />
+                <span>Paling Populer</span>
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* ─── GENRE QUICK ACCESS PILLS ───────────────────────────── */}
-        {topGenres.length > 0 && (
-          <section className="py-4 mb-8">
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {/* ─── GENRE QUICK ACCESS PILLS (NON-ADULT ONLY) ─────────── */}
+        {safeTopGenres.length > 0 && (
+          <section className="py-2 mb-8">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none justify-start sm:justify-center">
               <span className="text-[0.65rem] font-black uppercase tracking-wider opacity-40 shrink-0 mr-1 flex items-center gap-1">
                 <Compass size={12} /> Kategori:
               </span>
-              {topGenres.map((g: any) => (
+              {safeTopGenres.map((g: any) => (
                 <Link
                   key={g.id}
                   href={`/browse?genre=${g.name}`}
@@ -295,6 +278,23 @@ export default async function Home() {
                   <span>{g.name}</span>
                   <span className="text-[0.6rem] opacity-40">({g._count.novels})</span>
                 </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ─── NEW RELEASES GRID SECTION ──────────────────────────── */}
+        {newlyAddedNovels.length > 0 && (
+          <section className="py-6">
+            <SectionHeader
+              title="Rilis Novel Terbaru"
+              icon={Sparkles}
+              href="/browse?sort=newest"
+              badge="Fresh"
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+              {newlyAddedNovels.map((novel) => (
+                <NovelCard key={novel.id} novel={novel} />
               ))}
             </div>
           </section>
