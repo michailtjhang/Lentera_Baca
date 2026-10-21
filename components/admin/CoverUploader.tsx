@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSwiftGramUpload } from "@/lib/swiftgram-client";
-import { Image, X, Loader2 } from "lucide-react";
+import { Image as ImageIcon, X, Loader2, UploadCloud, RefreshCw } from "lucide-react";
 import { deleteFiles } from "@/app/actions/novel-actions";
 import { convertToWebP } from "@/lib/image-utils";
 
@@ -28,7 +28,7 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
             }
         },
         onUploadError: (error) => {
-            alert(`Upload failed: ${error.message}`);
+            alert(`Gagal mengunggah cover: ${error.message}`);
         },
     });
 
@@ -37,7 +37,7 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
         if (!file) return;
         
         try {
-            // Konversi dan optimasi ke WebP
+            // Konversi dan optimasi otomatis ke format WebP
             const webpFile = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1800, quality: 0.85 });
             await startUpload([webpFile]);
         } catch (error: any) {
@@ -46,46 +46,65 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
         }
     };
 
+    const handleRemove = async () => {
+        if (key) {
+            await deleteFiles(key).catch(console.error);
+        }
+        setUrl(""); 
+        setKey("");
+        onUploaded("", ""); 
+    };
+
     return (
-        <div className="space-y-3">
-            <label className="block text-xs font-black uppercase tracking-widest opacity-50">
-                Cover Image <span className="text-black/30 font-bold">(Otomatis dikonversi ke WebP)</span>
-            </label>
-            <div className="border-2 border-dashed border-black/10 dark:border-white/10 rounded-[2.5rem] p-2 bg-white/40 dark:bg-white/5 group hover:border-black/20 dark:hover:border-white/20 transition-all flex flex-col items-center justify-center text-center min-h-[300px]">
+        <div className="w-full">
+            <div className="border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl p-4 bg-black/[0.02] dark:bg-white/[0.02] hover:border-amber-500/40 dark:hover:border-amber-400/40 transition-all flex flex-col items-center justify-center text-center min-h-[280px]">
                 {url ? (
-                    <div className="relative w-full max-w-[260px] aspect-[2/3] mx-auto group/preview">
+                    <div className="relative w-full max-w-[200px] aspect-[10/14] mx-auto group/preview">
                         <img 
                             src={url} 
-                            alt="cover" 
-                            className="w-full h-full object-cover rounded-[2rem] shadow-2xl border-4 border-white transition-transform group-hover/preview:scale-[1.03] duration-500" 
+                            alt="Cover preview" 
+                            className="w-full h-full object-cover rounded-xl shadow-xl border border-black/10 dark:border-white/10 transition-transform group-hover/preview:scale-[1.02] duration-300" 
                         />
+                        {/* Remove button */}
                         <button
                             type="button"
-                            onClick={async () => { 
-                                if (key) await deleteFiles(key);
-                                setUrl(""); 
-                                setKey("");
-                                onUploaded("", ""); 
-                            }}
-                            className="absolute -top-4 -right-4 p-2.5 bg-red-500 text-white rounded-full shadow-2xl hover:bg-black transition-all z-20 hover:scale-110 active:scale-90 border-2 border-white"
+                            onClick={handleRemove}
+                            title="Hapus gambar cover"
+                            className="absolute -top-2.5 -right-2.5 p-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95 border-2 border-white dark:border-zinc-900"
                         >
-                            <X size={18} />
+                            <X size={14} />
                         </button>
+                        {/* Status tag */}
+                        <div className="absolute bottom-2 left-2 right-2 text-center">
+                            <span className="inline-block px-2 py-0.5 rounded-md bg-black/80 dark:bg-black/90 text-white text-[0.6rem] font-black uppercase tracking-wider backdrop-blur-sm">
+                                WebP Optimized
+                            </span>
+                        </div>
                     </div>
                 ) : (
-                    <>
-                        <div className="w-16 h-16 bg-black/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Image size={32} className="text-black/20" />
+                    <div className="flex flex-col items-center justify-center py-6 px-4">
+                        <div className="w-14 h-14 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-2xl flex items-center justify-center mb-4 border border-amber-500/20">
+                            {isUploading ? (
+                                <Loader2 size={24} className="animate-spin" />
+                            ) : (
+                                <UploadCloud size={24} />
+                            )}
                         </div>
                         
                         <label className="relative cursor-pointer">
-                            <div className="bg-[#3E2723] text-[#F5F5DC] px-8 py-3 rounded-xl font-black text-[0.65rem] uppercase tracking-widest hover:opacity-80 transition-all flex items-center gap-2 shadow-xl">
+                            <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-amber-600/20 hover:shadow-lg transition-all active:scale-95">
                                 {isUploading ? (
-                                    <><Loader2 size={14} className="animate-spin" /> Mengunggah WebP...</>
+                                    <>
+                                        <Loader2 size={13} className="animate-spin" />
+                                        <span>Mengunggah...</span>
+                                    </>
                                 ) : (
-                                    "Pilih Cover"
+                                    <>
+                                        <ImageIcon size={14} />
+                                        <span>Pilih Gambar Sampul</span>
+                                    </>
                                 )}
-                            </div>
+                            </span>
                             <input
                                 type="file"
                                 accept="image/*"
@@ -94,8 +113,10 @@ export default function CoverUploader({ onUploaded, currentUrl, currentKey }: Co
                                 disabled={isUploading}
                             />
                         </label>
-                        <p className="mt-4 text-[0.6rem] font-bold text-black/20 uppercase tracking-widest">Auto WebP • Max 1200x1800</p>
-                    </>
+                        <p className="mt-3 text-[0.65rem] font-bold opacity-40 uppercase tracking-widest">
+                            Otomatis WebP • Max 1200×1800
+                        </p>
+                    </div>
                 )}
             </div>
         </div>
