@@ -191,6 +191,16 @@ export default async function ReaderPage({ params }: PageProps) {
 
     const getLink = (c: any) => `${basePath}/${getChapterSlug(c, novel.chapters)}`;
 
+    const allChapters = novel.chapters.map((c) => ({
+        id: c.id,
+        order: c.order,
+        title: c.title,
+        type: c.type,
+        formattedTitle: formatChapterTitle(c, novel.chapters),
+        link: getLink(c),
+        isCurrent: c.id === chapter.id,
+    }));
+
     return (
         <ReaderLayout
             novelId={chapter.novelId}
@@ -204,6 +214,7 @@ export default async function ReaderPage({ params }: PageProps) {
             nextChapterLink={nextChapter ? getLink(nextChapter) : null}
             chapterContent={chapter.content}
             chapterType={chapter.type}
+            chapters={allChapters}
         />
     );
 }
