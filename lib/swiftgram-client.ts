@@ -150,3 +150,66 @@ export function useSwiftGramUpload(
         isUploading,
     };
 }
+
+/**
+ * Robust client-side helper to delete files from SwiftGram (or legacy storage).
+ * Tries the Server Action first, then the /api/upload endpoint, then direct client DELETE.
+ */
+export async function deleteUploadedFile(keyOrUrl: string): Promise<{ success: boolean; error?: string }> {
+    if (!keyOrUrl) return { success: true };
+
+    const trimmed = keyOrUrl.trim();
+
+    // 1. Try Next.js Server Action
+    try {
+        const { deleteFiles } = await import("@/app/actions/novel-actions");
+        const res = await deleteFiles(trimmed);
+        if (res && res.success) {
+            return { success: true };
+        }
+    } catch (err: any) {
+        console.warn("Server action deleteFiles attempt failed, trying API route fallback:", err);
+    }
+
+    // 2. Try Next.js API route DELETE /api/upload
+    try {
+        const apiRes = await fetch(`/api/upload?key=${encodeURIComponent(trimmed)}`, {
+            method: "DELETE",
+        });
+        if (apiRes.ok) {
+            const data = await apiRes.json().catch(() => ({}));
+            if (data.success) {
+                return { success: true };
+            }
+        }
+    } catch (apiErr) {
+        console.warn("API route DELETE fallback failed:", apiErr);
+    }
+
+    // 3. Try direct browser DELETE to SwiftGram if direct credentials are available
+    try {
+        const authRes = await fetch("/api/upload", { method: "GET" });
+        if (authRes.ok) {
+            const { baseUrl, apiKey } = await authRes.json();
+            const uuidMatch = trimmed.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+            const id = uuidMatch ? uuidMatch[0] : trimmed;
+            if (id && baseUrl && apiKey) {
+                const directRes = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/files/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-API-KEY": apiKey,
+                        "Accept": "application/json",
+                    },
+                });
+                if (directRes.ok || directRes.status === 404) {
+                    return { success: true };
+                }
+            }
+        }
+    } catch (directErr) {
+        console.warn("Direct client DELETE failed:", directErr);
+    }
+
+    // If it reaches here, return error message but do not throw
+    return { success: false, error: "Gagal menghapus file dari storage server" };
+}

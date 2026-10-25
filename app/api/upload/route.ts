@@ -69,3 +69,33 @@ export async function POST(req: NextRequest) {
         );
     }
 }
+
+export async function DELETE(req: NextRequest) {
+    try {
+        await checkAdmin();
+        const url = new URL(req.url);
+        let key = url.searchParams.get("key");
+
+        if (!key) {
+            const body = await req.json().catch(() => ({}));
+            key = body.key || body.url || body.id;
+        }
+
+        if (!key) {
+            return NextResponse.json(
+                { success: false, error: "Parameter 'key' atau 'url' wajib disertakan" },
+                { status: 400 }
+            );
+        }
+
+        const { deleteFiles } = await import("@/app/actions/novel-actions");
+        const result = await deleteFiles(key);
+        return NextResponse.json(result);
+    } catch (error: any) {
+        console.error("API /api/upload DELETE error:", error);
+        return NextResponse.json(
+            { success: false, error: error.message || "Gagal menghapus file" },
+            { status: 500 }
+        );
+    }
+}

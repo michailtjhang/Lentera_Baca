@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { useFormStatus, useFormState } from "react-dom";
 import Editor from "@/components/Editor";
-import { useSwiftGramUpload } from "@/lib/swiftgram-client";
-import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
+import { useSwiftGramUpload, deleteUploadedFile } from "@/lib/swiftgram-client";
+import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus, CheckCircle2 } from "lucide-react";
 import { convertToWebP } from "@/lib/image-utils";
-import { deleteFiles } from "@/app/actions/novel-actions";
 import CustomSelect from "@/components/CustomSelect";
 
 interface ChapterFormProps {
@@ -44,18 +43,24 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
     const [draftFound, setDraftFound] = useState(false);
     const [isSavingDraft, setIsSavingDraft] = useState(false);
 
+    const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
+    const [deleteNotice, setDeleteNotice] = useState<{ message: string; isError?: boolean } | null>(null);
+
     const [images, setImages] = useState<{url: string, key?: string}[]>(() => {
         if (chapter?.type === "ILLUSTRATION") {
             const regex = /src="([^"]+)"/g;
-            const urls = [];
+            const urls: { url: string; key?: string }[] = [];
             let match;
             while ((match = regex.exec(chapter.content || "")) !== null) {
                 const url = match[1];
                 let key: string | undefined = undefined;
-                if (url.includes("/api/gateway/")) {
-                    key = url.split("/api/gateway/").pop()?.split("?")[0];
+                const uuidMatch = url.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+                if (uuidMatch) {
+                    key = uuidMatch[0];
+                } else if (url.includes("/api/gateway/")) {
+                    key = url.split("/api/gateway/").pop()?.split("?")[0]?.split("/")[0];
                 } else if (url.includes("utfs.io/f/")) {
-                    key = url.split("/f/").pop();
+                    key = url.split("/f/").pop()?.split("?")[0];
                 }
                 urls.push({ url, key });
             }
@@ -75,7 +80,7 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
     }, [draftKey, chapter?.content]);
 
     useEffect(() => {
-        if (content || title || (type === "ILLUSTRATION" && images.length > 0)) {
+        if (content || title || type === "ILLUSTRATION") {
             setIsSavingDraft(true);
             const timer = setTimeout(() => {
                 localStorage.setItem(draftKey, JSON.stringify({ 
@@ -109,12 +114,12 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
         setDraftFound(false);
     };
 
-
     const syncImagesToContent = (newImages: {url: string, key?: string}[]) => {
         const html = newImages.map(img => 
             `<img src="${img.url}" alt="illustration" class="rounded-2xl shadow-xl mx-auto my-8 max-w-full h-auto" />`
         ).join('\n');
         setContent(html);
+        return html;
     };
     
     const { startUpload, isUploading } = useSwiftGramUpload({
@@ -155,12 +160,51 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
 
     const removeImage = async (index: number) => {
         const imgToRemove = images[index];
-        if (imgToRemove.key) {
-            await deleteFiles(imgToRemove.key);
+        if (!imgToRemove) return;
+
+        if (!window.confirm("Hapus ilustrasi ini dari chapter?")) {
+            return;
         }
+
+        setDeletingIndex(index);
+
+        // Remove from list immediately to ensure UI is fast and responsive
         const newImages = images.filter((_, i) => i !== index);
         setImages(newImages);
-        syncImagesToContent(newImages);
+        const newHtml = syncImagesToContent(newImages);
+
+        // Update local draft immediately
+        try {
+            localStorage.setItem(draftKey, JSON.stringify({ 
+                title, 
+                content: newHtml,
+                type,
+                images: newImages,
+                timestamp: Date.now() 
+            }));
+        } catch (e) {
+            console.warn("Failed updating draft:", e);
+        }
+
+        // Delete from SwiftGram / storage
+        const identifier = imgToRemove.key || imgToRemove.url;
+        if (identifier) {
+            try {
+                const res = await deleteUploadedFile(identifier);
+                if (res.success) {
+                    setDeleteNotice({ message: "Ilustrasi berhasil dihapus dari server", isError: false });
+                } else {
+                    console.warn("SwiftGram delete notice:", res.error);
+                    setDeleteNotice({ message: "Ilustrasi dihapus dari chapter", isError: false });
+                }
+            } catch (delErr: any) {
+                console.warn("Storage deletion error:", delErr);
+                setDeleteNotice({ message: "Ilustrasi dihapus dari chapter", isError: false });
+            }
+            setTimeout(() => setDeleteNotice(null), 3000);
+        }
+
+        setDeletingIndex(null);
     };
 
     const handleFormSubmit = async (formData: FormData) => {
@@ -216,6 +260,13 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
                 <div className="fixed top-24 right-8 flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 z-[999] border border-white/10">
                     <Loader2 size={16} className="animate-spin" />
                     <span className="text-[0.65rem] font-black uppercase tracking-widest">Menyimpan draf...</span>
+                </div>
+            )}
+
+            {deleteNotice && (
+                <div className={`fixed top-24 right-8 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 z-[999] border border-white/10 text-white ${deleteNotice.isError ? "bg-red-600" : "bg-emerald-600"}`}>
+                    <CheckCircle2 size={16} />
+                    <span className="text-xs font-bold">{deleteNotice.message}</span>
                 </div>
             )}
 
@@ -299,45 +350,62 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
 
                     {/* Image List */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {images.map((img, idx) => (
-                            <div key={idx} className="relative group rounded-2xl overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-500">
-                                <img src={img.url} alt={`Illustration ${idx}`} className="w-full h-full object-cover" />
-                                
-                                {/* Controls Overlay */}
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => moveImage(idx, 'up')}
-                                            disabled={idx === 0}
-                                            className="p-2 bg-white/20 text-white rounded-lg hover:bg-white/40 disabled:opacity-20 transition-all"
-                                            title="Pindah ke Atas"
-                                        >
-                                            <ArrowUp size={16} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => moveImage(idx, 'down')}
-                                            disabled={idx === images.length - 1}
-                                            className="p-2 bg-white/20 text-white rounded-lg hover:bg-white/40 disabled:opacity-20 transition-all"
-                                            title="Pindah ke Bawah"
-                                        >
-                                            <ArrowDown size={16} />
-                                        </button>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeImage(idx)}
-                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl text-[0.65rem] font-black uppercase tracking-widest hover:bg-red-600 transition-all"
-                                    >
-                                        <Trash2 size={14} /> Hapus
-                                    </button>
-                                    <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-xs font-black shadow-lg">
+                        {images.map((img, idx) => {
+                            const isBeingDeleted = deletingIndex === idx;
+
+                            return (
+                                <div key={idx} className="relative group rounded-2xl overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 aspect-[3/4] shadow-sm hover:shadow-xl transition-all duration-500">
+                                    <img src={img.url} alt={`Illustration ${idx}`} className="w-full h-full object-cover" />
+                                    
+                                    {/* Number badge */}
+                                    <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-black/70 backdrop-blur-md text-white border border-white/10 flex items-center justify-center text-xs font-black shadow-lg z-10">
                                         {idx + 1}
                                     </div>
+
+                                    {/* Deleting Spinner Overlay */}
+                                    {isBeingDeleted && (
+                                        <div className="absolute inset-0 bg-black/80 z-20 flex flex-col items-center justify-center gap-2.5 backdrop-blur-md animate-in fade-in">
+                                            <Loader2 className="animate-spin text-amber-500" size={32} />
+                                            <span className="text-[0.65rem] font-black uppercase tracking-widest text-white">Menghapus...</span>
+                                        </div>
+                                    )}
+
+                                    {/* Controls Overlay */}
+                                    {!isBeingDeleted && (
+                                        <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm z-10">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => moveImage(idx, 'up')}
+                                                    disabled={idx === 0 || deletingIndex !== null}
+                                                    className="p-2.5 bg-white/20 text-white rounded-xl hover:bg-white/35 disabled:opacity-20 transition-all hover:scale-105 active:scale-95"
+                                                    title="Pindah ke Atas"
+                                                >
+                                                    <ArrowUp size={16} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => moveImage(idx, 'down')}
+                                                    disabled={idx === images.length - 1 || deletingIndex !== null}
+                                                    className="p-2.5 bg-white/20 text-white rounded-xl hover:bg-white/35 disabled:opacity-20 transition-all hover:scale-105 active:scale-95"
+                                                    title="Pindah ke Bawah"
+                                                >
+                                                    <ArrowDown size={16} />
+                                                </button>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(idx)}
+                                                disabled={deletingIndex !== null}
+                                                className="mt-2 flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[0.65rem] font-black uppercase tracking-widest shadow-lg shadow-red-950/40 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                            >
+                                                <Trash2 size={14} /> Hapus Ilustrasi
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         {/* Upload Button */}
                         <label className={`relative cursor-pointer border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center p-8 bg-black/2 dark:bg-white/2 hover:bg-black/5 dark:hover:bg-white/5 transition-all aspect-[3/4] ${isUploading ? 'pointer-events-none' : ''}`}>

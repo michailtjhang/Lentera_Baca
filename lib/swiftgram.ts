@@ -64,9 +64,10 @@ export function extractFileIdentifier(urlOrKey: string): { type: "swiftgram" | "
         }
     }
 
-    // Direct UUID is SwiftGram ID
-    if (UUID_REGEX.test(trimmed)) {
-        return { type: "swiftgram", idOrKey: trimmed };
+    // Direct UUID or any URL containing a SwiftGram UUID pattern
+    const uuidMatch = trimmed.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    if (uuidMatch) {
+        return { type: "swiftgram", idOrKey: uuidMatch[0] };
     }
 
     // Otherwise, assume it's UploadThing key or other legacy identifier
