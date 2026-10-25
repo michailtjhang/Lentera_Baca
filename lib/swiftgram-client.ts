@@ -153,14 +153,43 @@ export function useSwiftGramUpload(
 
 /**
  * Robust client-side helper to delete files from SwiftGram (or legacy storage).
- * Tries the Server Action first, then the /api/upload endpoint, then direct client DELETE.
+ * Prioritizes direct browser DELETE to SwiftGram to completely bypass Cloudflare
+ * datacenter IP blocks (WAF / Bot Fight Mode) that affect Vercel server requests.
  */
 export async function deleteUploadedFile(keyOrUrl: string): Promise<{ success: boolean; error?: string }> {
     if (!keyOrUrl) return { success: true };
 
     const trimmed = keyOrUrl.trim();
+    const uuidMatch = trimmed.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    const swiftGramId = uuidMatch ? uuidMatch[0] : null;
 
-    // 1. Try Next.js Server Action
+    // 1. PRIORITAS UTAMA: Direct Browser Delete ke SwiftGram API
+    // Request ini dikirim langsung dari browser pengguna (IP residensial) sehingga aman dari Cloudflare bot challenge
+    if (swiftGramId) {
+        try {
+            const authRes = await fetch("/api/upload", { method: "GET" });
+            if (authRes.ok) {
+                const { baseUrl, apiKey } = await authRes.json();
+                if (baseUrl && apiKey) {
+                    const directRes = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/files/${swiftGramId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "X-API-KEY": apiKey,
+                            "Accept": "application/json",
+                        },
+                    });
+
+                    if (directRes.ok || directRes.status === 404) {
+                        return { success: true };
+                    }
+                }
+            }
+        } catch (directErr) {
+            console.warn("Direct client DELETE error, falling back to server:", directErr);
+        }
+    }
+
+    // 2. Fallback: Next.js Server Action deleteFiles
     try {
         const { deleteFiles } = await import("@/app/actions/novel-actions");
         const res = await deleteFiles(trimmed);
@@ -171,7 +200,7 @@ export async function deleteUploadedFile(keyOrUrl: string): Promise<{ success: b
         console.warn("Server action deleteFiles attempt failed, trying API route fallback:", err);
     }
 
-    // 2. Try Next.js API route DELETE /api/upload
+    // 3. Fallback: Next.js API route DELETE /api/upload
     try {
         const apiRes = await fetch(`/api/upload?key=${encodeURIComponent(trimmed)}`, {
             method: "DELETE",
@@ -186,30 +215,6 @@ export async function deleteUploadedFile(keyOrUrl: string): Promise<{ success: b
         console.warn("API route DELETE fallback failed:", apiErr);
     }
 
-    // 3. Try direct browser DELETE to SwiftGram if direct credentials are available
-    try {
-        const authRes = await fetch("/api/upload", { method: "GET" });
-        if (authRes.ok) {
-            const { baseUrl, apiKey } = await authRes.json();
-            const uuidMatch = trimmed.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-            const id = uuidMatch ? uuidMatch[0] : trimmed;
-            if (id && baseUrl && apiKey) {
-                const directRes = await fetch(`${baseUrl.replace(/\/+$/, "")}/api/files/${id}`, {
-                    method: "DELETE",
-                    headers: {
-                        "X-API-KEY": apiKey,
-                        "Accept": "application/json",
-                    },
-                });
-                if (directRes.ok || directRes.status === 404) {
-                    return { success: true };
-                }
-            }
-        }
-    } catch (directErr) {
-        console.warn("Direct client DELETE failed:", directErr);
-    }
-
-    // If it reaches here, return error message but do not throw
+    // If it reaches here, return notice but avoid crashing
     return { success: false, error: "Gagal menghapus file dari storage server" };
 }

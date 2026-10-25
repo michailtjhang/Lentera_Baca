@@ -194,7 +194,11 @@ export async function deleteFromSwiftGram(id: string): Promise<{ success: boolea
         // 404 means the file was already deleted or doesn't exist; treat as resolved
         if (!response.ok && response.status !== 404) {
             const errText = await response.text().catch(() => "");
-            console.warn(`SwiftGram delete warning for ID ${id} [status ${response.status}]:`, errText);
+            if (response.status === 403 && (errText.includes("Just a moment") || errText.includes("challenges.cloudflare.com"))) {
+                console.warn(`SwiftGram delete blocked by Cloudflare Bot Protection for ID ${id} [HTTP 403]. Pastikan subdomain swiftgram.michail.my.id disetel DNS Only (Grey Cloud) di Cloudflare.`);
+                return { success: false, error: "Cloudflare WAF memblokir akses server Vercel ke SwiftGram (HTTP 403)" };
+            }
+            console.warn(`SwiftGram delete warning for ID ${id} [status ${response.status}]:`, errText.slice(0, 200));
             return { success: false, error: `Gagal menghapus file di SwiftGram: ${response.statusText}` };
         }
 
