@@ -109,8 +109,8 @@ export async function uploadToSwiftGram(
             method: "POST",
             headers: {
                 "X-API-KEY": apiKey,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json",
-                "User-Agent": "LenteraBaca/1.0 (Next.js Server Client)",
             },
             body: formData,
         });
@@ -185,8 +185,8 @@ export async function deleteFromSwiftGram(id: string): Promise<{ success: boolea
             method: "DELETE",
             headers: {
                 "X-API-KEY": apiKey,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json",
-                "User-Agent": "LenteraBaca/1.0 (Next.js Server Client)",
             },
         });
 
