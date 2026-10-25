@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAdmin } from "@/lib/admin";
-import { uploadToSwiftGram } from "@/lib/swiftgram";
+import { uploadToSwiftGram, getSwiftGramConfig } from "@/lib/swiftgram";
+
+export async function GET(req: NextRequest) {
+    try {
+        await checkAdmin();
+        const { baseUrl, apiKey } = getSwiftGramConfig();
+        if (!apiKey) {
+            return NextResponse.json(
+                { success: false, error: "SWIFTGRAM_API_KEY belum dikonfigurasi di Vercel/Environment" },
+                { status: 500 }
+            );
+        }
+        return NextResponse.json({ success: true, baseUrl, apiKey });
+    } catch (error: any) {
+        return NextResponse.json(
+            { success: false, error: error.message || "Unauthorized" },
+            { status: 401 }
+        );
+    }
+}
 
 export async function POST(req: NextRequest) {
     try {

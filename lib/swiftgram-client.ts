@@ -36,6 +36,28 @@ export function useSwiftGramUpload(
         setIsUploading(true);
 
         try {
+            // Dapatkan konfigurasi upload resmi dari server (untuk admin terotorisasi)
+            let directConfig: { baseUrl: string; apiKey: string } | null = null;
+            try {
+                const authRes = await fetch("/api/upload", { method: "GET" });
+                if (authRes.ok) {
+                    const authData = await authRes.json();
+                    if (authData.success && authData.baseUrl && authData.apiKey) {
+                        directConfig = { baseUrl: authData.baseUrl.replace(/\/+$/, ""), apiKey: authData.apiKey };
+                    }
+                } else {
+                    const errData = await authRes.json().catch(() => ({}));
+                    if (errData.error && errData.error.includes("SWIFTGRAM_API_KEY")) {
+                        throw new Error(errData.error);
+                    }
+                }
+            } catch (authErr: any) {
+                if (authErr.message?.includes("SWIFTGRAM_API_KEY")) {
+                    throw authErr;
+                }
+                console.warn("Direct upload config fetch failed, will use server proxy:", authErr);
+            }
+
             const results: SwiftGramUploadedFile[] = [];
 
             for (let file of files) {
@@ -56,24 +78,59 @@ export function useSwiftGramUpload(
                 const formData = new FormData();
                 formData.append("file", file, file.name);
 
-                const res = await fetch("/api/upload", {
-                    method: "POST",
-                    body: formData,
-                });
+                let uploaded = false;
 
-                const data = await res.json().catch(() => ({}));
+                // 1. Prioritaskan Direct Upload dari browser (menghindari blokir IP Datacenter Vercel oleh hosting)
+                if (directConfig) {
+                    try {
+                        const directRes = await fetch(`${directConfig.baseUrl}/api/upload`, {
+                            method: "POST",
+                            headers: {
+                                "X-API-KEY": directConfig.apiKey,
+                                "Accept": "application/json",
+                            },
+                            body: formData,
+                        });
 
-                if (!res.ok || !data.success || !data.data?.id) {
-                    const errMsg = data.error || data.message || `Upload gagal dengan status ${res.status}`;
-                    throw new Error(errMsg);
+                        const directData = await directRes.json().catch(() => ({}));
+
+                        if (directRes.ok && directData.success && directData.data?.id) {
+                            results.push({
+                                url: `${directConfig.baseUrl}/api/gateway/${directData.data.id}`,
+                                key: directData.data.id,
+                                name: directData.data.original_name || file.name,
+                                size: directData.data.size || file.size,
+                            });
+                            uploaded = true;
+                        } else {
+                            console.warn("Direct upload error, mencoba fallback server proxy:", directData);
+                        }
+                    } catch (directErr) {
+                        console.warn("Direct upload failed, mencoba fallback server proxy:", directErr);
+                    }
                 }
 
-                results.push({
-                    url: data.data.url,
-                    key: data.data.id,
-                    name: data.data.original_name,
-                    size: data.data.size,
-                });
+                // 2. Fallback melalui Server Proxy (/api/upload) jika direct upload tidak berhasil
+                if (!uploaded) {
+                    const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || !data.success || !data.data?.id) {
+                        const errMsg = data.error || data.message || `Upload gagal dengan status ${res.status}`;
+                        throw new Error(errMsg);
+                    }
+
+                    results.push({
+                        url: data.data.url,
+                        key: data.data.id,
+                        name: data.data.original_name,
+                        size: data.data.size,
+                    });
+                }
             }
 
             options.onClientUploadComplete?.(results);
