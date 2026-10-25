@@ -179,7 +179,12 @@ export async function deleteUploadedFile(keyOrUrl: string): Promise<{ success: b
                         },
                     });
 
-                    if (directRes.ok || directRes.status === 404) {
+                    const result = await directRes.json().catch(() => null);
+                    if (result?.message) {
+                        console.log(`SwiftGram client delete [${swiftGramId}]:`, result.message);
+                    }
+
+                    if (directRes.ok || directRes.status === 404 || result?.success) {
                         return { success: true };
                     }
                 }

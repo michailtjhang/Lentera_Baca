@@ -186,20 +186,23 @@ export async function deleteFromSwiftGram(id: string): Promise<{ success: boolea
             method: "DELETE",
             headers: {
                 "X-API-KEY": apiKey,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json",
             },
         });
 
+        const result = await response.json().catch(() => null);
+        if (result?.message) {
+            console.log(`SwiftGram delete [${id}]:`, result.message);
+        }
+
         // 404 means the file was already deleted or doesn't exist; treat as resolved
         if (!response.ok && response.status !== 404) {
-            const errText = await response.text().catch(() => "");
-            if (response.status === 403 && (errText.includes("Just a moment") || errText.includes("challenges.cloudflare.com"))) {
+            if (response.status === 403) {
                 console.warn(`SwiftGram delete blocked by Cloudflare Bot Protection for ID ${id} [HTTP 403]. Pastikan subdomain swiftgram.michail.my.id disetel DNS Only (Grey Cloud) di Cloudflare.`);
                 return { success: false, error: "Cloudflare WAF memblokir akses server Vercel ke SwiftGram (HTTP 403)" };
             }
-            console.warn(`SwiftGram delete warning for ID ${id} [status ${response.status}]:`, errText.slice(0, 200));
-            return { success: false, error: `Gagal menghapus file di SwiftGram: ${response.statusText}` };
+            return { success: false, error: result?.error || `Gagal menghapus file di SwiftGram: ${response.statusText}` };
         }
 
         return { success: true };
