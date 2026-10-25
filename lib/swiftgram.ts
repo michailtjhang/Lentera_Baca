@@ -110,25 +110,41 @@ export async function uploadToSwiftGram(
             headers: {
                 "X-API-KEY": apiKey,
                 "Accept": "application/json",
+                "User-Agent": "LenteraBaca/1.0 (Next.js Server Client)",
             },
             body: formData,
         });
 
+        const rawText = await response.text();
+
         if (!response.ok) {
             let errorMsg = `SwiftGram upload error: HTTP ${response.status} ${response.statusText}`;
             try {
-                const errJson = await response.json();
+                const errJson = JSON.parse(rawText);
                 if (errJson.message || errJson.error) {
                     errorMsg = errJson.message || errJson.error;
                 }
             } catch {
-                const text = await response.text().catch(() => "");
-                if (text) errorMsg = text;
+                if (rawText && rawText.length < 150) {
+                    errorMsg = rawText;
+                } else if (rawText.includes("Cloudflare") || rawText.includes("Attention Required") || rawText.includes("403 Forbidden")) {
+                    errorMsg = "Akses diblokir oleh Cloudflare WAF/Bot Protection di domain SwiftGram (HTTP 403 Forbidden)";
+                }
             }
+
+            if (response.status === 403 && errorMsg.toLowerCase().includes("invalid api key")) {
+                errorMsg = "SWIFTGRAM_API_KEY tidak valid atau belum disetel dengan benar di Vercel/Environment.";
+            }
+
             throw new Error(errorMsg);
         }
 
-        const json = await response.json();
+        let json: any;
+        try {
+            json = JSON.parse(rawText);
+        } catch {
+            throw new Error(`Format response SwiftGram tidak valid (bukan JSON): ${rawText.slice(0, 100)}`);
+        }
 
         if (!json.success || !json.data?.id) {
             throw new Error(json.message || json.error || "Format response SwiftGram upload tidak valid");
@@ -170,6 +186,7 @@ export async function deleteFromSwiftGram(id: string): Promise<{ success: boolea
             headers: {
                 "X-API-KEY": apiKey,
                 "Accept": "application/json",
+                "User-Agent": "LenteraBaca/1.0 (Next.js Server Client)",
             },
         });
 
