@@ -10,11 +10,6 @@ import {
   ExternalLink,
   ChevronRight,
   Home,
-  BookOpen,
-  FileText,
-  Plus,
-  Settings,
-  ArrowLeft,
   Menu,
   X,
   Sparkles,
@@ -64,22 +59,6 @@ export default function Sidebar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Extract current novel ID if navigating inside a novel's management routes
-  const novelMatch = pathname.match(/\/admin\/novel\/([^\/]+)/);
-  const currentNovelId = novelMatch && novelMatch[1] !== "new" ? novelMatch[1] : null;
-
-  // Active status helpers for novel context sub-menu
-  const isChapterListActive =
-    !!currentNovelId &&
-    pathname.startsWith(`/admin/novel/${currentNovelId}/chapter`) &&
-    !pathname.endsWith("/chapter/new");
-  const isNewChapterActive =
-    !!currentNovelId && pathname === `/admin/novel/${currentNovelId}/chapter/new`;
-  const isEditNovelActive =
-    !!currentNovelId && pathname === `/admin/novel/${currentNovelId}/edit`;
-  const isEditingChapter =
-    !!currentNovelId && pathname.includes("/chapter/") && pathname.endsWith("/edit");
-
   const NavContent = () => (
     <div className="h-full flex flex-col justify-between select-none relative z-10">
       {/* Top Header: Brand */}
@@ -116,86 +95,6 @@ export default function Sidebar() {
 
       {/* Middle: Scrollable Navigation Container */}
       <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-4 space-y-6 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20 scrollbar-track-transparent">
-        {/* Contextual Active Novel Navigation (Visible when inside a specific novel) */}
-        {currentNovelId && (
-          <div className="space-y-2 animate-in fade-in duration-300">
-            <div className="px-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-[0.62rem] font-black uppercase tracking-[0.2em] text-amber-400">
-                <BookOpen size={12} className="text-amber-400 shrink-0" />
-                <span>Novel Aktif</span>
-              </div>
-              <span className="text-[0.55rem] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/20 font-mono">
-                {currentNovelId.slice(0, 8)}...
-              </span>
-            </div>
-
-            <div className="p-1.5 rounded-2xl bg-gradient-to-b from-amber-500/[0.08] to-transparent border border-amber-500/20 space-y-1">
-              {/* Daftar Chapter */}
-              <Link
-                href={`/admin/novel/${currentNovelId}/chapter`}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  isChapterListActive
-                    ? "bg-amber-600 text-white shadow-md shadow-amber-900/30"
-                    : "text-white/80 hover:text-white hover:bg-white/8"
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <FileText size={15} className={isChapterListActive ? "text-white" : "text-amber-400"} />
-                  <span className="truncate">Daftar Chapter</span>
-                </div>
-                {isEditingChapter ? (
-                  <span className="text-[0.55rem] font-black px-1.5 py-0.5 rounded bg-black/30 text-amber-200 border border-white/10 shrink-0">
-                    Edit Aktif
-                  </span>
-                ) : (
-                  isChapterListActive && <ChevronRight size={13} className="shrink-0 opacity-80" />
-                )}
-              </Link>
-
-              {/* Tambah Chapter Baru */}
-              <Link
-                href={`/admin/novel/${currentNovelId}/chapter/new`}
-                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                  isNewChapterActive
-                    ? "bg-amber-600 text-white shadow-md shadow-amber-900/30"
-                    : "text-white/70 hover:text-white hover:bg-white/8"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Plus size={15} className={isNewChapterActive ? "text-white" : "text-amber-400"} />
-                  <span>Tambah Chapter</span>
-                </div>
-                {isNewChapterActive && <ChevronRight size={13} className="shrink-0 opacity-80" />}
-              </Link>
-
-              {/* Edit Detail Novel */}
-              <Link
-                href={`/admin/novel/${currentNovelId}/edit`}
-                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                  isEditNovelActive
-                    ? "bg-amber-600 text-white shadow-md shadow-amber-900/30"
-                    : "text-white/70 hover:text-white hover:bg-white/8"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Settings size={15} className={isEditNovelActive ? "text-white" : "text-amber-400"} />
-                  <span>Edit Info Novel</span>
-                </div>
-                {isEditNovelActive && <ChevronRight size={13} className="shrink-0 opacity-80" />}
-              </Link>
-
-              {/* Quick Return to Catalog */}
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-[0.68rem] font-bold text-white/50 hover:text-white hover:bg-white/6 transition-all mt-1 border-t border-white/5"
-              >
-                <ArrowLeft size={13} className="text-amber-400/80" />
-                <span>Kembali ke Katalog</span>
-              </Link>
-            </div>
-          </div>
-        )}
-
         {/* Primary Navigation Section */}
         <div className="space-y-1.5">
           <div className="px-2.5 mb-2">
@@ -344,8 +243,8 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Desktop Permanent Sidebar */}
-      <aside className="hidden md:flex w-72 shrink-0 h-screen sticky top-0 z-40 bg-gradient-to-b from-[#201007] via-[#160b05] to-[#0d0603] border-r border-white/[0.08] flex-col overflow-hidden">
+      {/* Desktop Fixed Permanent Sidebar */}
+      <aside className="hidden md:flex md:fixed md:inset-y-0 md:left-0 md:w-72 md:h-screen z-40 bg-gradient-to-b from-[#201007] via-[#160b05] to-[#0d0603] border-r border-white/[0.08] flex-col overflow-hidden select-none">
         {/* Decorative ambient subtle glow */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/[0.08] rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />

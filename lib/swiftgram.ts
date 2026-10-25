@@ -23,6 +23,8 @@ export interface SwiftGramUploadResponse {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export const SWIFTGRAM_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
 /**
  * Get SwiftGram configuration from environment variables
  */
@@ -110,7 +112,7 @@ export async function uploadToSwiftGram(
             method: "POST",
             headers: {
                 "X-API-KEY": apiKey,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": SWIFTGRAM_USER_AGENT,
                 "Accept": "application/json",
             },
             body: formData,
@@ -186,7 +188,7 @@ export async function deleteFromSwiftGram(id: string): Promise<{ success: boolea
             method: "DELETE",
             headers: {
                 "X-API-KEY": apiKey,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": SWIFTGRAM_USER_AGENT,
                 "Accept": "application/json",
             },
         });

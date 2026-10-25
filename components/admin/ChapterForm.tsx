@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useFormStatus, useFormState } from "react-dom";
 import Editor from "@/components/Editor";
 import { useSwiftGramUpload, deleteUploadedFile } from "@/lib/swiftgram-client";
-import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus, CheckCircle2 } from "lucide-react";
+import { Image as ImageIcon, Loader2, Trash2, ArrowUp, ArrowDown, Plus, CheckCircle2, Save } from "lucide-react";
 import { convertToWebP } from "@/lib/image-utils";
 import CustomSelect from "@/components/CustomSelect";
 
@@ -13,6 +13,21 @@ interface ChapterFormProps {
     volumes?: any[];
     action: (prevState: any, formData: FormData) => Promise<any>;
     novelType?: string;
+}
+
+function TopSubmitButton({ isEdit }: { isEdit: boolean }) {
+    const { pending } = useFormStatus();
+
+    return (
+        <button
+            type="submit"
+            disabled={pending}
+            className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md shadow-amber-900/20"
+        >
+            {pending ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
+            <span>{pending ? "Menyimpan..." : (isEdit ? "Simpan Perubahan" : "Simpan Chapter")}</span>
+        </button>
+    );
 }
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
@@ -216,9 +231,21 @@ export default function AdminChapterForm({ chapter, volumes = [], action, novelT
 
     return (
         <form 
+            id="chapter-form"
             action={handleFormSubmit} 
             className="space-y-6 bg-white dark:bg-white/4 p-6 md:p-10 rounded-3xl border border-black/5 dark:border-white/5 max-w-7xl mx-auto shadow-sm"
         >
+            {/* Top Form Header Action Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/5 dark:border-white/5 gap-3">
+                <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-xs font-black uppercase tracking-wider opacity-70">
+                        {chapter?.order ? `Pengaturan Chapter #${chapter.order}` : "Pengaturan Chapter Baru"}
+                    </span>
+                </div>
+                <TopSubmitButton isEdit={!!chapter} />
+            </div>
+
             {/* Error Message */}
             {state?.error && (
                 <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 p-4 rounded-2xl font-bold flex items-center gap-3 text-sm">
